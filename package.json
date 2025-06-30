@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@react-router/express": "^7.5.3",
+    "@react-router/fs-routes": "^7.6.3",
     "@react-router/node": "^7.5.3",
     "@types/plotly.js-dist-min": "^2.3.4",
     "ansi-escapes": "^7.0.0",
