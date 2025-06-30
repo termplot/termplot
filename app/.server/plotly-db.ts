@@ -149,4 +149,4 @@ class PlotlyDatabase {
 
 // Export a singleton instance of the database
 const plotlyDb = new PlotlyDatabase();
-export default plotlyDb;
+export { plotlyDb };
