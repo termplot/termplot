@@ -35,7 +35,7 @@ const DataSchema = z.object({
   x: z.array(z.number()),
   y: z.array(z.number()),
   type: z.literal("scatter"), // Limit to 'scatter' for now, can expand later
-  mode: z.string().optional(), // e.g., 'lines+markers'
+  mode: z.literal("lines+markers").optional(), // e.g., 'lines+markers'
   name: z.string().optional(),
 });
 
@@ -53,7 +53,7 @@ const PlotlyConfigSchema = z.object({
 });
 
 // Infer TypeScript types from the Zod schema
-type PlotlyConfig = z.infer<typeof PlotlyConfigSchema>;
+export type PlotlyConfig = z.infer<typeof PlotlyConfigSchema>;
 
 // In-memory database using a Map to store plot configurations by ID
 class PlotlyDatabase {
