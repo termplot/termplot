@@ -1818,3 +1818,6 @@ Let me know which part you’d like to focus on next or if you have additional
 refinements to the plan!
 
 # === USER ===
+
+the last version of react-plotly.js was from 8 years ago. however, there are new
+versions of plotly.js. is there a better way to use plotly in react?
