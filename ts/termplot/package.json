@@ -1,5 +1,4 @@
 {
-  "private": true,
   "type": "module",
   "scripts": {
     "build": "react-router build",
