@@ -57,7 +57,7 @@ const server = app.listen(PORT, () => {
     await page.setViewport({ width: 1200, height: 900 });
 
     // Navigate to the local web server hosting the plot
-    await page.goto("http://localhost:3000/plotly/0", { waitUntil: "networkidle2" });
+    await page.goto(`http://localhost:${PORT}/plotly/0`, { waitUntil: "networkidle2" });
 
     // Take a screenshot
     const imageBuffer = await page.screenshot({ fullPage: true });
