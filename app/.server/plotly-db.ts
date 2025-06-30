@@ -76,7 +76,7 @@ const DataSchema = z.object({
   x: z.array(z.number()),
   y: z.array(z.number()),
   type: z.literal("scatter"), // Limit to 'scatter' for now
-  mode: z.literal("lines+markers").optional(), // Default to 'lines+markers'
+  mode: z.enum(["lines", "markers", "lines+markers"]).optional(), // Optional mode
   name: z.string().optional(),
   line: LineSchema.optional(),
   marker: MarkerSchema.optional(),
