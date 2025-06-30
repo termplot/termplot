@@ -7,6 +7,9 @@
     "start": "node server.ts",
     "typecheck": "react-router typegen && tsc -b"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
     "@react-router/express": "^7.5.3",
     "@react-router/node": "^7.5.3",
