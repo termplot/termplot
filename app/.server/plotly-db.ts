@@ -175,8 +175,8 @@ class PlotlyDatabase {
             color: "#cdd6f4", // Catppuccin Text
           },
         },
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 900,
         plot_bgcolor: "#1e1e2e", // Catppuccin Base for dark background (plot area)
         paper_bgcolor: "#1e1e2e", // Catppuccin Base for surrounding area
         font: {

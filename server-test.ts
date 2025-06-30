@@ -54,7 +54,7 @@ const server = app.listen(PORT, () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    // await page.setViewport({ width: 1024, height: 768 });
+    await page.setViewport({ width: 1200, height: 900 });
 
     // Navigate to the local web server hosting the plot
     await page.goto("http://localhost:3000/plotly/0", { waitUntil: "networkidle2" });

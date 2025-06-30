@@ -4251,7 +4251,9 @@ assist!
 
 # === USER ===
 
-i use the catpuccin theme everywhere. in my terminal and my editor and anywhere else i can. is there any way you can update these colors to be more catpuccin-esque?
+i use the catpuccin theme everywhere. in my terminal and my editor and anywhere
+else i can. is there any way you can update these colors to be more
+catpuccin-esque?
 
 ```typescript
     const defaultPlot: PlotlyConfig = {
@@ -4353,26 +4355,45 @@ i use the catpuccin theme everywhere. in my terminal and my editor and anywhere 
 
 # === ASSISTANT ===
 
-
 # === ASSISTANT ===
 
-I'm glad you're looking to customize the appearance of your Plotly chart to match the Catppuccin theme, which is a popular, aesthetically pleasing color scheme used across terminals, editors, and other tools. Catppuccin is known for its soft, pastel-inspired colors with a focus on readability and a cozy, modern feel. It offers several flavor variants (e.g., Latte, Frappé, Macchiato, Mocha), each with a distinct palette. Since you use Catppuccin everywhere, I'll assume you're looking for a dark variant (like Mocha, the darkest and most popular) to align with the terminal aesthetic you've been pursuing. If you prefer a different flavor (e.g., Latte for a light theme), let me know!
+I'm glad you're looking to customize the appearance of your Plotly chart to
+match the Catppuccin theme, which is a popular, aesthetically pleasing color
+scheme used across terminals, editors, and other tools. Catppuccin is known for
+its soft, pastel-inspired colors with a focus on readability and a cozy, modern
+feel. It offers several flavor variants (e.g., Latte, Frappé, Macchiato, Mocha),
+each with a distinct palette. Since you use Catppuccin everywhere, I'll assume
+you're looking for a dark variant (like Mocha, the darkest and most popular) to
+align with the terminal aesthetic you've been pursuing. If you prefer a
+different flavor (e.g., Latte for a light theme), let me know!
 
 ### Catppuccin Theme Overview
 
-Catppuccin’s palette is organized into a set of named colors (e.g., Base, Surface, Text, Rosewater, Flamingo, etc.) that are designed to work harmoniously together. For a terminal-inspired dark theme, we'll use the **Mocha** variant, which features:
+Catppuccin’s palette is organized into a set of named colors (e.g., Base,
+Surface, Text, Rosewater, Flamingo, etc.) that are designed to work harmoniously
+together. For a terminal-inspired dark theme, we'll use the **Mocha** variant,
+which features:
 
 - **Base**: A deep, dark background color (`#1e1e2e`).
-- **Surface0/Surface1**: Slightly lighter backgrounds for containers or panels (`#313244`/`#45475a`).
+- **Surface0/Surface1**: Slightly lighter backgrounds for containers or panels
+  (`#313244`/`#45475a`).
 - **Text**: A light color for text readability (`#cdd6f4`).
-- **Green**: A soft green for highlights or data (`#a6e3a1`), which can replace the "terminal green" focus from the previous configuration.
-- **Other Accent Colors**: Subtle pastel tones like Lavender (`#b4befe`), Mauve (`#cba6f7`), and Sky (`#89dceb`) for additional data traces or highlights if needed.
+- **Green**: A soft green for highlights or data (`#a6e3a1`), which can replace
+  the "terminal green" focus from the previous configuration.
+- **Other Accent Colors**: Subtle pastel tones like Lavender (`#b4befe`), Mauve
+  (`#cba6f7`), and Sky (`#89dceb`) for additional data traces or highlights if
+  needed.
 
-We'll adapt the Plotly chart’s colors to match this palette, maintaining the dark background, subtle grid lines, and readable text while incorporating Catppuccin’s cozy aesthetic.
+We'll adapt the Plotly chart’s colors to match this palette, maintaining the
+dark background, subtle grid lines, and readable text while incorporating
+Catppuccin’s cozy aesthetic.
 
 ### Updated Plotly Configuration with Catppuccin Colors (Mocha Variant)
 
-Below is the updated configuration for your test plot (ID "0") in the `PlotlyDatabase` class, using colors from the Catppuccin Mocha theme. I'll keep the structure, fonts, and sizing consistent with your current setup while replacing the color values.
+Below is the updated configuration for your test plot (ID "0") in the
+`PlotlyDatabase` class, using colors from the Catppuccin Mocha theme. I'll keep
+the structure, fonts, and sizing consistent with your current setup while
+replacing the color values.
 
 ```typescript
 const defaultPlot: PlotlyConfig = {
@@ -4500,20 +4521,23 @@ this.plots.set("0", defaultPlot);
      excellent readability against the dark background.
 
 5. **Legend Styling**:
-   - `bgcolor`: Set to `#313244` (Catppuccin Surface0), a shade lighter than
-     the base background, to distinguish the legend box.
+   - `bgcolor`: Set to `#313244` (Catppuccin Surface0), a shade lighter than the
+     base background, to distinguish the legend box.
    - `bordercolor`: Set to `#45475a` (Catppuccin Surface1), matching the grid
      and axis lines for consistency.
 
 ### Fonts and Other Styling
 
-- **Fonts**: Retained the monospace font stack (`Roboto Mono, Fira Code,
-  monospace`) from the previous configuration, as it aligns well with a terminal
-  aesthetic and complements Catppuccin’s clean, modern vibe. Catppuccin itself
-  doesn’t specify fonts, so this choice remains unchanged.
-- **Sizes and Layout**: Kept the font sizes, chart dimensions (`width: 800,
-  height: 600`), and legend positioning consistent with your existing setup to
-  maintain the same structure while focusing on color updates.
+- **Fonts**: Retained the monospace font stack
+  (`Roboto Mono, Fira Code,
+  monospace`) from the previous configuration, as it
+  aligns well with a terminal aesthetic and complements Catppuccin’s clean,
+  modern vibe. Catppuccin itself doesn’t specify fonts, so this choice remains
+  unchanged.
+- **Sizes and Layout**: Kept the font sizes, chart dimensions
+  (`width: 800,
+  height: 600`), and legend positioning consistent with your
+  existing setup to maintain the same structure while focusing on color updates.
 
 ### Integration with Zod Schema
 
@@ -4527,8 +4551,8 @@ configuration. The schema will validate these properties correctly.
 - **Catppuccin Flavor Variants**: I’ve used the **Mocha** variant because it’s
   the darkest and most commonly used for terminal and editor themes, aligning
   with your dark background preference. If you prefer another variant (e.g.,
-  **Latte** for a light theme, **Frappé**, or **Macchiato**), let me know, and
-  I can adjust the colors accordingly. You can find the full palette for each
+  **Latte** for a light theme, **Frappé**, or **Macchiato**), let me know, and I
+  can adjust the colors accordingly. You can find the full palette for each
   variant on the Catppuccin GitHub page:
   [https://github.com/catppuccin/catppuccin](https://github.com/catppuccin/catppuccin).
 - **Puppeteer Rendering**: These colors should render correctly in Puppeteer’s
@@ -4555,5 +4579,3 @@ colors, or add more styling features, just let me know, and I’ll be happy to
 help further!
 
 # === USER ===
-
-
