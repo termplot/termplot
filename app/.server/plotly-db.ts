@@ -119,11 +119,11 @@ class PlotlyDatabase {
           mode: "lines+markers",
           name: "Terminal Data",
           line: {
-            color: "#33CC33", // Terminal green for the line
+            color: "#a6e3a1", // Catppuccin Green for the line (soft terminal green)
             width: 2,
           },
           marker: {
-            color: "#33CC33", // Terminal green for markers
+            color: "#a6e3a1", // Catppuccin Green for markers
             size: 8,
           },
         },
@@ -136,7 +136,7 @@ class PlotlyDatabase {
           font: {
             family: "Roboto Mono, Fira Code, monospace",
             size: 20,
-            color: "#CCCCCC", // Light gray for readability
+            color: "#cdd6f4", // Catppuccin Text for readability
           },
         },
         xaxis: {
@@ -145,16 +145,16 @@ class PlotlyDatabase {
             font: {
               family: "Roboto Mono, Fira Code, monospace",
               size: 14,
-              color: "#CCCCCC",
+              color: "#cdd6f4", // Catppuccin Text
             },
           },
-          gridcolor: "#333333", // Subtle dark gray grid
-          linecolor: "#333333", // Subtle axis line
+          gridcolor: "#45475a", // Catppuccin Surface1 for subtle grid
+          linecolor: "#45475a", // Catppuccin Surface1 for axis line
           ticks: "outside",
           tickfont: {
             family: "Roboto Mono, Fira Code, monospace",
             size: 12,
-            color: "#CCCCCC",
+            color: "#cdd6f4", // Catppuccin Text
           },
         },
         yaxis: {
@@ -163,35 +163,35 @@ class PlotlyDatabase {
             font: {
               family: "Roboto Mono, Fira Code, monospace",
               size: 14,
-              color: "#CCCCCC",
+              color: "#cdd6f4", // Catppuccin Text
             },
           },
-          gridcolor: "#333333", // Subtle dark gray grid
-          linecolor: "#333333", // Subtle axis line
+          gridcolor: "#45475a", // Catppuccin Surface1 for subtle grid
+          linecolor: "#45475a", // Catppuccin Surface1 for axis line
           ticks: "outside",
           tickfont: {
             family: "Roboto Mono, Fira Code, monospace",
             size: 12,
-            color: "#CCCCCC",
+            color: "#cdd6f4", // Catppuccin Text
           },
         },
         width: 800,
         height: 600,
-        plot_bgcolor: "#1A1A1A", // Dark gray background for plot area
-        paper_bgcolor: "#1A1A1A", // Dark gray background for surrounding area
+        plot_bgcolor: "#1e1e2e", // Catppuccin Base for dark background (plot area)
+        paper_bgcolor: "#1e1e2e", // Catppuccin Base for surrounding area
         font: {
           family: "Roboto Mono, Fira Code, monospace",
-          color: "#CCCCCC", // Default font color for any other text
+          color: "#cdd6f4", // Catppuccin Text as default font color
         },
         showlegend: true,
         legend: {
           font: {
             family: "Roboto Mono, Fira Code, monospace",
             size: 12,
-            color: "#CCCCCC",
+            color: "#cdd6f4", // Catppuccin Text
           },
-          bgcolor: "#2A2A2A", // Slightly lighter dark background for legend
-          bordercolor: "#333333",
+          bgcolor: "#313244", // Catppuccin Surface0 for slightly lighter legend background
+          bordercolor: "#45475a", // Catppuccin Surface1 for border
           borderwidth: 1,
           x: 1,
           xanchor: "right",
