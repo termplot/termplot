@@ -42,7 +42,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   }, []); // Re-render the plot when plotlyConfig changes
 
   return (
-    <div>
+    <div className="bg-[#1A1A1A] h-full">
       <div>
         {plotlyConfig ? (
           <div

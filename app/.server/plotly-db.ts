@@ -4,21 +4,45 @@ import { z } from "zod";
 // Define Zod schemas for the Plotly configuration structure
 // Minimal schema matching the current default plot properties
 
-// Schema for axis title (used in xaxis and yaxis)
+// Schema for font styling
+const FontSchema = z.object({
+  family: z.string().optional(),
+  size: z.number().optional(),
+  color: z.string().optional(),
+});
+
+// Schema for axis title
 const AxisTitleSchema = z.object({
   text: z.string(),
+  font: FontSchema.optional(),
 });
 
 // Schema for axis configuration (xaxis and yaxis)
 const AxisSchema = z.object({
   title: AxisTitleSchema,
+  gridcolor: z.string().optional(),
+  linecolor: z.string().optional(),
+  ticks: z.enum(["outside", "inside", ""]).optional(), // 'outside' or 'inside' for ticks, empty string for no ticks
+  tickfont: FontSchema.optional(),
 });
 
 // Schema for plot title
 const TitleSchema = z.object({
   text: z.string(),
-  x: z.number().optional(), // Optional as it's not always required
+  x: z.number().optional(),
   xanchor: z.enum(["left", "center", "right"]).optional(),
+  font: FontSchema.optional(),
+});
+
+// Schema for legend
+const LegendSchema = z.object({
+  font: FontSchema.optional(),
+  bgcolor: z.string().optional(),
+  bordercolor: z.string().optional(),
+  borderwidth: z.number().optional(),
+  x: z.number().optional(),
+  xanchor: z.enum(["left", "center", "right"]).optional(),
+  y: z.number().optional(),
 });
 
 // Schema for layout
@@ -28,15 +52,34 @@ const LayoutSchema = z.object({
   yaxis: AxisSchema,
   width: z.number(),
   height: z.number(),
+  plot_bgcolor: z.string().optional(),
+  paper_bgcolor: z.string().optional(),
+  font: FontSchema.optional(),
+  showlegend: z.boolean().optional(),
+  legend: LegendSchema.optional(),
+});
+
+// Schema for line styling
+const LineSchema = z.object({
+  color: z.string().optional(),
+  width: z.number().optional(),
+});
+
+// Schema for marker styling
+const MarkerSchema = z.object({
+  color: z.string().optional(),
+  size: z.number().optional(),
 });
 
 // Schema for data trace (e.g., scatter plot data)
 const DataSchema = z.object({
   x: z.array(z.number()),
   y: z.array(z.number()),
-  type: z.literal("scatter"), // Limit to 'scatter' for now, can expand later
-  mode: z.literal("lines+markers").optional(), // e.g., 'lines+markers'
+  type: z.literal("scatter"), // Limit to 'scatter' for now
+  mode: z.literal("lines+markers").optional(), // Default to 'lines+markers'
   name: z.string().optional(),
+  line: LineSchema.optional(),
+  marker: MarkerSchema.optional(),
 });
 
 // Schema for config
@@ -74,27 +117,86 @@ class PlotlyDatabase {
           y: [2, 3, 1, 5, 4],
           type: "scatter",
           mode: "lines+markers",
-          name: "Default Scatter Plot",
+          name: "Terminal Data",
+          line: {
+            color: "#33CC33", // Terminal green for the line
+            width: 2,
+          },
+          marker: {
+            color: "#33CC33", // Terminal green for markers
+            size: 8,
+          },
         },
       ],
       layout: {
         title: {
-          text: "Default Test Plot",
+          text: "Terminal Test Plot",
           x: 0.5,
           xanchor: "center",
+          font: {
+            family: "Roboto Mono, Fira Code, monospace",
+            size: 20,
+            color: "#CCCCCC", // Light gray for readability
+          },
         },
         xaxis: {
           title: {
             text: "X Axis",
+            font: {
+              family: "Roboto Mono, Fira Code, monospace",
+              size: 14,
+              color: "#CCCCCC",
+            },
+          },
+          gridcolor: "#333333", // Subtle dark gray grid
+          linecolor: "#333333", // Subtle axis line
+          ticks: "outside",
+          tickfont: {
+            family: "Roboto Mono, Fira Code, monospace",
+            size: 12,
+            color: "#CCCCCC",
           },
         },
         yaxis: {
           title: {
             text: "Y Axis",
+            font: {
+              family: "Roboto Mono, Fira Code, monospace",
+              size: 14,
+              color: "#CCCCCC",
+            },
+          },
+          gridcolor: "#333333", // Subtle dark gray grid
+          linecolor: "#333333", // Subtle axis line
+          ticks: "outside",
+          tickfont: {
+            family: "Roboto Mono, Fira Code, monospace",
+            size: 12,
+            color: "#CCCCCC",
           },
         },
         width: 800,
         height: 600,
+        plot_bgcolor: "#1A1A1A", // Dark gray background for plot area
+        paper_bgcolor: "#1A1A1A", // Dark gray background for surrounding area
+        font: {
+          family: "Roboto Mono, Fira Code, monospace",
+          color: "#CCCCCC", // Default font color for any other text
+        },
+        showlegend: true,
+        legend: {
+          font: {
+            family: "Roboto Mono, Fira Code, monospace",
+            size: 12,
+            color: "#CCCCCC",
+          },
+          bgcolor: "#2A2A2A", // Slightly lighter dark background for legend
+          bordercolor: "#333333",
+          borderwidth: 1,
+          x: 1,
+          xanchor: "right",
+          y: 1,
+        },
       },
       config: {
         responsive: true,

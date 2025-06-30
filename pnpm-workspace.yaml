@@ -4,3 +4,4 @@ onlyBuiltDependencies:
   - es5-ext
   - esbuild
   - puppeteer
+  - sharp
