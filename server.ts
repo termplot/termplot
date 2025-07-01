@@ -1,8 +1,9 @@
 import net from "node:net";
 import express from "express";
 
-// Short-circuit the type-checking of the built output.
-const BUILD_PATH = "./build/server/index.js";
+// The React Router app is built with vite. The React Router server, separate
+// from the express server, is built to this location.
+const RR_BUILD_PATH = "./build/server/index.js";
 const DEVELOPMENT = process.env.NODE_ENV === "development";
 
 // Function to check if a port is in use
@@ -63,38 +64,36 @@ const app = express();
 
 app.disable("x-powered-by");
 
-if (DEVELOPMENT) {
-  console.log("Starting development server");
-  const viteDevServer = await import("vite").then((vite) =>
-    vite.createServer({
-      server: { middlewareMode: true },
-    }),
-  );
-  app.use(viteDevServer.middlewares);
-  app.use(async (req, res, next) => {
-    try {
-      const source = await viteDevServer.ssrLoadModule("./server/app.ts");
-      return await source.app(req, res, next);
-    } catch (error) {
-      if (typeof error === "object" && error instanceof Error) {
-        viteDevServer.ssrFixStacktrace(error);
-      }
-      next(error);
+// if (DEVELOPMENT) {
+// console.log("Starting development server");
+const viteDevServer = await import("vite").then((vite) =>
+  vite.createServer({
+    server: { middlewareMode: true },
+  }),
+);
+app.use(viteDevServer.middlewares);
+app.use(async (req, res, next) => {
+  try {
+    const source = await viteDevServer.ssrLoadModule("./server/app.ts");
+    return await source.app(req, res, next);
+  } catch (error) {
+    if (typeof error === "object" && error instanceof Error) {
+      viteDevServer.ssrFixStacktrace(error);
     }
-  });
-} else {
-  app.use(
-    "/assets",
-    express.static("build/client/assets", { immutable: true, maxAge: "1y" }),
-  );
-  app.use(express.static("build/client", { maxAge: "1h" }));
-  app.use(await import(BUILD_PATH).then((mod) => mod.app));
-}
+    next(error);
+  }
+});
+// } else {
+//   app.use(
+//     "/assets",
+//     express.static("build/client/assets", { immutable: true, maxAge: "1y" }),
+//   );
+//   app.use(express.static("build/client", { maxAge: "1h" }));
+//   app.use(await import(RR_BUILD_PATH).then((mod) => mod.app));
+// }
 
 const server = app.listen(PORT, () => {
-  if (DEVELOPMENT) {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  }
+  // console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 export { PORT, server };
