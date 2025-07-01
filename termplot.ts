@@ -29,5 +29,7 @@ import { PORT, server } from "./server.ts";
   } catch (error) {
     console.error("Error:", error);
   }
+
+  // Everything should be closed gracefully by now. Exit the process.
   process.exit(0);
 })();
