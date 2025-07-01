@@ -99,7 +99,7 @@ const PlotlyConfigSchema = z.object({
 export type PlotlyConfig = z.infer<typeof PlotlyConfigSchema>;
 
 // In-memory database using a Map to store plot configurations by ID
-class PlotlyDatabase {
+export class PlotlyDatabase {
   private plots: Map<string, PlotlyConfig>;
 
   constructor() {
@@ -209,10 +209,10 @@ class PlotlyDatabase {
 
   // Add a new plot configuration, returning the assigned ID
   // Validates the config against the Zod schema before storing
-  addPlot(plotConfig: unknown): string | Error {
+  addPlot(plotConfig: PlotlyConfig): string {
     const parsed = PlotlyConfigSchema.safeParse(plotConfig);
     if (!parsed.success) {
-      return new Error(`Invalid plot configuration: ${parsed.error.message}`);
+      throw new Error(`Invalid plot configuration: ${parsed.error.message}`);
     }
     const id = uuidv4();
     this.plots.set(id, parsed.data);
@@ -220,10 +220,10 @@ class PlotlyDatabase {
   }
 
   // Add a plot configuration with a specific ID (useful for testing or updates)
-  addPlotWithId(id: string, plotConfig: unknown): Error | void {
+  addPlotWithId(id: string, plotConfig: PlotlyConfig): void {
     const parsed = PlotlyConfigSchema.safeParse(plotConfig);
     if (!parsed.success) {
-      return new Error(`Invalid plot configuration: ${parsed.error.message}`);
+      throw new Error(`Invalid plot configuration: ${parsed.error.message}`);
     }
     this.plots.set(id, parsed.data);
   }
@@ -250,5 +250,13 @@ class PlotlyDatabase {
 }
 
 // Export a singleton instance of the database
-const plotlyDb = new PlotlyDatabase();
+let plotlyDb = new PlotlyDatabase();
+// this must be globally accessible because of the way the client-side react
+// router server is build, thus accessing a different version of this file than
+// the express web server. by making this a global variable, both access the
+// same instance. this confuses typescript, so we need to ignore the type error.
+// @ts-ignore
+globalThis.plotlyDb = globalThis.plotlyDb ? globalThis.plotlyDb : plotlyDb;
+// @ts-ignore
+plotlyDb = globalThis.plotlyDb;
 export { plotlyDb };
