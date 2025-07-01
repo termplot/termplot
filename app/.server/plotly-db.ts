@@ -24,6 +24,7 @@ const AxisSchema = z.object({
   linecolor: z.string().optional(),
   ticks: z.enum(["outside", "inside", ""]).optional(), // 'outside' or 'inside' for ticks, empty string for no ticks
   tickfont: FontSchema.optional(),
+  range: z.array(z.number()).optional(), // Optional range for the axis
 });
 
 // Schema for plot title
