@@ -11,8 +11,8 @@ export function loader({ context, params }: Route.LoaderArgs) {
 export function meta({ data }: Route.MetaArgs) {
   const title = data?.plotlyConfig?.layout?.title?.text || "Plotly Plot";
   return [
-    { title: `Plotly Plot - ${title}` },
-    { name: "description", content: "Welcome to Termplot!" },
+    { title: `${title} | Plotly | Termplot` },
+    { name: "description", content: "Beautiful plots in your terminal." },
   ];
 }
 

@@ -3,8 +3,8 @@ import { $aicon } from "~/util/aicons";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Termplot" },
+    { name: "description", content: "Beautiful plots in your terminal." },
   ];
 }
 
