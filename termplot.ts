@@ -1,35 +1,48 @@
 #!/usr/bin/env node
 import ansiescapes from "ansi-escapes";
+import { Command } from "commander";
 import puppeteer from "puppeteer";
 import { PORT, server } from "./server.ts";
 
-(async () => {
-  try {
-    // Launch a headless browser
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+const program = new Command();
 
-    await page.setViewport({ width: 1080, height: 810 });
+program
+  .name("termplot")
+  .description("Termplot: Beautiful plots in your terminal")
+  .version("0.0.1");
 
-    // Navigate to the local web server hosting the plot
-    await page.goto(`http://localhost:${PORT}/plotly/0`, {
-      waitUntil: "networkidle2",
-    });
+program
+  .command("test")
+  .description("Creates a default test plot in your terminal")
+  .action(async () => {
+    try {
+      // Launch a headless browser
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
 
-    // Take a screenshot
-    const imageBuffer = await page.screenshot({ fullPage: true });
+      await page.setViewport({ width: 1080, height: 810 });
 
-    // Close the page and browser and server
-    await page.close();
-    await browser.close();
-    server.close();
+      // Navigate to the local web server hosting the plot
+      await page.goto(`http://localhost:${PORT}/plotly/0`, {
+        waitUntil: "networkidle2",
+      });
 
-    // Display the image in the terminal
-    console.log(ansiescapes.image(imageBuffer, {}));
-  } catch (error) {
-    console.error("Error:", error);
-  }
+      // Take a screenshot
+      const imageBuffer = await page.screenshot({ fullPage: true });
 
-  // Everything should be closed gracefully by now. Exit the process.
-  process.exit(0);
-})();
+      // Close the page and browser and server
+      await page.close();
+      await browser.close();
+      server.close();
+
+      // Display the image in the terminal
+      console.log(ansiescapes.image(imageBuffer, {}));
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
+    // Everything should be closed gracefully by now. Exit the process.
+    process.exit(0);
+  });
+
+program.parse(process.argv);
