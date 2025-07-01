@@ -163,6 +163,7 @@ program
 
       // Close the page and browser and server
       await page.close();
+      plotlyDb.removePlot(id);
       await browser.close();
       server.close();
 
@@ -312,6 +313,7 @@ program
 
       // Close the page and browser and server
       await page.close();
+      plotlyDb.removePlot(id);
       await browser.close();
       server.close();
 
@@ -444,6 +446,7 @@ program
 
       // Close the page and browser and server
       await page.close();
+      plotlyDb.removePlot(id);
       await browser.close();
       server.close();
 
@@ -631,6 +634,7 @@ program
 
       // Close the page and browser and server
       await page.close();
+      plotlyDb.removePlot(id);
       await browser.close();
       server.close();
 
