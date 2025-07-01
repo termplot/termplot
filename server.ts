@@ -100,6 +100,4 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-const port = PORT;
-
-export { port, server };
+export { PORT, server };

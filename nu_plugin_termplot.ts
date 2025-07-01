@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import ansiescapes from "ansi-escapes";
 import puppeteer from "puppeteer";
-import { port, server } from "./server.ts";
+import { PORT, server } from "./server.ts";
 
 (async () => {
   try {
@@ -12,7 +12,7 @@ import { port, server } from "./server.ts";
     await page.setViewport({ width: 1080, height: 810 });
 
     // Navigate to the local web server hosting the plot
-    await page.goto(`http://localhost:${port}/plotly/0`, {
+    await page.goto(`http://localhost:${PORT}/plotly/0`, {
       waitUntil: "networkidle2",
     });
 
