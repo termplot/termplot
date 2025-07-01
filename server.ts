@@ -97,7 +97,9 @@ if (DEVELOPMENT) {
 }
 
 const server = app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  if (DEVELOPMENT) {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  }
 });
 
 export { PORT, server };
