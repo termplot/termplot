@@ -5,6 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(({ isSsrBuild }) => ({
   build: {
+    chunkSizeWarningLimit: 10000, // Increase chunk size warning limit
     rollupOptions: isSsrBuild
       ? {
           input: "./server/app.ts",
