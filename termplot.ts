@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import ansiescapes from "ansi-escapes";
 import { Command } from "commander";
 import puppeteer from "puppeteer";
