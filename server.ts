@@ -1,5 +1,4 @@
 import net from "node:net";
-import compression from "compression";
 import express from "express";
 
 // Short-circuit the type-checking of the built output.
@@ -62,7 +61,6 @@ const PORT = await getPort();
 
 const app = express();
 
-app.use(compression());
 app.disable("x-powered-by");
 
 if (DEVELOPMENT) {
