@@ -86,7 +86,6 @@ if (DEVELOPMENT) {
     }
   });
 } else {
-  console.log("Starting production server");
   app.use(
     "/assets",
     express.static("build/client/assets", { immutable: true, maxAge: "1y" }),
