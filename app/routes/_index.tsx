@@ -1,5 +1,5 @@
 import type { Route } from "./+types/_index";
-import { Welcome } from "../welcome/welcome";
+import { $aicon } from "~/util/aicons";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
@@ -13,5 +13,21 @@ export function loader({ context }: Route.LoaderArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  return <Welcome message={loaderData.message} />;
+  return (
+    <div className="grid place-items-center min-h-[400px]">
+      <div>
+        <img
+          src={$aicon("/images/termplot-2-300.webp")}
+          alt="Termplot Icon"
+          className="w-[150px] aspect-square mx-auto block"
+        />
+        <h1 className="mx-auto block text-center text-xl font-bold my-2">
+          Termplot
+        </h1>
+        <p className="text-center text-gray-700 dark:text-gray-300">
+          Beautiful plots in your terminal.
+        </p>
+      </div>
+    </div>
+  );
 }

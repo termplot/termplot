@@ -7,6 +7,7 @@
     "termplot": "./bin/termplot.ts"
   },
   "scripts": {
+    "build:icons": "tsx process-icons.ts",
     "build": "react-router build",
     "dev": "cross-env NODE_ENV=development node server.ts",
     "start": "node server.ts",
@@ -43,6 +44,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "cross-env": "^7.0.3",
+    "png-to-ico": "^2.1.8",
     "sharp": "^0.34.2",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
