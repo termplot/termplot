@@ -5113,4 +5113,9 @@ with a specific framework or tool in your stack!
 
 # === USER ===
 
+i have top-level await. can add some code here to "await" until after the server actually starts? should be some sort of pause stored as a promise that is resolved when the server starts. errors should be handled. then again, maybe you have a better way to do it. if you have a better way, please find the best way to 'await' this command before subsequent code runs.
 
+```typescript
+const server = app.listen(PORT, () => {
+});
+```

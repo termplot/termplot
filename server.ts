@@ -1,11 +1,6 @@
 import net from "node:net";
 import express from "express";
 
-// The React Router app is built with vite. The React Router server, separate
-// from the express server, is built to this location.
-const RR_BUILD_PATH = "./build/server/index.js";
-const DEVELOPMENT = process.env.NODE_ENV === "development";
-
 // Function to check if a port is in use
 const isPortInUse = (port: number): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -64,8 +59,6 @@ const app = express();
 
 app.disable("x-powered-by");
 
-// if (DEVELOPMENT) {
-// console.log("Starting development server");
 const viteDevServer = await import("vite").then((vite) =>
   vite.createServer({
     server: { middlewareMode: true },
@@ -83,17 +76,17 @@ app.use(async (req, res, next) => {
     next(error);
   }
 });
-// } else {
-//   app.use(
-//     "/assets",
-//     express.static("build/client/assets", { immutable: true, maxAge: "1y" }),
-//   );
-//   app.use(express.static("build/client", { maxAge: "1h" }));
-//   app.use(await import(RR_BUILD_PATH).then((mod) => mod.app));
-// }
 
-const server = app.listen(PORT, () => {
-  // console.log(`Server is running on http://localhost:${PORT}`);
+let resolvePromise: (value?: void | PromiseLike<void>) => void;
+
+// Start server and wait for it to finish to prevent race conflicts with
+// subsequent puppeteer calls
+const p = new Promise<void>((resolve) => {
+  resolvePromise = resolve;
 });
+const server = app.listen(PORT, () => {
+  resolvePromise();
+});
+await p;
 
 export { PORT, server };
