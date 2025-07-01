@@ -5,7 +5,6 @@
     { "path": "./tsconfig.vite.json" }
   ],
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
      "types": ["node", "plotly.js"],
     "checkJs": true,
     "verbatimModuleSyntax": true,

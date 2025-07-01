@@ -1,5 +1,15 @@
+#!/usr/bin/env node
 import net from "node:net";
 import express from "express";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Short-circuit the type-checking of the built output.
+// const BUILD_PATH = "./build/server/index.js";
+const BUILD_PATH = join(__dirname, "./build/server/index.js");
+const DEVELOPMENT = process.env.NODE_ENV === "development";
 
 // Function to check if a port is in use
 const isPortInUse = (port: number): Promise<boolean> => {
@@ -59,23 +69,36 @@ const app = express();
 
 app.disable("x-powered-by");
 
-const viteDevServer = await import("vite").then((vite) =>
-  vite.createServer({
-    server: { middlewareMode: true },
-  }),
-);
-app.use(viteDevServer.middlewares);
-app.use(async (req, res, next) => {
-  try {
-    const source = await viteDevServer.ssrLoadModule("./server/app.ts");
-    return await source.app(req, res, next);
-  } catch (error) {
-    if (typeof error === "object" && error instanceof Error) {
-      viteDevServer.ssrFixStacktrace(error);
+if (DEVELOPMENT) {
+  console.log("Starting development server");
+  const viteDevServer = await import("vite").then((vite) =>
+    vite.createServer({
+      server: { middlewareMode: true },
+    }),
+  );
+  app.use(viteDevServer.middlewares);
+  app.use(async (req, res, next) => {
+    try {
+      const serverPath = join(__dirname, "./server/app.ts");
+      const source = await viteDevServer.ssrLoadModule(serverPath);
+      return await source.app(req, res, next);
+    } catch (error) {
+      if (typeof error === "object" && error instanceof Error) {
+        viteDevServer.ssrFixStacktrace(error);
+      }
+      next(error);
     }
-    next(error);
-  }
-});
+  });
+} else {
+  const assetsPath = join(__dirname, "./build/client/assets");
+  app.use(
+    "/assets",
+    express.static(assetsPath, { immutable: true, maxAge: "1y" }),
+  );
+  const clientPath = join(__dirname, "build/client");
+  app.use(express.static(clientPath, { maxAge: "1h" }));
+  app.use(await import(BUILD_PATH).then((mod) => mod.app));
+}
 
 // Start server and wait for it to finish to prevent race conflicts with
 // subsequent puppeteer calls
@@ -87,6 +110,11 @@ const p = new Promise<void>((resolve, reject) => {
   rejectPromise = reject;
 });
 const server = app.listen(PORT, (err) => {
+  if (DEVELOPMENT) {
+    console.log(`Dev server is running on http://localhost:${PORT}`);
+  } else {
+    console.log(`Prod server is running on port ${PORT}`);
+  }
   if (err) {
     rejectPromise(err);
     return;
