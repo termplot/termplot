@@ -1,3 +1,4 @@
+import net from "node:net";
 import compression from "compression";
 import express from "express";
 import morgan from "morgan";
@@ -5,7 +6,60 @@ import morgan from "morgan";
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = "./build/server/index.js";
 const DEVELOPMENT = process.env.NODE_ENV === "development";
-const PORT = Number.parseInt(process.env.PORT || "3000");
+
+// Function to check if a port is in use
+const isPortInUse = (port: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        resolve(true); // Port is in use
+      }
+    });
+
+    server.once("listening", () => {
+      server.close();
+      resolve(false); // Port is available
+    });
+
+    server.listen(port);
+  });
+};
+
+// Function to find an available port starting from a base port
+const findAvailablePort = async (
+  startPort: number,
+  maxAttempts: number = 10,
+): Promise<number> => {
+  let port = startPort;
+  for (let i = 0; i < maxAttempts; i++) {
+    const inUse = await isPortInUse(port);
+    if (!inUse) {
+      return port; // Found an available port
+    }
+    port++; // Increment port number and try again
+  }
+
+  // Fallback to a random port if no available port found after maxAttempts
+  const randomPort = Math.floor(Math.random() * (65535 - 3000 + 1)) + 3000;
+  const inUse = await isPortInUse(randomPort);
+  if (!inUse) {
+    return randomPort;
+  }
+
+  throw new Error(
+    `Could not find an available port after ${maxAttempts} attempts or random fallback.`,
+  );
+};
+
+// Set the port, starting from an environment variable or default to 3000
+const getPort = async (): Promise<number> => {
+  const envPort = Number.parseInt(process.env.PORT || "3000");
+  return await findAvailablePort(envPort);
+};
+
+const PORT = await getPort();
 
 const app = express();
 
@@ -48,4 +102,4 @@ const server = app.listen(PORT, () => {
 
 const port = PORT;
 
-export { server, port };
+export { port, server };
