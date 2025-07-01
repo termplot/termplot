@@ -70,15 +70,22 @@ const LineSchema = z.object({
 const MarkerSchema = z.object({
   color: z.string().optional(),
   size: z.number().optional(),
+  line: LineSchema.optional(), // Optional line styling for markers
 });
 
 // Schema for data trace (e.g., scatter plot data)
 const DataSchema = z.object({
+  z: z.array(z.array(z.number())).optional(), // Optional for 3D plots
   x: z.array(z.number()),
   y: z.array(z.number()),
-  type: z.literal("scatter"), // Limit to 'scatter' for now
+  type: z
+    .enum(["scatter", "bar", "pie", "histogram", "box", "heatmap"])
+    .optional(), // Optional type
   mode: z.enum(["lines", "markers", "lines+markers"]).optional(), // Optional mode
   name: z.string().optional(),
+  colorscale: z.array(z.tuple([z.number(), z.string()])).optional(),
+  showscale: z.boolean().optional(), // Optional to show color scale
+  opacity: z.number().optional(), // Optional opacity for the trace
   line: LineSchema.optional(),
   marker: MarkerSchema.optional(),
 });
