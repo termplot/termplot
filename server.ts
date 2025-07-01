@@ -77,14 +77,20 @@ app.use(async (req, res, next) => {
   }
 });
 
-let resolvePromise: (value?: void | PromiseLike<void>) => void;
-
 // Start server and wait for it to finish to prevent race conflicts with
 // subsequent puppeteer calls
-const p = new Promise<void>((resolve) => {
+let resolvePromise: (value?: void | PromiseLike<void>) => void;
+// biome-ignore lint/suspicious/noExplicitAny: special case
+let rejectPromise: (reason?: any) => void;
+const p = new Promise<void>((resolve, reject) => {
   resolvePromise = resolve;
+  rejectPromise = reject;
 });
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, (err) => {
+  if (err) {
+    rejectPromise(err);
+    return;
+  }
   resolvePromise();
 });
 await p;
