@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import ansiescapes from "ansi-escapes";
 import puppeteer from "puppeteer";
 import { PORT, server } from "./server.ts";
