@@ -1,8 +1,11 @@
 {
   "name": "@termplot/termplot",
   "version": "0.1.0",
-  "description": "Create beautiful full color plots in your terminal with web technologies.",
+  "description": "Beautiful plots in your terminal.",
   "type": "module",
+  "bin": {
+    "termplot": "./bin/termplot.ts"
+  },
   "scripts": {
     "build": "react-router build",
     "dev": "cross-env NODE_ENV=development node server.ts",
