@@ -19,7 +19,8 @@ import { PORT, server } from "./server.ts";
     // Take a screenshot
     const imageBuffer = await page.screenshot({ fullPage: true });
 
-    // Close the browser and server
+    // Close the page and browser and server
+    await page.close();
     await browser.close();
     server.close();
 
