@@ -1,5 +1,5 @@
-import type { Route } from "./+types/_index";
 import { $aicon } from "~/util/aicons";
+import type { Route } from "./+types/_index";
 
 export function meta({ data }: Route.MetaArgs) {
   return [
