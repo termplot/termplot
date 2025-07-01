@@ -111,9 +111,9 @@ const p = new Promise<void>((resolve, reject) => {
 });
 const server = app.listen(PORT, (err) => {
   if (DEVELOPMENT) {
-    console.log(`Dev server is running on http://localhost:${PORT}`);
+    console.log(`Dev termplot server is running on http://localhost:${PORT}`);
   } else {
-    console.log(`Prod server is running on port ${PORT}`);
+    console.log(`Prod termplot server is running on http://localhost:${PORT}`);
   }
   if (err) {
     rejectPromise(err);
