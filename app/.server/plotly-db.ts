@@ -108,36 +108,28 @@ export type PlotlyConfig = z.infer<typeof PlotlyConfigSchema>;
 
 // In-memory database using a Map to store plot configurations by ID
 export class PlotlyDatabase {
-  private plots: Map<string, PlotlyConfig>;
+  private plots: Map<string, any>;
 
   constructor() {
-    this.plots = new Map<string, PlotlyConfig>();
+    this.plots = new Map<string, any>();
     // Initialize with a hardcoded default plot for ID "0" for testing
   }
 
   // Add a new plot configuration, returning the assigned ID
   // Validates the config against the Zod schema before storing
   addPlot(plotConfig: any): string {
-    const parsed = PlotlyConfigSchema.safeParse(plotConfig);
-    if (!parsed.success) {
-      throw new Error(`Invalid plot configuration: ${parsed.error.message}`);
-    }
     const id = uuidv4();
-    this.plots.set(id, parsed.data);
+    this.plots.set(id, plotConfig);
     return id;
   }
 
   // Add a plot configuration with a specific ID (useful for testing or updates)
-  addPlotWithId(id: string, plotConfig: PlotlyConfig): void {
-    const parsed = PlotlyConfigSchema.safeParse(plotConfig);
-    if (!parsed.success) {
-      throw new Error(`Invalid plot configuration: ${parsed.error.message}`);
-    }
-    this.plots.set(id, parsed.data);
+  addPlotWithId(id: string, plotConfig: any): void {
+    this.plots.set(id, plotConfig);
   }
 
   // Retrieve a plot configuration by ID
-  getPlot(id: string): PlotlyConfig | undefined {
+  getPlot(id: string): any {
     return this.plots.get(id);
   }
 
