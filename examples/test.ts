@@ -1,24 +1,42 @@
-const defaultPlot = {
+const scatterPlot = {
   data: [
     {
       x: [1, 2, 3, 4, 5],
-      y: [5, 1, 1, 1, 4],
+      y: [2, 3, 1, 5, 4],
       type: "scatter",
-      mode: "lines+markers",
-      name: "Terminal Data",
-      line: {
-        color: "#a6e3a1", // Catppuccin Green for the line (soft terminal green)
-        width: 2,
-      },
+      mode: "markers",
+      name: "Green Data",
       marker: {
-        color: "#a6e3a1", // Catppuccin Green for markers
+        color: "#a6e3a1", // Catppuccin Green for first set of dots
+        size: 8,
+      },
+    },
+    {
+      x: [1.5, 2.5, 3.5, 4.5, 5.5],
+      y: [3, 4, 2, 6, 5],
+      type: "scatter",
+      mode: "markers",
+      name: "Lavender Data",
+      marker: {
+        color: "#b4befe", // Catppuccin Lavender for second set of dots
+        size: 8,
+      },
+    },
+    {
+      x: [2, 3, 4, 5, 6],
+      y: [1, 2, 0.5, 4, 3],
+      type: "scatter",
+      mode: "markers",
+      name: "Mauve Data",
+      marker: {
+        color: "#cba6f7", // Catppuccin Mauve for third set of dots
         size: 8,
       },
     },
   ],
   layout: {
     title: {
-      text: "Terminal Test Plot",
+      text: "Scatter Plot with Three Sets of Dots",
       x: 0.5,
       xanchor: "center",
       font: {
@@ -92,4 +110,4 @@ const defaultPlot = {
   },
 };
 
-console.log(JSON.stringify(defaultPlot, null, 2));
+console.log(JSON.stringify(scatterPlot, null, 2));
