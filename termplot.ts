@@ -3,13 +3,29 @@ import { Command } from "commander";
 import puppeteer from "puppeteer";
 import { type PlotlyConfig, plotlyDb } from "./app/.server/plotly-db.ts";
 import { PORT, server } from "./server.ts";
+import { readStdin } from "./util/stdin.ts";
 
 const program = new Command();
 
 program
   .name("termplot")
+  .argument("[config]", "JSON plot configuration file (optional)")
   .description("Termplot: Beautiful plots in your terminal")
-  .version("0.0.1");
+  .version("0.0.1")
+  .action(async (input: string, opts: any) => {
+    let configStr = input;
+    if (!configStr && !process.stdin.isTTY) {
+      configStr = (await readStdin()).trim();
+    }
+    if (!configStr) {
+      console.error("No prompt supplied (argument or stdin required).");
+      process.exit(1);
+    }
+
+    console.log("Received configuration:", configStr);
+
+    process.exit(0);
+  });
 
 program
   .command("test1")
