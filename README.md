@@ -2,8 +2,6 @@
 
 **Beautiful plots in your terminal.**
 
----
-
 ## Screenshot
 
 <img src="raw-images/screenshot.png" width="600" alt="termplot demo">
