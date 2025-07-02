@@ -217,7 +217,7 @@ export class PlotlyDatabase {
 
   // Add a new plot configuration, returning the assigned ID
   // Validates the config against the Zod schema before storing
-  addPlot(plotConfig: PlotlyConfig): string {
+  addPlot(plotConfig: any): string {
     const parsed = PlotlyConfigSchema.safeParse(plotConfig);
     if (!parsed.success) {
       throw new Error(`Invalid plot configuration: ${parsed.error.message}`);
