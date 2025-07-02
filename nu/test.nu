@@ -147,3 +147,8 @@ let testObject = {
     staticPlot: true # Disable interactivity for static screenshots
   }
 }
+
+def testF [input: list<int>] {
+  # Example function that processes input and returns a list of integers
+  $input | get 0
+}

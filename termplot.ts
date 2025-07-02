@@ -329,7 +329,9 @@ program
 
 program
   .command("test4")
-  .description("Creates a line chart showing a decreasing value (e.g., ML loss)")
+  .description(
+    "Creates a line chart showing a decreasing value (e.g., ML loss)",
+  )
   .action(async () => {
     try {
       // Launch a headless browser
@@ -462,7 +464,9 @@ program
 
 program
   .command("test5")
-  .description("Creates a scatter plot with three sets of dots and decision boundaries")
+  .description(
+    "Creates a scatter plot with three sets of dots and decision boundaries",
+  )
   .action(async () => {
     try {
       // Launch a headless browser
