@@ -1,24 +1,78 @@
-const lossPlot: PlotlyConfig = {
+const decisionBoundaryPlot = {
   data: [
+    // Heatmap for decision boundaries (simulated grid of class predictions)
     {
-      x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      y: [5.0, 4.2, 3.5, 3.0, 2.6, 2.3, 2.1, 1.9, 1.8, 1.7],
+      z: [
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 1, 1, 1, 1, 1],
+        [0, 0, 0, 1, 1, 2, 2, 2],
+        [0, 0, 1, 1, 2, 2, 2, 2],
+        [0, 0, 1, 2, 2, 2, 2, 2],
+        [0, 1, 1, 2, 2, 2, 2, 2],
+        [1, 1, 2, 2, 2, 2, 2, 2],
+        [1, 1, 2, 2, 2, 2, 2, 2],
+      ], // Grid of class labels (0, 1, 2) simulating neural network predictions
+      x: [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5], // X coordinates for heatmap grid
+      y: [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5], // Y coordinates for heatmap grid
+      type: "heatmap",
+      colorscale: [
+        [0, "#7aa2a1"], // Lighter shade of Catppuccin Green for Class 0 region
+        [0.5, "#8a9efe"], // Lighter shade of Catppuccin Lavender for Class 1 region
+        [1, "#ab86f7"], // Lighter shade of Catppuccin Mauve for Class 2 region
+      ],
+      showscale: false, // Hide color scale bar since legend will show class info
+      opacity: 0.5, // Semi-transparent to allow overlap visibility with scatter points
+    },
+    // Scatter plot for three sets of data points
+    {
+      x: [-1.5, -1, -0.5, -1.2, -0.8],
+      y: [-1.5, -1, -1.2, -0.5, -0.8],
       type: "scatter",
-      mode: "lines+markers",
-      name: "Training Loss",
-      line: {
-        color: "#f38ba8", // Catppuccin Red for the line (bright and noticeable)
-        width: 2,
-      },
+      mode: "markers",
+      name: "Class 0 (Green)",
       marker: {
-        color: "#f38ba8", // Catppuccin Red for markers
-        size: 6,
+        color: "#a6e3a1", // Catppuccin Green for first set of dots
+        size: 10,
+        line: {
+          color: "#cdd6f4", // Catppuccin Text for outline
+          width: 1,
+        },
+      },
+    },
+    {
+      x: [0.5, 0, -0.5, 0.2, -0.2],
+      y: [0.5, 1, 0, 0.8, -0.5],
+      type: "scatter",
+      mode: "markers",
+      name: "Class 1 (Lavender)",
+      marker: {
+        color: "#b4befe", // Catppuccin Lavender for second set of dots
+        size: 10,
+        line: {
+          color: "#cdd6f4", // Catppuccin Text for outline
+          width: 1,
+        },
+      },
+    },
+    {
+      x: [1, 1.5, 0.8, 1.2, 0.5],
+      y: [0.5, 1, 1.5, -0.5, 1.2],
+      type: "scatter",
+      mode: "markers",
+      name: "Class 2 (Mauve)",
+      marker: {
+        color: "#cba6f7", // Catppuccin Mauve for third set of dots
+        size: 10,
+        line: {
+          color: "#cdd6f4", // Catppuccin Text for outline
+          width: 1,
+        },
       },
     },
   ],
   layout: {
     title: {
-      text: "Machine Learning Loss Curve",
+      text: "Scatter Plot with Decision Boundaries",
       x: 0.5,
       xanchor: "center",
       font: {
@@ -29,7 +83,7 @@ const lossPlot: PlotlyConfig = {
     },
     xaxis: {
       title: {
-        text: "Epoch",
+        text: "Feature 1",
         font: {
           family: "Roboto Mono, Fira Code, monospace",
           size: 14,
@@ -44,10 +98,11 @@ const lossPlot: PlotlyConfig = {
         size: 12,
         color: "#cdd6f4", // Catppuccin Text
       },
+      range: [-2, 2], // Set range to cover the grid
     },
     yaxis: {
       title: {
-        text: "Loss",
+        text: "Feature 2",
         font: {
           family: "Roboto Mono, Fira Code, monospace",
           size: 14,
@@ -62,7 +117,7 @@ const lossPlot: PlotlyConfig = {
         size: 12,
         color: "#cdd6f4", // Catppuccin Text
       },
-      range: [0, 5.5], // Set y-axis range to start from 0 for better visualization
+      range: [-2, 2], // Set range to cover the grid
     },
     width: 1080,
     height: 810,
@@ -93,4 +148,4 @@ const lossPlot: PlotlyConfig = {
   },
 };
 
-console.log(JSON.stringify(lossPlot, null, 2));
+console.log(JSON.stringify(decisionBoundaryPlot, null, 2));

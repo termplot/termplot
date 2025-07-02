@@ -1,0 +1,143 @@
+{
+  "data": [
+    {
+      "z": [
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 1, 1, 1, 1, 1],
+        [0, 0, 0, 1, 1, 2, 2, 2],
+        [0, 0, 1, 1, 2, 2, 2, 2],
+        [0, 0, 1, 2, 2, 2, 2, 2],
+        [0, 1, 1, 2, 2, 2, 2, 2],
+        [1, 1, 2, 2, 2, 2, 2, 2],
+        [1, 1, 2, 2, 2, 2, 2, 2]
+      ],
+      "x": [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5],
+      "y": [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5],
+      "type": "heatmap",
+      "colorscale": [[0, "#7aa2a1"], [0.5, "#8a9efe"], [1, "#ab86f7"]],
+      "showscale": false,
+      "opacity": 0.5
+    },
+    {
+      "x": [-1.5, -1, -0.5, -1.2, -0.8],
+      "y": [-1.5, -1, -1.2, -0.5, -0.8],
+      "type": "scatter",
+      "mode": "markers",
+      "name": "Class 0 (Green)",
+      "marker": {
+        "color": "#a6e3a1",
+        "size": 10,
+        "line": {
+          "color": "#cdd6f4",
+          "width": 1
+        }
+      }
+    },
+    {
+      "x": [0.5, 0, -0.5, 0.2, -0.2],
+      "y": [0.5, 1, 0, 0.8, -0.5],
+      "type": "scatter",
+      "mode": "markers",
+      "name": "Class 1 (Lavender)",
+      "marker": {
+        "color": "#b4befe",
+        "size": 10,
+        "line": {
+          "color": "#cdd6f4",
+          "width": 1
+        }
+      }
+    },
+    {
+      "x": [1, 1.5, 0.8, 1.2, 0.5],
+      "y": [0.5, 1, 1.5, -0.5, 1.2],
+      "type": "scatter",
+      "mode": "markers",
+      "name": "Class 2 (Mauve)",
+      "marker": {
+        "color": "#cba6f7",
+        "size": 10,
+        "line": {
+          "color": "#cdd6f4",
+          "width": 1
+        }
+      }
+    }
+  ],
+  "layout": {
+    "title": {
+      "text": "Scatter Plot with Decision Boundaries",
+      "x": 0.5,
+      "xanchor": "center",
+      "font": {
+        "family": "Roboto Mono, Fira Code, monospace",
+        "size": 20,
+        "color": "#cdd6f4"
+      }
+    },
+    "xaxis": {
+      "title": {
+        "text": "Feature 1",
+        "font": {
+          "family": "Roboto Mono, Fira Code, monospace",
+          "size": 14,
+          "color": "#cdd6f4"
+        }
+      },
+      "gridcolor": "#45475a",
+      "linecolor": "#45475a",
+      "ticks": "outside",
+      "tickfont": {
+        "family": "Roboto Mono, Fira Code, monospace",
+        "size": 12,
+        "color": "#cdd6f4"
+      },
+      "range": [-2, 2]
+    },
+    "yaxis": {
+      "title": {
+        "text": "Feature 2",
+        "font": {
+          "family": "Roboto Mono, Fira Code, monospace",
+          "size": 14,
+          "color": "#cdd6f4"
+        }
+      },
+      "gridcolor": "#45475a",
+      "linecolor": "#45475a",
+      "ticks": "outside",
+      "tickfont": {
+        "family": "Roboto Mono, Fira Code, monospace",
+        "size": 12,
+        "color": "#cdd6f4"
+      },
+      "range": [-2, 2]
+    },
+    "width": 1080,
+    "height": 810,
+    "plot_bgcolor": "#1e1e2e",
+    "paper_bgcolor": "#1e1e2e",
+    "font": {
+      "family": "Roboto Mono, Fira Code, monospace",
+      "color": "#cdd6f4"
+    },
+    "showlegend": true,
+    "legend": {
+      "font": {
+        "family": "Roboto Mono, Fira Code, monospace",
+        "size": 12,
+        "color": "#cdd6f4"
+      },
+      "bgcolor": "#313244",
+      "bordercolor": "#45475a",
+      "borderwidth": 1,
+      "x": 1,
+      "xanchor": "right",
+      "y": 1
+    }
+  },
+  "config": {
+    "responsive": true,
+    "staticPlot": true
+  }
+}
