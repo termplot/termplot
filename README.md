@@ -6,4 +6,10 @@
 
 ---
 
+## Screenshot
+
+<img src="raw-images/screenshot.png" width="600" alt="termplot demo">
+
+---
+
 Copyright (C) 2025 Identellica LLC
