@@ -1,42 +1,24 @@
-const scatterPlot = {
+const lossPlot: PlotlyConfig = {
   data: [
     {
-      x: [1, 2, 3, 4, 5],
-      y: [2, 3, 1, 5, 4],
+      x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      y: [5.0, 4.2, 3.5, 3.0, 2.6, 2.3, 2.1, 1.9, 1.8, 1.7],
       type: "scatter",
-      mode: "markers",
-      name: "Green Data",
-      marker: {
-        color: "#a6e3a1", // Catppuccin Green for first set of dots
-        size: 8,
+      mode: "lines+markers",
+      name: "Training Loss",
+      line: {
+        color: "#f38ba8", // Catppuccin Red for the line (bright and noticeable)
+        width: 2,
       },
-    },
-    {
-      x: [1.5, 2.5, 3.5, 4.5, 5.5],
-      y: [3, 4, 2, 6, 5],
-      type: "scatter",
-      mode: "markers",
-      name: "Lavender Data",
       marker: {
-        color: "#b4befe", // Catppuccin Lavender for second set of dots
-        size: 8,
-      },
-    },
-    {
-      x: [2, 3, 4, 5, 6],
-      y: [1, 2, 0.5, 4, 3],
-      type: "scatter",
-      mode: "markers",
-      name: "Mauve Data",
-      marker: {
-        color: "#cba6f7", // Catppuccin Mauve for third set of dots
-        size: 8,
+        color: "#f38ba8", // Catppuccin Red for markers
+        size: 6,
       },
     },
   ],
   layout: {
     title: {
-      text: "Scatter Plot with Three Sets of Dots",
+      text: "Machine Learning Loss Curve",
       x: 0.5,
       xanchor: "center",
       font: {
@@ -47,7 +29,7 @@ const scatterPlot = {
     },
     xaxis: {
       title: {
-        text: "X Axis",
+        text: "Epoch",
         font: {
           family: "Roboto Mono, Fira Code, monospace",
           size: 14,
@@ -65,7 +47,7 @@ const scatterPlot = {
     },
     yaxis: {
       title: {
-        text: "Y Axis",
+        text: "Loss",
         font: {
           family: "Roboto Mono, Fira Code, monospace",
           size: 14,
@@ -80,6 +62,7 @@ const scatterPlot = {
         size: 12,
         color: "#cdd6f4", // Catppuccin Text
       },
+      range: [0, 5.5], // Set y-axis range to start from 0 for better visualization
     },
     width: 1080,
     height: 810,
@@ -110,4 +93,4 @@ const scatterPlot = {
   },
 };
 
-console.log(JSON.stringify(scatterPlot, null, 2));
+console.log(JSON.stringify(lossPlot, null, 2));
