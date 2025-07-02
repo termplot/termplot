@@ -1,29 +1,38 @@
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod/v4";
+
+export const plotlyBareConfigSchema = z.object({
+  data: z.array(z.any()), // Array of data traces, each can be any valid Plotly trace type
+  layout: z.any(),
+  config: z.object().optional(), // Optional configuration object for Plotly
+});
+
+export type PlotlyBareConfig = z.infer<typeof plotlyBareConfigSchema>;
 
 // In-memory database using a Map to store plot configurations by ID
 export class PlotlyDatabase {
-  private plots: Map<string, any>;
+  private plots: Map<string, PlotlyBareConfig>;
 
   constructor() {
-    this.plots = new Map<string, any>();
+    this.plots = new Map<string, PlotlyBareConfig>();
     // Initialize with a hardcoded default plot for ID "0" for testing
   }
 
   // Add a new plot configuration, returning the assigned ID
   // Validates the config against the Zod schema before storing
-  addPlot(plotConfig: any): string {
+  addPlot(plotConfig: PlotlyBareConfig): string {
     const id = uuidv4();
     this.plots.set(id, plotConfig);
     return id;
   }
 
   // Add a plot configuration with a specific ID (useful for testing or updates)
-  addPlotWithId(id: string, plotConfig: any): void {
+  addPlotWithId(id: string, plotConfig: PlotlyBareConfig): void {
     this.plots.set(id, plotConfig);
   }
 
   // Retrieve a plot configuration by ID
-  getPlot(id: string): any {
+  getPlot(id: string): PlotlyBareConfig | undefined {
     return this.plots.get(id);
   }
 
