@@ -1,6 +1,6 @@
 {
   "name": "@termplot/termplot",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Beautiful plots in your terminal.",
   "type": "module",
   "bin": {
