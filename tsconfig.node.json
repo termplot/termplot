@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["server.js", "vite.config.ts"],
+  "include": ["*.ts", "util/*.ts", "app/.server/**/*.ts", "vite.config.ts"],
   "compilerOptions": {
     "composite": true,
     "strict": true,
@@ -8,6 +8,8 @@
     "lib": ["ES2022"],
     "target": "ES2022",
     "module": "ES2022",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "outDir": "./build",
+    "noEmit": false,
   }
 }

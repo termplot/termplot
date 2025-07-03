@@ -7,9 +7,10 @@
   "compilerOptions": {
      "types": ["node", "plotly.js"],
     "checkJs": true,
+    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true
+    "noEmit": true,
   }
 }
