@@ -15,6 +15,12 @@ This comes at the cost of complexity, because in order to enable this, Termplot
 bundles an entire web browser with a web server to take advantage of advanced
 plotting tools that work on the web.
 
+## Installation
+
+```nushell
+npm install -g @termplot/termplot
+```
+
 ## Usage
 
 Simply pipe a Plotly configuration JSON file directly into Termplot in any
