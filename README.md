@@ -47,9 +47,9 @@ Termplot currently only supports Plotly plots.
 ## How it Works
 
 Termplot finds an open port, runs a React Router / express web app, runs a
-[puppeteer](https://github.com/puppeteer/puppeteer), and navigates to the web
-app, loading the desired plot, taking a screenshot of the plot, rendeirng the
-screenshot in the terminal, and then exiting.
+[puppeteer](https://github.com/puppeteer/puppeteer) web browser, and navigates
+to the web app, loading the desired plot, taking a screenshot of the plot,
+rendeirng the screenshot in the terminal, and then exiting.
 
 ## Dependencies
 
