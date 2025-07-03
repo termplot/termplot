@@ -87,6 +87,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      node-resolve-ts:
+        specifier: ^1.0.2
+        version: 1.0.2
       png-to-ico:
         specifier: ^2.1.8
         version: 2.1.8
@@ -1654,6 +1657,9 @@ packages:
 
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
+
+  node-resolve-ts@1.0.2:
+    resolution: {integrity: sha512-OXr7jYcmWWhO0Bb4eyK7Rwi9PbWRy5+Ie7bRIL+tlD4hdkVf/HMNoZhF/ze5H31eMBee8NSVwfxSpb/WwpJt6g==}
 
   normalize-package-data@5.0.0:
     resolution: {integrity: sha512-h9iPVIfrVZ9wVYQnxFgtw1ugSvGEMOlyPWWtm8BMJhnwyEL/FLbYbTY3V3PpjI/BUK67n9PEWDu6eHzu1fB15Q==}
@@ -3653,6 +3659,8 @@ snapshots:
     optional: true
 
   node-releases@2.0.19: {}
+
+  node-resolve-ts@1.0.2: {}
 
   normalize-package-data@5.0.0:
     dependencies:
