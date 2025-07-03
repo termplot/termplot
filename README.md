@@ -6,14 +6,11 @@
 
 <img src="raw-images/screenshot.png" width="600" alt="termplot demo">
 
-## Introduction
+## Overview
 
 Termplot renders the most beautiful and advanced plots directly inside your
-terminal.
-
-This comes at the cost of complexity, because in order to enable this, Termplot
-bundles an entire web browser with a web server to take advantage of advanced
-plotting tools that work on the web.
+terminal by running a web app inside an ephemeral web browser, taking a
+screenshot, and using modern escape codes to render the image.
 
 ## Installation
 
