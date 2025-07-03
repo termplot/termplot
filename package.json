@@ -4,7 +4,7 @@
   "description": "Beautiful plots in your terminal.",
   "type": "module",
   "bin": {
-    "termplot": "./bin/termplot.ts"
+    "termplot": "./bin/termplot"
   },
   "scripts": {
     "build:icons": "tsx process-icons.ts",
