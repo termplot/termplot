@@ -8,7 +8,9 @@
   },
   "scripts": {
     "build:icons": "tsx process-icons.ts",
-    "build": "react-router build",
+    "build:app": "react-router build",
+    "build:cli": "tsc -b tsconfig.cli.json",
+    "build": "pnpm run build:app && pnpm run build:cli",
     "dev": "cross-env NODE_ENV=development node server.ts",
     "start": "node server.ts",
     "typecheck": "react-router typegen && tsc -b"

@@ -1,9 +1,9 @@
 import ansiescapes from "ansi-escapes";
 import { Command } from "commander";
 import puppeteer from "puppeteer";
-import { plotlyDb } from "./app/.server/plotly-db.ts";
-import { PORT, server } from "./server.ts";
-import { readStdin } from "./util/stdin.ts";
+import { plotlyDb } from "./plotly-db.js";
+import { PORT, server } from "./server.js";
+import { readStdin } from "./util/stdin.js";
 
 const program = new Command();
 

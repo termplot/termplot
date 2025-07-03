@@ -7,9 +7,6 @@ import express from "express";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Short-circuit the type-checking of the built output.
-// const BUILD_PATH = "./build/server/index.js";
-const BUILD_PATH = join(__dirname, "./build/server/index.js");
 const DEVELOPMENT = process.env.NODE_ENV === "development";
 
 // Function to check if a port is in use
@@ -80,7 +77,7 @@ if (DEVELOPMENT) {
   app.use(viteDevServer.middlewares);
   app.use(async (req, res, next) => {
     try {
-      const serverPath = join(__dirname, "./server/app.ts");
+      const serverPath = join(__dirname, "../server/app.js");
       const source = await viteDevServer.ssrLoadModule(serverPath);
       return await source.app(req, res, next);
     } catch (error) {
@@ -91,14 +88,14 @@ if (DEVELOPMENT) {
     }
   });
 } else {
-  const assetsPath = join(__dirname, "./build/client/assets");
+  const assetsPath = join(__dirname, "../client/assets");
   app.use(
     "/assets",
     express.static(assetsPath, { immutable: true, maxAge: "1y" }),
   );
-  const clientPath = join(__dirname, "build/client");
+  const clientPath = join(__dirname, "../client");
   app.use(express.static(clientPath, { maxAge: "1h" }));
-  app.use(await import(BUILD_PATH).then((mod) => mod.app));
+  app.use(await import(join(__dirname, "../server/index.js")).then((mod) => mod.app));
 }
 
 // Start server and wait for it to finish to prevent race conflicts with
