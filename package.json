@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build:icons": "tsx process-icons.ts",
-    "build": "rimraf build && react-router build && node build-ts.ts",
+    "build": "react-router build",
     "dev": "cross-env NODE_ENV=development node server.ts",
     "start": "node server.ts",
     "typecheck": "react-router typegen && tsc -b"
@@ -23,7 +23,6 @@
     "@types/plotly.js-dist-min": "^2.3.4",
     "ansi-escapes": "^7.0.0",
     "commander": "^14.0.0",
-    "esbuild": "^0.25.5",
     "express": "^5.1.0",
     "isbot": "^5.1.28",
     "plotly.js-dist-min": "^3.0.1",
@@ -47,7 +46,6 @@
     "@types/react-dom": "^19.1.6",
     "cross-env": "^7.0.3",
     "png-to-ico": "^2.1.8",
-    "rimraf": "^6.0.1",
     "sharp": "^0.34.2",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
