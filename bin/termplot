@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import "../termplot.ts";
+import "../build/cli/termplot.js";
