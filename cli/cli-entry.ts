@@ -48,7 +48,7 @@ program
   .option("--width <width>", "Width of the browser page", "1080")
   .option("--height <height>", "Height of the browser page", "810")
   .description("Termplot: Beautiful plots in your terminal")
-  .version("0.0.1")
+  .version("0.1.4")
   .action(async (input: string, opts: { width?: string; height?: string }) => {
     let configStr = input;
     if (!configStr && !process.stdin.isTTY) {
