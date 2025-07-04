@@ -27,8 +27,7 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def "beautiful scatter" [
-] {
+def "beautiful scatter" [] {
   mut plotly = $plotlyTemplate
   let plotlyTemplateLayout = {
     title: {
@@ -101,13 +100,26 @@ def "beautiful scatter" [
     }
   }
   $plotly.data = []
+  if (($in | describe -d | get type) == "list") {
+    for $data in $in {
+      if ($data | describe -d | get type) == "record" {
+        $plotly = $plotly | beautiful scatter add $data
+      } else {
+        error make {msg: "Expected a list of records, got $data"}
+      }
+    }
+  } else if ($in | describe -d | get type) == "record" {
+    $plotly = $plotly | beautiful scatter add $in
+  } else if ($in != null) {
+    error make {msg: "Expected a record or a list of records, got $in"}
+  }
   $plotly.layout = $plotlyTemplateLayout
   $plotly.config = $plotlyTemplateConfig
   $plotly
 }
 
 def "beautiful scatter add" [
-  data: any
+  data: record
 ] {
   mut plotly = $in
   if $plotly.data == null {
