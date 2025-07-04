@@ -110,16 +110,14 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def create_data_points_scatter [
-  x: list<number>
-  y: list<number>
+def create_scatter_data_unit [
+  xy: list<list<number>>
   --name: string = "Data Points"
-  --color: string = "#a6e3a1"
+  --color = "#a6e3a1"
   --size: number = 8
 ] {
-  if ($x | length) != ($y | length) {
-    throw "x and y must have the same length"
-  }
+  let x = $xy | each {|xy| $xy | get 0 }
+  let y = $xy | each {|xy| $xy | get 1 }
   let points = $plotlyTemplateDataScatter | merge {
     x: $x
     y: $y
@@ -132,5 +130,16 @@ def create_data_points_scatter [
   $points
 }
 
-let dataScatter = create_data_points_scatter [1 2] [1 2]
-print "hello" $dataScatter.x $dataScatter.y
+# let dataScatter = create_scatter_data_unit [[1 2] [1 2]]
+# print "hello" $dataScatter.x $dataScatter.y
+
+def create_scatter_plot [
+  xy: list<list<number>>
+  --color: any = "#a6e3a1"
+] {
+  mut plotly = $plotlyTemplate
+  $plotly.data = [(create_scatter_data_unit $xy --color $color)]
+  $plotly.layout = $plotlyTemplateLayout
+  $plotly.config = $plotlyTemplateConfig
+  $plotly
+}
