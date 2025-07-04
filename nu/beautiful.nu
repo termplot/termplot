@@ -9,22 +9,30 @@ let plotlyTemplateConfig = {
   staticPlot: true
 }
 
+def hex_to_rgb [hex: string] {
+  let hex = ($hex | str replace '#' '') # Remove '#' prefix
+  let r = ($hex | str substring 0..1 | into int -r 16) # First 2 chars to decimal
+  let g = ($hex | str substring 2..3 | into int -r 16) # Next 2 chars to decimal
+  let b = ($hex | str substring 4..5 | into int -r 16) # Last 2 chars to decimal
+  return $"rgb\(($r), ($g), ($b)\)"
+}
+
 # catpuccin bright color
 let brightColors = [
-  {name: "Green" hex: "#a6e3a1"}
-  {name: "Teal" hex: "#94e2d5"}
-  {name: "Sky" hex: "#89dceb"}
-  {name: "Sapphire" hex: "#74c7ec"}
-  {name: "Blue" hex: "#89b4fa"}
-  {name: "Lavender" hex: "#b4befe"}
-  {name: "Rosewater" hex: "#f5e0dc"}
-  {name: "Flamingo" hex: "#f2cdcd"}
-  {name: "Pink" hex: "#f5c2e7"}
-  {name: "Mauve" hex: "#cba6f7"}
-  {name: "Red" hex: "#f38ba8"}
-  {name: "Maroon" hex: "#eba0ac"}
-  {name: "Peach" hex: "#fab387"}
-  {name: "Yellow" hex: "#f9e2af"}
+  {name: "Green" hex: "#a6e3a1" rgb: (hex_to_rgb "#a6e3a1")}
+  {name: "Teal" hex: "#94e2d5" rgb: (hex_to_rgb "#94e2d5")}
+  {name: "Sky" hex: "#89dceb" rgb: (hex_to_rgb "#89dceb")}
+  {name: "Sapphire" hex: "#74c7ec" rgb: (hex_to_rgb "#74c7ec")}
+  {name: "Blue" hex: "#89b4fa" rgb: (hex_to_rgb "#89b4fa")}
+  {name: "Lavender" hex: "#b4befe" rgb: (hex_to_rgb "#b4befe")}
+  {name: "Rosewater" hex: "#f5e0dc" rgb: (hex_to_rgb "#f5e0dc")}
+  {name: "Flamingo" hex: "#f2cdcd" rgb: (hex_to_rgb "#f2cdcd")}
+  {name: "Pink" hex: "#f5c2e7" rgb: (hex_to_rgb "#f5c2e7")}
+  {name: "Mauve" hex: "#cba6f7" rgb: (hex_to_rgb "#cba6f7")}
+  {name: "Red" hex: "#f38ba8" rgb: (hex_to_rgb "#f38ba8")}
+  {name: "Maroon" hex: "#eba0ac" rgb: (hex_to_rgb "#eba0ac")}
+  {name: "Peach" hex: "#fab387" rgb: (hex_to_rgb "#fab387")}
+  {name: "Yellow" hex: "#f9e2af" rgb: (hex_to_rgb "#f9e2af")}
 ]
 
 # Generates catpuccin-themed plotly configuration files
@@ -32,10 +40,8 @@ def beautiful [] {
   print "Run `beautiful --help` to see available commands."
 }
 
-# Generate a catpuccin-themed colorscale for plotly colorscales.
+# Generate a Catppuccin-themed colorscale for Plotly colorscales.
 def "beautiful colorscale" [
-  start: float # Starting value of the gradient range
-  end: float   # Ending value of the gradient range
   count: int = 14 # Total number of colors in the colorscale (must be > 0)
 ]: [nothing -> list<list>] {
   # Validate input
@@ -49,15 +55,14 @@ def "beautiful colorscale" [
   # Handle the case of count == 1 separately
   if $count == 1 {
     let color = $brightColors | get 0 | get hex
-    $colorscale = [[$start $color]]
+    $colorscale = [[0.0 $color]]
   } else {
-    # Calculate step size based on start and end range
-    let range = $end - $start
-    let step = $range / ($count - 1.0)
+    # Calculate step size for normalized values (0 to 1)
+    let step = 1.0 / ($count - 1.0)
 
     # Generate the colorscale by cycling through brightColors
     for $i in 0..($count - 1) {
-      let value = $start + ($i * $step)
+      let value = ($i * $step)
       let colorIndex = ($i mod $colorListLength)
       let color = $brightColors | get $colorIndex | get hex
       $colorscale = $colorscale | append [[$value $color]]
@@ -186,6 +191,12 @@ def "beautiful scatter add" [
       color: $brightColor # Catppuccin Text for outline
     }
   } | merge deep $data
+  # if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
+  #   print "Generating colorscale for data"
+  #   let min = ($data.marker.color | math min | into float)
+  #   let max = ($data.marker.color | math max | into float)
+  #   $data.marker.colorscale = beautiful colorscale $min $max 14
+  # }
   $plotly.data = $plotly.data | append $data
   $plotly
 }
