@@ -659,3 +659,311 @@ def "beautiful scatter add" [
   $plotly
 }
 ```
+
+# === ASSISTANT ===
+
+To add help functionality to your `beautiful` command in Nushell and make it compatible with the usual `--help` style, you can define a main `beautiful` command with subcommands like `scatter`. Nushell supports built-in help systems for custom commands through metadata and the `help` command. Additionally, you can handle `--help` flags manually or let Nushell's built-in help system take over by properly structuring your script as a module or command with usage information.
+
+Below, I'll update your script to:
+1. Define a main `beautiful` command that prints a general help message when invoked without arguments.
+2. Handle `beautiful --help` to print a detailed help message.
+3. Structure the script to be compatible with Nushell's `--help` style by using command metadata and subcommands.
+4. Organize `scatter` and `scatter add` as subcommands under `beautiful`.
+
+Nushell scripts can be turned into proper commands with help text by defining them with metadata (like `export def`) if you're working within a module or by manually handling help flags. Since your script appears to be a standalone or sourced file, I'll focus on making it work as a command with manual help handling and also provide a structure for subcommands.
+
+### Updated Nushell Script with Help Functionality
+
+```nu
+let plotlyTemplate = {
+  data: []
+  layout: {}
+  config: {}
+}
+
+let plotlyTemplateConfig = {
+  responsive: false
+  staticPlot: true
+}
+
+# Catppuccin bright colors
+let brightColors = [
+  {name: "Green" hex: "#a6e3a1"}
+  {name: "Teal" hex: "#94e2d5"}
+  {name: "Sky" hex: "#89dceb"}
+  {name: "Sapphire" hex: "#74c7ec"}
+  {name: "Blue" hex: "#89b4fa"}
+  {name: "Lavender" hex: "#b4befe"}
+  {name: "Rosewater" hex: "#f5e0dc"}
+  {name: "Flamingo" hex: "#f2cdcd"}
+  {name: "Pink" hex: "#f5c2e7"}
+  {name: "Mauve" hex: "#cba6f7"}
+  {name: "Red" hex: "#f38ba8"}
+  {name: "Maroon" hex: "#eba0ac"}
+  {name: "Peach" hex: "#fab387"}
+  {name: "Yellow" hex: "#f9e2af"}
+]
+
+# Main beautiful command to handle help and subcommands
+def beautiful [
+  --help (-h) # Display detailed help information for beautiful
+] {
+  if $help {
+    print (beautiful-help-detailed)
+  } else {
+    print (beautiful-help-brief)
+  }
+}
+
+# Brief help message for 'beautiful' command
+def beautiful-help-brief [] {
+  "beautiful: A Nushell tool to generate Plotly configuration files with beautiful themes.
+Usage: beautiful <subcommand> [options]
+Run 'beautiful --help' for detailed information and subcommands."
+}
+
+# Detailed help message for 'beautiful' command
+def beautiful-help-detailed [] {
+  "beautiful: A Nushell tool to generate Plotly configuration files with beautiful themes.
+
+Description:
+  'beautiful' helps create Plotly configuration files for data visualization, using
+  themes like Catppuccin for a polished terminal-friendly look. Pipe data into subcommands
+  to generate plots like scatter plots, and render them with tools like termplot.
+
+Usage:
+  beautiful <subcommand> [options]
+
+Subcommands:
+  scatter    - Generate a scatter plot configuration with Catppuccin theme.
+               Usage: beautiful scatter [data]
+               Pipe in a record or list of records with x and y fields.
+
+Options:
+  --help, -h - Show this detailed help message.
+
+Examples:
+  # Create a scatter plot with sample data
+  [{x: [1, 2, 3] y: [2, 3, 1]}] | beautiful scatter
+
+  # Show help
+  beautiful --help
+
+See 'help beautiful scatter' for more details on specific subcommands."
+}
+
+# Scatter subcommand for generating scatter plots
+def "beautiful scatter" [
+  --help (-h) # Display help information for scatter subcommand
+] {
+  if $help {
+    print (beautiful-scatter-help)
+    return
+  }
+
+  mut plotly = $plotlyTemplate
+  let plotlyTemplateLayout = {
+    title: {
+      text: "Scatter Plot with Three Sets of Dots"
+      x: 0.5
+      xanchor: "center"
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    xaxis: {
+      title: {
+        text: "X Axis"
+        font: {
+          family: "Roboto Mono, Fira Code, monospace"
+          size: 14
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+    }
+    yaxis: {
+      title: {
+        text: "Y Axis"
+        font: {
+          family: "Roboto Mono, Fira Code, monospace"
+          size: 14
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+    }
+    width: 1080
+    height: 810
+    plot_bgcolor: "#1e1e2e"
+    paper_bgcolor: "#1e1e2e"
+    font: {
+      family: "Roboto Mono, Fira Code, monospace"
+      color: "#cdd6f4"
+    }
+    showlegend: true
+    legend: {
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+      bgcolor: "#313244"
+      bordercolor: "#45475a"
+      borderwidth: 1
+      x: 1
+      xanchor: "right"
+      y: 1
+    }
+  }
+  $plotly.data = []
+  let input_data = $in
+  if (($input_data | describe -d | get type) == "list") {
+    for $data in $input_data {
+      if ($data | describe -d | get type) == "record" {
+        $plotly = $plotly | beautiful scatter add $data
+      } else {
+        error make {msg: $"Expected a list of records, got ($data)"}
+      }
+    }
+  } else if ($input_data | describe -d | get type) == "record" {
+    $plotly = $plotly | beautiful scatter add $input_data
+  } else if ($input_data != null) {
+    error make {msg: $"Expected a record or a list of records, got ($input_data)"}
+  }
+  $plotly.layout = $plotlyTemplateLayout
+  $plotly.config = $plotlyTemplateConfig
+  $plotly
+}
+
+# Help message for 'beautiful scatter'
+def beautiful-scatter-help [] {
+  "beautiful scatter: Generate a scatter plot configuration with Catppuccin theme.
+
+Description:
+  Creates a Plotly configuration for a scatter plot using the Catppuccin theme.
+  Data can be piped in as a single record or a list of records, where each record
+  should contain 'x' and 'y' fields for the data points.
+
+Usage:
+  beautiful scatter [options]
+  Pipe in data: <data> | beautiful scatter
+
+Options:
+  --help, -h - Show this help message.
+
+Examples:
+  # Single record scatter plot
+  {x: [1, 2, 3] y: [2, 3, 1]} | beautiful scatter
+
+  # Multiple records for multiple series
+  [{x: [1, 2, 3] y: [2, 3, 1]} {x: [1.5, 2.5, 3.5] y: [3, 4, 2]}] | beautiful scatter
+
+Note:
+  Colors for data series are automatically cycled from the Catppuccin bright color palette."
+}
+
+# Helper subcommand to add data to a scatter plot (internal use)
+def "beautiful scatter add" [
+  data: record
+] {
+  mut plotly = $in
+  if $plotly.data == null {
+    $plotly = $in | merge {data: []}
+  }
+  let dataLen = $plotly.data | length
+  let brightColor = $brightColors | get ($dataLen mod ($brightColors | length)) | get "hex"
+  let data = {
+    type: "scatter"
+    mode: "markers"
+    marker: {
+      size: 10
+      line: {
+        color: $brightColor # Catppuccin Text for outline
+        width: 1
+      }
+    }
+  } | merge $data
+  $plotly.data = $plotly.data | append $data
+  $plotly
+}
+```
+
+### Explanation of Changes and Features
+
+1. **Main `beautiful` Command with Help**:
+   - I added a main `beautiful` command that serves as the entry point. When invoked without arguments, it prints a brief help message using `beautiful-help-brief`.
+   - It accepts a `--help` or `-h` flag to print a detailed help message using `beautiful-help-detailed`.
+
+2. **Help Messages**:
+   - `beautiful-help-brief`: A short message shown when `beautiful` is run without arguments or subcommands.
+   - `beautiful-help-detailed`: A comprehensive help message shown with `beautiful --help` or `beautiful -h`, including usage, subcommands, options, and examples.
+
+3. **Subcommand Help for `scatter`**:
+   - The `beautiful scatter` subcommand now accepts a `--help` or `-h` flag to display its specific help message using `beautiful-scatter-help`.
+   - This help message includes usage, options, and examples specific to scatter plots.
+
+4. **Compatibility with Nushell's Help System**:
+   - If you save this script as a module (e.g., `beautiful.nu`) and load it with `use beautiful.nu *`, Nushell's built-in `help` command can display information about `beautiful` and its subcommands.
+   - To fully integrate with Nushell's help system, consider using `export def` for commands if this script is part of a module. For example:
+     ```nu
+     export def beautiful [--help (-h)] { ... }
+     export def "beautiful scatter" [--help (-h)] { ... }
+     ```
+     This allows `help beautiful` and `help beautiful scatter` to work automatically with Nushell's help system. However, since you might be sourcing this script directly, I’ve implemented manual help handling.
+
+5. **Registry and Subcommand Structure**:
+   - The script uses Nushell's subcommand structure (`beautiful scatter`, `beautiful scatter add`), which is compatible with the typical Nushell command style.
+   - Additional subcommands (like `line` or other plot types) can be added similarly under the `beautiful` namespace.
+
+### How It Works
+
+- **Running `beautiful`**: Prints a brief help message.
+  ```
+  $ beautiful
+  beautiful: A Nushell tool to generate Plotly configuration files with beautiful themes.
+  Usage: beautiful <subcommand> [options]
+  Run 'beautiful --help' for detailed information and subcommands.
+  ```
+
+- **Running `beautiful --help` or `beautiful -h`**: Prints the detailed help message with subcommands and examples.
+
+- **Running `beautiful scatter --help`**: Prints the help message specific to the `scatter` subcommand.
+
+- **Nushell Help Compatibility**: If this script is loaded as a module with `export def`, running `help beautiful` or `help beautiful scatter` will show help information (though you may need to add more metadata like `usage` or `extra_usage` in the command definition for richer help output).
+
+### Notes for Further Development
+
+- **Module Export**: If you plan to distribute or reuse this script, consider wrapping it in a module with `export def` for commands to fully leverage Nushell's help system. For example, save it as `beautiful.nu` and add at the top:
+  ```nu
+  # beautiful.nu
+  export def beautiful [--help (-h)] { ... }
+  export def "beautiful scatter" [--help (-h)] { ... }
+  ```
+  Then load it with `use beautiful.nu *`.
+
+- **Custom Flags**: You can add more flags to `beautiful` or `beautiful scatter` (e.g., for theme selection or customization) and document them in the help messages.
+
+- **Error Handling**: Ensure error messages are user-friendly and consistent with help documentation.
+
+Let me know if you'd like help with further refinements, adding more subcommands, or integrating this into a module for Nushell!
+
+# === USER ===
+
+

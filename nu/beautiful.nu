@@ -43,12 +43,12 @@ def "beautiful scatter" []: [
   mut plotly = $plotlyTemplate
   let plotlyTemplateLayout = {
     title: {
-      text: "Scatter Plot with Three Sets of Dots"
+      text: "Scatter Plot"
       x: 0.5
       xanchor: "center"
       font: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 20
+        family: "monospace"
+        size: 30
         color: "#cdd6f4"
       }
     }
@@ -56,8 +56,8 @@ def "beautiful scatter" []: [
       title: {
         text: "X Axis"
         font: {
-          family: "Roboto Mono, Fira Code, monospace"
-          size: 14
+          family: "monospace"
+          size: 20
           color: "#cdd6f4"
         }
       }
@@ -65,8 +65,8 @@ def "beautiful scatter" []: [
       linecolor: "#45475a"
       ticks: "outside"
       tickfont: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 12
+        family: "monospace"
+        size: 18
         color: "#cdd6f4"
       }
     }
@@ -74,8 +74,8 @@ def "beautiful scatter" []: [
       title: {
         text: "Y Axis"
         font: {
-          family: "Roboto Mono, Fira Code, monospace"
-          size: 14
+          family: "monospace"
+          size: 20
           color: "#cdd6f4"
         }
       }
@@ -83,8 +83,8 @@ def "beautiful scatter" []: [
       linecolor: "#45475a"
       ticks: "outside"
       tickfont: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 12
+        family: "monospace"
+        size: 18
         color: "#cdd6f4"
       }
     }
@@ -93,14 +93,14 @@ def "beautiful scatter" []: [
     plot_bgcolor: "#1e1e2e"
     paper_bgcolor: "#1e1e2e"
     font: {
-      family: "Roboto Mono, Fira Code, monospace"
+      family: "monospace"
       color: "#cdd6f4"
     }
     showlegend: true
     legend: {
       font: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 12
+        family: "monospace"
+        size: 20
         color: "#cdd6f4"
       }
       bgcolor: "#313244"
