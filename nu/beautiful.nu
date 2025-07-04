@@ -139,7 +139,7 @@ def "beautiful scatter add" [
 ]: [record -> record] {
   mut plotly = $in
   if $plotly.data == null {
-    $plotly = $in | merge {data: []}
+    $plotly = $in | merge deep {data: []}
   }
   let dataLen = $plotly.data | length
   let brightColor = $brightColors | get ($dataLen mod ($brightColors | length)) | get "hex"
@@ -153,7 +153,7 @@ def "beautiful scatter add" [
         width: 1
       }
     }
-  } | merge $data
+  } | merge deep $data
   $plotly.data = $plotly.data | append $data
   $plotly
 }
