@@ -102,8 +102,7 @@ def "beautiful scatter" [] {
   $plotly.data = []
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
-    for $i in (seq 0 (($input_data | length) - 1)) {
-      let data = $input_data | get $i
+    for $data in $input_data {
       if ($data | describe -d | get type) == "record" {
         $plotly = $plotly | beautiful scatter add $data
       } else {

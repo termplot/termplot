@@ -435,4 +435,15 @@ Let me know if you need help with a different scope, additional conditions, or i
 
 # === USER ===
 
+in the following nushell code, is there a way to do a range over a list, or must you always use `seq` and index numbers like this?
 
+```nu
+    for $i in (seq 0 (($input_data | length) - 1)) {
+      let data = $input_data | get $i
+      if ($data | describe -d | get type) == "record" {
+        $plotly = $plotly | beautiful scatter add $data
+      } else {
+        error make {msg: "Expected a list of records, got $data"}
+      }
+    }
+```
