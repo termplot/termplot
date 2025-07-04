@@ -27,15 +27,16 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-# Generates catpuccin-themed plots using Plotly
+# Generates catpuccin-themed plotly configuration files
 def beautiful [] {
   print "Run `beautiful --help` to see available commands."
 }
 
-# Generates a catpuccin-themed scatter plot using Plotly
+# Generates a catpuccin-themed scatter plot using plotly
 #
 # You can input a single plotly data record or a list of records. If you don't
-# input data, the config file will not contain any data.
+# input data, the config file will not contain any data. See the plotly
+# documentation for more information on how to configure the data record.
 def "beautiful scatter" []: [
   record -> record list<record> -> record
 ] {
@@ -130,9 +131,12 @@ def "beautiful scatter" []: [
   $plotly
 }
 
+# Adds a catcpuccin-themed scatter plot data record to the plotly template. See
+# the plotly documentation for more information on how to configure the data
+# record.
 def "beautiful scatter add" [
   data: record
-] {
+]: [record -> record] {
   mut plotly = $in
   if $plotly.data == null {
     $plotly = $in | merge {data: []}
