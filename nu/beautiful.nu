@@ -100,18 +100,20 @@ def "beautiful scatter" [] {
     }
   }
   $plotly.data = []
-  if (($in | describe -d | get type) == "list") {
-    for $data in $in {
+  let input_data = $in
+  if (($input_data | describe -d | get type) == "list") {
+    for $i in (seq 0 (($input_data | length) - 1)) {
+      let data = $input_data | get $i
       if ($data | describe -d | get type) == "record" {
         $plotly = $plotly | beautiful scatter add $data
       } else {
         error make {msg: "Expected a list of records, got $data"}
       }
     }
-  } else if ($in | describe -d | get type) == "record" {
-    $plotly = $plotly | beautiful scatter add $in
-  } else if ($in != null) {
-    error make {msg: "Expected a record or a list of records, got $in"}
+  } else if ($input_data | describe -d | get type) == "record" {
+    $plotly = $plotly | beautiful scatter add $input_data
+  } else if ($input_data != null) {
+    error make {msg: "Expected a record or a list of records, got $input_data"}
   }
   $plotly.layout = $plotlyTemplateLayout
   $plotly.config = $plotlyTemplateConfig
@@ -131,7 +133,7 @@ def "beautiful scatter add" [
     type: "scatter"
     mode: "markers"
     marker: {
-      size: 8
+      size: 10
       line: {
         color: $brightColor # Catppuccin Text for outline
         width: 1
