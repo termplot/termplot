@@ -32,6 +32,40 @@ def beautiful [] {
   print "Run `beautiful --help` to see available commands."
 }
 
+# Generate a catpuccin-themed colorscale for plotly colorscales.
+def "beautiful colorscale" [
+  start: float # Starting value of the gradient range
+  end: float # Ending value of the gradient range
+  count: int = 14 # Total number of colors in the colorscale (must be > 0)
+]: [nothing -> list<list>] {
+  # Validate input
+  if $count <= 0 {
+    error make {msg: "Count must be greater than 0"}
+  }
+
+  let colorListLength = ($brightColors | length)
+  mut colorscale = []
+
+  # Handle the case of count == 1 separately
+  if $count == 1 {
+    let color = $brightColors | get 0 | get hex
+    $colorscale = [[0.0 $color]]
+  } else {
+    # Calculate step size for normalized values (0 to 1)
+    let step = 1.0 / ($count - 1.0)
+
+    # Generate the colorscale by cycling through brightColors
+    for $i in 0..($count - 1) {
+      let normalizedValue = ($i * $step)
+      let colorIndex = ($i mod $colorListLength)
+      let color = $brightColors | get $colorIndex | get hex
+      $colorscale = $colorscale | append [ [$normalizedValue $color] ]
+    }
+  }
+
+  return $colorscale
+}
+
 # Generates a catpuccin-themed scatter plot using plotly
 #
 # You can input a single plotly data record or a list of records. If you don't
