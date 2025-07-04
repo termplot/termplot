@@ -370,4 +370,16 @@ Let me know if you'd like me to help flesh out the full scatter plot function or
 
 # === USER ===
 
+i need a regular expression i can run in neovim to solve the following problem:
 
+replace all instances of:
+
+"somestring":
+
+with:
+
+somestring:
+
+where somestring is any string of lowercase letters or underscores.
+
+what does this regular expression look like?

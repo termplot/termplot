@@ -4,6 +4,77 @@ let plotlyTemplate = {
   config: {}
 }
 
+let plotlyTemplateLayout = {
+  title: {
+    text: "Scatter Plot with Three Sets of Dots"
+    x: 0.5
+    xanchor: "center"
+    font: {
+      family: "Roboto Mono, Fira Code, monospace"
+      size: 20
+      color: "#cdd6f4"
+    }
+  }
+  xaxis: {
+    title: {
+      text: "X Axis"
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 14
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "Roboto Mono, Fira Code, monospace"
+      size: 12
+      color: "#cdd6f4"
+    }
+  }
+  yaxis: {
+    title: {
+      text: "Y Axis"
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 14
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "Roboto Mono, Fira Code, monospace"
+      size: 12
+      color: "#cdd6f4"
+    }
+  }
+  width: 1080
+  height: 810
+  plot_bgcolor: "#1e1e2e"
+  paper_bgcolor: "#1e1e2e"
+  font: {
+    family: "Roboto Mono, Fira Code, monospace"
+    color: "#cdd6f4"
+  }
+  showlegend: true
+  legend: {
+    font: {
+      family: "Roboto Mono, Fira Code, monospace"
+      size: 12
+      color: "#cdd6f4"
+    }
+    bgcolor: "#313244"
+    bordercolor: "#45475a"
+    borderwidth: 1
+    x: 1
+    xanchor: "right"
+    y: 1
+  }
+}
+
 let plotlyTemplateDataScatter = {
   x: [1 2 3 4 5]
   y: [2 3 1 5 4]
@@ -54,5 +125,5 @@ def create_data_points_scatter [
   $points
 }
 
-let dataScatter = create_data_points_scatter [[1, 2] [1, 2]]
+let dataScatter = create_data_points_scatter [[1 2] [1 2]]
 print "hello" $dataScatter.x $dataScatter.y
