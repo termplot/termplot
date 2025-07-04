@@ -70,4 +70,4 @@ These tools make Termplot possible:
 
 ---
 
-Copyright (C) 2025 Identellica LLC
+Copyright (C) 2025 Ryan X. Charles
