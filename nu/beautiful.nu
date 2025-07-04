@@ -50,20 +50,21 @@ def "beautiful colorscale" [
   }
 
   let colorListLength = ($brightColors | length)
+  let stepSize = 5 # Step size for cycling through colors to increase contrast
   mut colorscale = []
 
   # Handle the case of count == 1 separately
   if $count == 1 {
     let color = $brightColors | get 0 | get hex
-    $colorscale = [[0.0 $color]]
+    $colorscale = [[0.0 $color] [1.0 $color]]
   } else {
     # Calculate step size for normalized values (0 to 1)
     let step = 1.0 / ($count - 1.0)
 
-    # Generate the colorscale by cycling through brightColors
+    # Generate the colorscale by cycling through brightColors with a larger step
     for $i in 0..($count - 1) {
       let value = ($i * $step)
-      let colorIndex = ($i mod $colorListLength)
+      let colorIndex = (($i * $stepSize) mod $colorListLength)
       let color = $brightColors | get $colorIndex | get hex
       $colorscale = $colorscale | append [[$value $color]]
     }
