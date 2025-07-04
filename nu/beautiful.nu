@@ -4,92 +4,9 @@ let plotlyTemplate = {
   config: {}
 }
 
-let plotlyTemplateLayout = {
-  title: {
-    text: "Scatter Plot with Three Sets of Dots"
-    x: 0.5
-    xanchor: "center"
-    font: {
-      family: "Roboto Mono, Fira Code, monospace"
-      size: 20
-      color: "#cdd6f4"
-    }
-  }
-  xaxis: {
-    title: {
-      text: "X Axis"
-      font: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 14
-        color: "#cdd6f4"
-      }
-    }
-    gridcolor: "#45475a"
-    linecolor: "#45475a"
-    ticks: "outside"
-    tickfont: {
-      family: "Roboto Mono, Fira Code, monospace"
-      size: 12
-      color: "#cdd6f4"
-    }
-  }
-  yaxis: {
-    title: {
-      text: "Y Axis"
-      font: {
-        family: "Roboto Mono, Fira Code, monospace"
-        size: 14
-        color: "#cdd6f4"
-      }
-    }
-    gridcolor: "#45475a"
-    linecolor: "#45475a"
-    ticks: "outside"
-    tickfont: {
-      family: "Roboto Mono, Fira Code, monospace"
-      size: 12
-      color: "#cdd6f4"
-    }
-  }
-  width: 1080
-  height: 810
-  plot_bgcolor: "#1e1e2e"
-  paper_bgcolor: "#1e1e2e"
-  font: {
-    family: "Roboto Mono, Fira Code, monospace"
-    color: "#cdd6f4"
-  }
-  showlegend: true
-  legend: {
-    font: {
-      family: "Roboto Mono, Fira Code, monospace"
-      size: 12
-      color: "#cdd6f4"
-    }
-    bgcolor: "#313244"
-    bordercolor: "#45475a"
-    borderwidth: 1
-    x: 1
-    xanchor: "right"
-    y: 1
-  }
-}
-
 let plotlyTemplateConfig = {
   responsive: false
   staticPlot: true
-}
-
-let plotlyTemplateDataScatter = {
-  x: [1 2 3 4 5]
-  y: [2 3 1 5 4]
-  type: "scatter"
-  mode: "markers"
-  name: "Green Data"
-  marker: {
-    color: "#a6e3a1"
-    size: 8
-  }
 }
 
 # catpuccin bright color
@@ -110,36 +27,105 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def create_scatter_data_unit [
-  xy: list<list<number>>
-  --name: string = "Data Points"
-  --color = "#a6e3a1"
-  --size: number = 8
-] {
-  let x = $xy | each {|xy| $xy | get 0 }
-  let y = $xy | each {|xy| $xy | get 1 }
-  let points = $plotlyTemplateDataScatter | merge {
-    x: $x
-    y: $y
-    name: $name
-    marker: {
-      color: $color
-      size: $size
-    }
-  }
-  $points
-}
-
-# let dataScatter = create_scatter_data_unit [[1 2] [1 2]]
-# print "hello" $dataScatter.x $dataScatter.y
-
-def create_scatter_plot [
-  xy: list<list<number>>
-  --color: any = "#a6e3a1"
+def "beautiful scatter" [
 ] {
   mut plotly = $plotlyTemplate
-  $plotly.data = [(create_scatter_data_unit $xy --color $color)]
+  let plotlyTemplateLayout = {
+    title: {
+      text: "Scatter Plot with Three Sets of Dots"
+      x: 0.5
+      xanchor: "center"
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    xaxis: {
+      title: {
+        text: "X Axis"
+        font: {
+          family: "Roboto Mono, Fira Code, monospace"
+          size: 14
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+    }
+    yaxis: {
+      title: {
+        text: "Y Axis"
+        font: {
+          family: "Roboto Mono, Fira Code, monospace"
+          size: 14
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+    }
+    width: 1080
+    height: 810
+    plot_bgcolor: "#1e1e2e"
+    paper_bgcolor: "#1e1e2e"
+    font: {
+      family: "Roboto Mono, Fira Code, monospace"
+      color: "#cdd6f4"
+    }
+    showlegend: true
+    legend: {
+      font: {
+        family: "Roboto Mono, Fira Code, monospace"
+        size: 12
+        color: "#cdd6f4"
+      }
+      bgcolor: "#313244"
+      bordercolor: "#45475a"
+      borderwidth: 1
+      x: 1
+      xanchor: "right"
+      y: 1
+    }
+  }
+  $plotly.data = []
   $plotly.layout = $plotlyTemplateLayout
   $plotly.config = $plotlyTemplateConfig
+  $plotly
+}
+
+def "beautiful scatter add" [
+  data: any
+] {
+  mut plotly = $in
+  if $plotly.data == null {
+    $plotly = $in | merge {data: []}
+  }
+  let dataLen = $plotly.data | length
+  let brightColor = $brightColors | get ($dataLen mod ($brightColors | length)) | get "hex"
+  let data = {
+    type: "scatter"
+    mode: "markers"
+    marker: {
+      size: 8
+      line: {
+        color: $brightColor # Catppuccin Text for outline
+        width: 1
+      }
+    }
+  } | merge $data
+  $plotly.data = $plotly.data | append $data
   $plotly
 }
