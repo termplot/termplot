@@ -27,7 +27,9 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def "beautiful scatter" [] {
+def "beautiful scatter" []: [
+  record -> record list<record> -> record
+] {
   mut plotly = $plotlyTemplate
   let plotlyTemplateLayout = {
     title: {
