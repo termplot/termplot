@@ -75,6 +75,11 @@ let plotlyTemplateLayout = {
   }
 }
 
+let plotlyTemplateConfig = {
+  responsive: false
+  staticPlot: true
+}
+
 let plotlyTemplateDataScatter = {
   x: [1 2 3 4 5]
   y: [2 3 1 5 4]
