@@ -5,14 +5,14 @@ let plotlyTemplate = {
 }
 
 let scatterDataPointsTemplate = {
-  "x": [1 2 3 4 5]
-  "y": [2 3 1 5 4]
-  "type": "scatter"
-  "mode": "markers"
-  "name": "Green Data"
-  "marker": {
-    "color": "#a6e3a1"
-    "size": 8
+  x: [1 2 3 4 5]
+  y: [2 3 1 5 4]
+  type: "scatter"
+  mode: "markers"
+  name: "Green Data"
+  marker: {
+    color: "#a6e3a1"
+    size: 8
   }
 }
 
@@ -33,3 +33,25 @@ let brightColors = [
   {name: "Peach" hex: "#fab387"}
   {name: "Yellow" hex: "#f9e2af"}
 ]
+
+def create_scatter_points [
+  xy: list<list<number>>
+  --name: string
+  --color: string
+] {
+  let x = $xy | each {|xy| $xy | get 0 }
+  let y = $xy | each {|xy| $xy | get 1 }
+  let points = scatterDataPointsTemplate | merge {
+    x: $x
+    y: $y
+    name: $name
+    marker: {
+      color: $color
+      size: 10
+      line: {
+        color: "#cdd6f4" # Catppuccin Text for outline
+        width: 1
+      }
+    }
+  }
+}
