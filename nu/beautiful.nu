@@ -165,7 +165,7 @@ def "beautiful scatter" []: [
   $plotly
 }
 
-# Adds a catcpuccin-themed scatter plot data record to the plotly template. See
+# Adds a catpuccin-themed scatter plot data record to the plotly template. See
 # the plotly documentation for more information on how to configure the data
 # record.
 def "beautiful scatter add" [
