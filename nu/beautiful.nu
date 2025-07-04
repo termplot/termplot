@@ -194,7 +194,6 @@ def "beautiful scatter add" [
     }
   } | merge deep $data
   if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
-    print "Generating colorscale for data"
     let min = ($data.marker.color | math min | into float)
     let max = ($data.marker.color | math max | into float)
     $data.marker.colorscale = beautiful colorscale 14
