@@ -183,7 +183,8 @@ def "beautiful scatter add" [
     $plotly = $in | merge deep {data: []}
   }
   let dataLen = $plotly.data | length
-  let brightColor = $brightColors | get ($dataLen mod ($brightColors | length)) | get "hex"
+  let stepSize = 5 # Step size for cycling through colors to increase contrast
+  let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
   mut data = {
     type: "scatter"
     mode: "markers"
@@ -192,12 +193,12 @@ def "beautiful scatter add" [
       color: $brightColor # Catppuccin Text for outline
     }
   } | merge deep $data
-  # if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
-  #   print "Generating colorscale for data"
-  #   let min = ($data.marker.color | math min | into float)
-  #   let max = ($data.marker.color | math max | into float)
-  #   $data.marker.colorscale = beautiful colorscale $min $max 14
-  # }
+  if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
+    print "Generating colorscale for data"
+    let min = ($data.marker.color | math min | into float)
+    let max = ($data.marker.color | math max | into float)
+    $data.marker.colorscale = beautiful colorscale 14
+  }
   $plotly.data = $plotly.data | append $data
   $plotly
 }
