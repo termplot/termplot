@@ -34,10 +34,11 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def create_data_scatter [
+def create_data_points_scatter [
   xy: list<list<number>>
-  --name: string
-  --color: string
+  --name: string = "Data Points"
+  --color: string = "#a6e3a1"
+  --size: number = 8
 ] {
   let x = $xy | each {|xy| $xy | get 0 }
   let y = $xy | each {|xy| $xy | get 1 }
@@ -47,11 +48,11 @@ def create_data_scatter [
     name: $name
     marker: {
       color: $color
-      size: 10
+      size: $size
     }
   }
   $points
 }
 
-let dataScatter = create_data_scatter [[1, 2] [1, 2]]
+let dataScatter = create_data_points_scatter [[1, 2] [1, 2]]
 print "hello" $dataScatter.x $dataScatter.y
