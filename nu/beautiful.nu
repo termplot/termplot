@@ -35,7 +35,7 @@ def beautiful [] {
 # Generate a catpuccin-themed colorscale for plotly colorscales.
 def "beautiful colorscale" [
   start: float # Starting value of the gradient range
-  end: float # Ending value of the gradient range
+  end: float   # Ending value of the gradient range
   count: int = 14 # Total number of colors in the colorscale (must be > 0)
 ]: [nothing -> list<list>] {
   # Validate input
@@ -49,17 +49,18 @@ def "beautiful colorscale" [
   # Handle the case of count == 1 separately
   if $count == 1 {
     let color = $brightColors | get 0 | get hex
-    $colorscale = [[0.0 $color]]
+    $colorscale = [[$start $color]]
   } else {
-    # Calculate step size for normalized values (0 to 1)
-    let step = 1.0 / ($count - 1.0)
+    # Calculate step size based on start and end range
+    let range = $end - $start
+    let step = $range / ($count - 1.0)
 
     # Generate the colorscale by cycling through brightColors
     for $i in 0..($count - 1) {
-      let normalizedValue = ($i * $step)
+      let value = $start + ($i * $step)
       let colorIndex = ($i mod $colorListLength)
       let color = $brightColors | get $colorIndex | get hex
-      $colorscale = $colorscale | append [ [$normalizedValue $color] ]
+      $colorscale = $colorscale | append [[$value $color]]
     }
   }
 
@@ -177,15 +178,12 @@ def "beautiful scatter add" [
   }
   let dataLen = $plotly.data | length
   let brightColor = $brightColors | get ($dataLen mod ($brightColors | length)) | get "hex"
-  let data = {
+  mut data = {
     type: "scatter"
     mode: "markers"
     marker: {
       size: 10
-      line: {
-        color: $brightColor # Catppuccin Text for outline
-        width: 1
-      }
+      color: $brightColor # Catppuccin Text for outline
     }
   } | merge deep $data
   $plotly.data = $plotly.data | append $data
