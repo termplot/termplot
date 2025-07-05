@@ -4,6 +4,16 @@ import puppeteer from "puppeteer";
 import { plotlyDb } from "./plotly-db.js";
 import { PORT, server } from "./server.js";
 import { readStdin } from "./util/stdin.js";
+import zod from "zod/v4";
+
+// Define the Plotly configuration schema using Zod
+const plotlyBareConfigSchema = zod.object({
+  data: zod.array(zod.any()), // Array of data traces, each can be any valid Plotly trace type
+  layout: zod.any(),
+  config: zod.object().optional(), // Optional configuration object for Plotly
+});
+
+type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
 
 const program = new Command();
 
@@ -67,15 +77,11 @@ program
       process.exit(1);
     }
 
-    let isPlotlyConfig = false;
-    if (jsonConfig.data && jsonConfig.layout) {
-      isPlotlyConfig = true;
-    }
-
-    if (!isPlotlyConfig) {
-      console.error(
-        "Invalid configuration: Must be a valid Plotly configuration object.",
-      );
+    let plotlyConfig: PlotlyBareConfig | undefined;
+    try {
+      plotlyConfig = plotlyBareConfigSchema.parse(jsonConfig);
+    } catch (error) {
+      console.error("Invalid Plotly configuration:", error);
       process.exit(1);
     }
 
