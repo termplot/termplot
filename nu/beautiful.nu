@@ -9,30 +9,22 @@ let beautifulConfigTemplate = {
   staticPlot: true
 }
 
-def hex_to_rgb [hex: string] {
-  let hex = ($hex | str replace '#' '') # Remove '#' prefix
-  let r = ($hex | str substring 0..1 | into int -r 16) # First 2 chars to decimal
-  let g = ($hex | str substring 2..3 | into int -r 16) # Next 2 chars to decimal
-  let b = ($hex | str substring 4..5 | into int -r 16) # Last 2 chars to decimal
-  return $"rgb\(($r), ($g), ($b)\)"
-}
-
 # catpuccin bright color
 let beautifulBrightColors = [
-  {name: "Green" hex: "#a6e3a1" rgb: (hex_to_rgb "#a6e3a1")}
-  {name: "Teal" hex: "#94e2d5" rgb: (hex_to_rgb "#94e2d5")}
-  {name: "Sky" hex: "#89dceb" rgb: (hex_to_rgb "#89dceb")}
-  {name: "Sapphire" hex: "#74c7ec" rgb: (hex_to_rgb "#74c7ec")}
-  {name: "Blue" hex: "#89b4fa" rgb: (hex_to_rgb "#89b4fa")}
-  {name: "Lavender" hex: "#b4befe" rgb: (hex_to_rgb "#b4befe")}
-  {name: "Rosewater" hex: "#f5e0dc" rgb: (hex_to_rgb "#f5e0dc")}
-  {name: "Flamingo" hex: "#f2cdcd" rgb: (hex_to_rgb "#f2cdcd")}
-  {name: "Pink" hex: "#f5c2e7" rgb: (hex_to_rgb "#f5c2e7")}
-  {name: "Mauve" hex: "#cba6f7" rgb: (hex_to_rgb "#cba6f7")}
-  {name: "Red" hex: "#f38ba8" rgb: (hex_to_rgb "#f38ba8")}
-  {name: "Maroon" hex: "#eba0ac" rgb: (hex_to_rgb "#eba0ac")}
-  {name: "Peach" hex: "#fab387" rgb: (hex_to_rgb "#fab387")}
-  {name: "Yellow" hex: "#f9e2af" rgb: (hex_to_rgb "#f9e2af")}
+  {name: "Green" hex: "#a6e3a1"}
+  {name: "Teal" hex: "#94e2d5"}
+  {name: "Sky" hex: "#89dceb"}
+  {name: "Sapphire" hex: "#74c7ec"}
+  {name: "Blue" hex: "#89b4fa"}
+  {name: "Lavender" hex: "#b4befe"}
+  {name: "Rosewater" hex: "#f5e0dc"}
+  {name: "Flamingo" hex: "#f2cdcd"}
+  {name: "Pink" hex: "#f5c2e7"}
+  {name: "Mauve" hex: "#cba6f7"}
+  {name: "Red" hex: "#f38ba8"}
+  {name: "Maroon" hex: "#eba0ac"}
+  {name: "Peach" hex: "#fab387"}
+  {name: "Yellow" hex: "#f9e2af"}
 ]
 
 let beautifulDataPointScatterTemplate = {
