@@ -1,15 +1,18 @@
 import ansiescapes from "ansi-escapes";
 import { Command } from "commander";
 import puppeteer from "puppeteer";
+import zod from "zod/v4";
 import { plotlyDb } from "./plotly-db.js";
 import { PORT, server } from "./server.js";
 import { readStdin } from "./util/stdin.js";
-import zod from "zod/v4";
 
 // Define the Plotly configuration schema using Zod
 const plotlyBareConfigSchema = zod.object({
   data: zod.array(zod.any()), // Array of data traces, each can be any valid Plotly trace type
-  layout: zod.any(),
+  layout: zod.looseObject({
+    width: zod.number().optional(), // Optional width for the layout
+    height: zod.number().optional(), // Optional height for the layout
+  }),
   config: zod.object().optional(), // Optional configuration object for Plotly
 });
 

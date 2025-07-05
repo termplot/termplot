@@ -7266,4 +7266,19 @@ to help debug further!
 
 # === USER ===
 
+in my zod configuration, i need to specify that the plotly configuration can contain an optional width and height, *and other stuff that i don't want to specify*. how do i do that? is that how it works by default, or do i somehow need to use a rest parameter or something? is my question clear?
 
+```typescript
+// Define the Plotly configuration schema using Zod
+const plotlyBareConfigSchema = zod.object({
+  data: zod.array(zod.any()), // Array of data traces, each can be any valid Plotly trace type
+  layout: zod.object({
+    width: zod.number().optional(), // Optional width for the layout
+    height: zod.number().optional(), // Optional height for the layout
+  }),
+  config: zod.object().optional(), // Optional configuration object for Plotly
+});
+
+type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
+
+```
