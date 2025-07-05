@@ -57,12 +57,10 @@ async function generateAndShowPlotly(
 
 program
   .name("termplot")
-  .argument("[config]", "JSON plot configuration file (optional)")
-  .option("--width <width>", "Width of the browser page", "1080")
-  .option("--height <height>", "Height of the browser page", "810")
+  .argument("[config]", "JSON plot configuration file (optional; can be piped)")
   .description("Termplot: Beautiful plots in your terminal")
   .version("0.1.5")
-  .action(async (input: string, opts: { width?: string; height?: string }) => {
+  .action(async (input: string) => {
     let configStr = input;
     if (!configStr && !process.stdin.isTTY) {
       configStr = (await readStdin()).trim();
@@ -88,8 +86,8 @@ program
       process.exit(1);
     }
 
-    const width = parseInt(opts.width || "0", 10) || plotlyConfig.layout?.width || 1080;
-    const height = parseInt(opts.height || "0", 10) || plotlyConfig.layout?.height || 810;
+    const width = plotlyConfig.layout?.width || 1080;
+    const height = plotlyConfig.layout?.height || 810;
 
     if (Number.isNaN(width) || Number.isNaN(height)) {
       console.error("Width and height must be valid numbers.");
