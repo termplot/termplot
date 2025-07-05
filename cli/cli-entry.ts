@@ -88,8 +88,8 @@ program
       process.exit(1);
     }
 
-    const width = parseInt(opts.width || "1080", 10);
-    const height = parseInt(opts.height || "810", 10);
+    const width = parseInt(opts.width || "0", 10) || plotlyConfig.layout?.width || 1080;
+    const height = parseInt(opts.height || "0", 10) || plotlyConfig.layout?.height || 810;
 
     if (Number.isNaN(width) || Number.isNaN(height)) {
       console.error("Width and height must be valid numbers.");
