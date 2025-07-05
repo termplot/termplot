@@ -1,10 +1,10 @@
-let plotlyTemplate = {
+let beautifulPlotlyTemplate = {
   data: []
   layout: {}
   config: {}
 }
 
-let plotlyTemplateConfig = {
+let beautifulConfigTemplate = {
   responsive: false
   staticPlot: true
 }
@@ -18,7 +18,7 @@ def hex_to_rgb [hex: string] {
 }
 
 # catpuccin bright color
-let brightColors = [
+let beautifulBrightColors = [
   {name: "Green" hex: "#a6e3a1" rgb: (hex_to_rgb "#a6e3a1")}
   {name: "Teal" hex: "#94e2d5" rgb: (hex_to_rgb "#94e2d5")}
   {name: "Sky" hex: "#89dceb" rgb: (hex_to_rgb "#89dceb")}
@@ -35,7 +35,16 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af" rgb: (hex_to_rgb "#f9e2af")}
 ]
 
-let plotlyTemplateLayout = {
+let beautifulDataPointScatterTemplate = {
+  type: "scatter"
+  mode: "markers"
+  marker: {
+    size: 10
+    color: "#a6e3a1" # Default color
+  }
+}
+
+let BeautifulLayoutTemplate = {
   title: {
     text: "Scatter Plot"
     x: 0.5
@@ -120,13 +129,13 @@ def "beautiful colorscale" [
     error make {msg: "Count must be greater than 0"}
   }
 
-  let colorListLength = ($brightColors | length)
+  let colorListLength = ($beautifulBrightColors | length)
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   mut colorscale = []
 
   # Handle the case of count == 1 separately
   if $count == 1 {
-    let color = $brightColors | get 0 | get hex
+    let color = $beautifulBrightColors | get 0 | get hex
     $colorscale = [[0.0 $color] [1.0 $color]]
   } else {
     # Calculate step size for normalized values (0 to 1)
@@ -136,7 +145,7 @@ def "beautiful colorscale" [
     for $i in 0..($count - 1) {
       let value = ($i * $step)
       let colorIndex = (($i * $stepSize) mod $colorListLength)
-      let color = $brightColors | get $colorIndex | get hex
+      let color = $beautifulBrightColors | get $colorIndex | get hex
       $colorscale = $colorscale | append [[$value $color]]
     }
   }
@@ -152,7 +161,7 @@ def "beautiful colorscale" [
 def "beautiful scatter" []: [
   record -> record list<record> -> record
 ] {
-  mut plotly = $plotlyTemplate
+  mut plotly = $beautifulPlotlyTemplate
   $plotly.data = []
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
@@ -168,8 +177,8 @@ def "beautiful scatter" []: [
   } else if ($input_data != null) {
     error make {msg: "Expected a record or a list of records, got $input_data"}
   }
-  $plotly.layout = $plotlyTemplateLayout
-  $plotly.config = $plotlyTemplateConfig
+  $plotly.layout = $BeautifulLayoutTemplate
+  $plotly.config = $beautifulConfigTemplate
   $plotly
 }
 
@@ -185,16 +194,8 @@ def "beautiful scatter add" [
   }
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
-  let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
-  let dataPointTemplate = {
-    type: "scatter"
-    mode: "markers"
-    marker: {
-      size: 10
-      color: "#a6e3a1" # Default color
-    }
-  }
-  mut data = $dataPointTemplate | merge deep {
+  let brightColor = $beautifulBrightColors | get (($dataLen * $stepSize) mod ($beautifulBrightColors | length)) | get "hex"
+  mut data = $beautifulDataPointScatterTemplate | merge deep {
     marker: {
       color: $brightColor
     }
