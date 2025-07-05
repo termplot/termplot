@@ -35,6 +35,77 @@ let brightColors = [
   {name: "Yellow" hex: "#f9e2af" rgb: (hex_to_rgb "#f9e2af")}
 ]
 
+let plotlyTemplateLayout = {
+  title: {
+    text: "Scatter Plot"
+    x: 0.5
+    xanchor: "center"
+    font: {
+      family: "monospace"
+      size: 30
+      color: "#cdd6f4"
+    }
+  }
+  xaxis: {
+    title: {
+      text: "X Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  yaxis: {
+    title: {
+      text: "Y Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  width: 1080
+  height: 810
+  plot_bgcolor: "#1e1e2e"
+  paper_bgcolor: "#1e1e2e"
+  font: {
+    family: "monospace"
+    color: "#cdd6f4"
+  }
+  showlegend: true
+  legend: {
+    font: {
+      family: "monospace"
+      size: 20
+      color: "#cdd6f4"
+    }
+    bgcolor: "#313244"
+    bordercolor: "#45475a"
+    borderwidth: 1
+    x: 1
+    xanchor: "right"
+    y: 1
+  }
+}
+
 # Generates catpuccin-themed plotly configuration files
 def beautiful [] {
   print "Run `beautiful --help` to see available commands."
@@ -82,76 +153,6 @@ def "beautiful scatter" []: [
   record -> record list<record> -> record
 ] {
   mut plotly = $plotlyTemplate
-  let plotlyTemplateLayout = {
-    title: {
-      text: "Scatter Plot"
-      x: 0.5
-      xanchor: "center"
-      font: {
-        family: "monospace"
-        size: 30
-        color: "#cdd6f4"
-      }
-    }
-    xaxis: {
-      title: {
-        text: "X Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    yaxis: {
-      title: {
-        text: "Y Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    width: 1080
-    height: 810
-    plot_bgcolor: "#1e1e2e"
-    paper_bgcolor: "#1e1e2e"
-    font: {
-      family: "monospace"
-      color: "#cdd6f4"
-    }
-    showlegend: true
-    legend: {
-      font: {
-        family: "monospace"
-        size: 20
-        color: "#cdd6f4"
-      }
-      bgcolor: "#313244"
-      bordercolor: "#45475a"
-      borderwidth: 1
-      x: 1
-      xanchor: "right"
-      y: 1
-    }
-  }
   $plotly.data = []
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
@@ -185,12 +186,17 @@ def "beautiful scatter add" [
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
-  mut data = {
+  let dataPointTemplate = {
     type: "scatter"
     mode: "markers"
     marker: {
       size: 10
-      color: $brightColor # Catppuccin Text for outline
+      color: "#a6e3a1" # Default color
+    }
+  }
+  mut data = $dataPointTemplate | merge deep {
+    marker: {
+      color: $brightColor
     }
   } | merge deep $data
   if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
