@@ -21,7 +21,7 @@ type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
 const program = new Command();
 
 async function generateAndShowPlotly(
-  plotConfig: any,
+  plotConfig: PlotlyBareConfig,
   width?: number,
   height?: number,
 ): Promise<void> {
@@ -97,7 +97,7 @@ program
     }
 
     try {
-      await generateAndShowPlotly(jsonConfig, width, height);
+      await generateAndShowPlotly(plotlyConfig, width, height);
     } catch (error) {
       console.error("Error generating plot:", error);
       process.exit(1);
