@@ -15,6 +15,148 @@ export const brightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
+export const scatterLayoutTemplate = {
+  title: {
+    text: "Scatter Plot"
+    x: 0.5
+    xanchor: "center"
+    font: {
+      family: "monospace"
+      size: 30
+      color: "#cdd6f4"
+    }
+  }
+  xaxis: {
+    title: {
+      text: "X Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  yaxis: {
+    title: {
+      text: "Y Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  width: 1080
+  height: 810
+  plot_bgcolor: "#1e1e2e"
+  paper_bgcolor: "#1e1e2e"
+  font: {
+    family: "monospace"
+    color: "#cdd6f4"
+  }
+  showlegend: true
+  legend: {
+    font: {
+      family: "monospace"
+      size: 20
+      color: "#cdd6f4"
+    }
+    bgcolor: "#313244"
+    bordercolor: "#45475a"
+    borderwidth: 1
+    x: 1
+    xanchor: "right"
+    y: 1
+  }
+}
+
+export const lineLayoutTemplate = {
+  title: {
+    text: "Line Plot"
+    x: 0.5
+    xanchor: "center"
+    font: {
+      family: "monospace"
+      size: 30
+      color: "#cdd6f4"
+    }
+  }
+  xaxis: {
+    title: {
+      text: "X Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  yaxis: {
+    title: {
+      text: "Y Axis"
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+    }
+    gridcolor: "#45475a"
+    linecolor: "#45475a"
+    ticks: "outside"
+    tickfont: {
+      family: "monospace"
+      size: 18
+      color: "#cdd6f4"
+    }
+  }
+  width: 1080
+  height: 810
+  plot_bgcolor: "#1e1e2e"
+  paper_bgcolor: "#1e1e2e"
+  font: {
+    family: "monospace"
+    color: "#cdd6f4"
+  }
+  showlegend: true
+  legend: {
+    font: {
+      family: "monospace"
+      size: 20
+      color: "#cdd6f4"
+    }
+    bgcolor: "#313244"
+    bordercolor: "#45475a"
+    borderwidth: 1
+    x: 1
+    xanchor: "right"
+    y: 1
+  }
+}
+
 export def "main" [] {
   print "Run `beautiful --help` to see available commands."
 }
@@ -53,79 +195,10 @@ export def "beautiful colorscale" [
 }
 
 export def "beautiful scatter" [
+  --layoutTemplate: record = $scatterLayoutTemplate
   --configTemplate: record = {
     responsive: false
     staticPlot: true
-  }
-  --layoutTemplate: record = {
-    title: {
-      text: "Scatter Plot"
-      x: 0.5
-      xanchor: "center"
-      font: {
-        family: "monospace"
-        size: 30
-        color: "#cdd6f4"
-      }
-    }
-    xaxis: {
-      title: {
-        text: "X Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    yaxis: {
-      title: {
-        text: "Y Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    width: 1080
-    height: 810
-    plot_bgcolor: "#1e1e2e"
-    paper_bgcolor: "#1e1e2e"
-    font: {
-      family: "monospace"
-      color: "#cdd6f4"
-    }
-    showlegend: true
-    legend: {
-      font: {
-        family: "monospace"
-        size: 20
-        color: "#cdd6f4"
-      }
-      bgcolor: "#313244"
-      bordercolor: "#45475a"
-      borderwidth: 1
-      x: 1
-      xanchor: "right"
-      y: 1
-    }
   }
 ]: [
   record -> record list<record> -> record
@@ -189,76 +262,7 @@ export def "beautiful lines" [
     responsive: false
     staticPlot: true
   }
-  --layoutTemplate: record = {
-    title: {
-      text: "Line Plot"
-      x: 0.5
-      xanchor: "center"
-      font: {
-        family: "monospace"
-        size: 30
-        color: "#cdd6f4"
-      }
-    }
-    xaxis: {
-      title: {
-        text: "X Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    yaxis: {
-      title: {
-        text: "Y Axis"
-        font: {
-          family: "monospace"
-          size: 20
-          color: "#cdd6f4"
-        }
-      }
-      gridcolor: "#45475a"
-      linecolor: "#45475a"
-      ticks: "outside"
-      tickfont: {
-        family: "monospace"
-        size: 18
-        color: "#cdd6f4"
-      }
-    }
-    width: 1080
-    height: 810
-    plot_bgcolor: "#1e1e2e"
-    paper_bgcolor: "#1e1e2e"
-    font: {
-      family: "monospace"
-      color: "#cdd6f4"
-    }
-    showlegend: true
-    legend: {
-      font: {
-        family: "monospace"
-        size: 20
-        color: "#cdd6f4"
-      }
-      bgcolor: "#313244"
-      bordercolor: "#45475a"
-      borderwidth: 1
-      x: 1
-      xanchor: "right"
-      y: 1
-    }
-  }
+  --layoutTemplate: record = $lineLayoutTemplate
 ]: [
   record -> record list<record> -> record
 ] {
