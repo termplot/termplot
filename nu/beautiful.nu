@@ -36,77 +36,6 @@ let beautifulDataPointScatterTemplate = {
   }
 }
 
-let BeautifulLayoutTemplate = {
-  title: {
-    text: "Scatter Plot"
-    x: 0.5
-    xanchor: "center"
-    font: {
-      family: "monospace"
-      size: 30
-      color: "#cdd6f4"
-    }
-  }
-  xaxis: {
-    title: {
-      text: "X Axis"
-      font: {
-        family: "monospace"
-        size: 20
-        color: "#cdd6f4"
-      }
-    }
-    gridcolor: "#45475a"
-    linecolor: "#45475a"
-    ticks: "outside"
-    tickfont: {
-      family: "monospace"
-      size: 18
-      color: "#cdd6f4"
-    }
-  }
-  yaxis: {
-    title: {
-      text: "Y Axis"
-      font: {
-        family: "monospace"
-        size: 20
-        color: "#cdd6f4"
-      }
-    }
-    gridcolor: "#45475a"
-    linecolor: "#45475a"
-    ticks: "outside"
-    tickfont: {
-      family: "monospace"
-      size: 18
-      color: "#cdd6f4"
-    }
-  }
-  width: 1080
-  height: 810
-  plot_bgcolor: "#1e1e2e"
-  paper_bgcolor: "#1e1e2e"
-  font: {
-    family: "monospace"
-    color: "#cdd6f4"
-  }
-  showlegend: true
-  legend: {
-    font: {
-      family: "monospace"
-      size: 20
-      color: "#cdd6f4"
-    }
-    bgcolor: "#313244"
-    bordercolor: "#45475a"
-    borderwidth: 1
-    x: 1
-    xanchor: "right"
-    y: 1
-  }
-}
-
 # Generates catpuccin-themed plotly configuration files
 def beautiful [] {
   print "Run `beautiful --help` to see available commands."
@@ -145,15 +74,90 @@ def "beautiful colorscale" [
   return $colorscale
 }
 
-# Generates a catpuccin-themed scatter plot using plotly
+# Generates a catpuccin-themed plot using plotly
 #
 # You can input a single plotly data record or a list of records. If you don't
 # input data, the config file will not contain any data. See the plotly
 # documentation for more information on how to configure the data record.
-def "beautiful scatter" []: [
+def "beautiful scatter" [
+  --layout: record = {
+    title: {
+      text: "Scatter Plot"
+      x: 0.5
+      xanchor: "center"
+      font: {
+        family: "monospace"
+        size: 30
+        color: "#cdd6f4"
+      }
+    }
+    xaxis: {
+      title: {
+        text: "X Axis"
+        font: {
+          family: "monospace"
+          size: 20
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "monospace"
+        size: 18
+        color: "#cdd6f4"
+      }
+    }
+    yaxis: {
+      title: {
+        text: "Y Axis"
+        font: {
+          family: "monospace"
+          size: 20
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "monospace"
+        size: 18
+        color: "#cdd6f4"
+      }
+    }
+    width: 1080
+    height: 810
+    plot_bgcolor: "#1e1e2e"
+    paper_bgcolor: "#1e1e2e"
+    font: {
+      family: "monospace"
+      color: "#cdd6f4"
+    }
+    showlegend: true
+    legend: {
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+      bgcolor: "#313244"
+      bordercolor: "#45475a"
+      borderwidth: 1
+      x: 1
+      xanchor: "right"
+      y: 1
+    }
+  }
+]: [
   record -> record list<record> -> record
 ] {
-  mut plotly = $beautifulPlotlyTemplate
+  mut plotly = {
+    data: []
+    layout: $layout
+    config: $beautifulConfigTemplate
+  }
   $plotly.data = []
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
@@ -169,7 +173,7 @@ def "beautiful scatter" []: [
   } else if ($input_data != null) {
     error make {msg: "Expected a record or a list of records, got $input_data"}
   }
-  $plotly.layout = $BeautifulLayoutTemplate
+  $plotly.layout = $layout
   $plotly.config = $beautifulConfigTemplate
   $plotly
 }
