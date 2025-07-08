@@ -1,15 +1,8 @@
-let beautifulPlotlyTemplate = {
-  data: []
-  layout: {}
-  config: {}
-}
-
 let beautifulConfigTemplate = {
   responsive: false
   staticPlot: true
 }
 
-# catpuccin bright color
 let beautifulBrightColors = [
   {name: "Green" hex: "#a6e3a1"}
   {name: "Teal" hex: "#94e2d5"}
@@ -27,12 +20,10 @@ let beautifulBrightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-# Generates catpuccin-themed plotly configuration files
 def beautiful [] {
   print "Run `beautiful --help` to see available commands."
 }
 
-# Generate a Catppuccin-themed colorscale for Plotly colorscales.
 def "beautiful colorscale" [
   count: int = 14 # Total number of colors in the colorscale (must be > 0)
 ]: [nothing -> list<list>] {
@@ -65,11 +56,6 @@ def "beautiful colorscale" [
   return $colorscale
 }
 
-# Generates a catpuccin-themed plot using plotly
-#
-# You can input a single plotly data record or a list of records. If you don't
-# input data, the config file will not contain any data. See the plotly
-# documentation for more information on how to configure the data record.
 def "beautiful scatter" [
   --layoutTemplate: record = {
     title: {
@@ -166,9 +152,6 @@ def "beautiful scatter" [
   $plotly
 }
 
-# Adds a catpuccin-themed scatter plot data record to the plotly template. See
-# the plotly documentation for more information on how to configure the data
-# record.
 def "beautiful scatter add" [
   data: record
   --dataPointsTemplate = {
