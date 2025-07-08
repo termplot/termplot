@@ -21,29 +21,30 @@ export def "main" [] {
 
 export def "beautiful colorscale" [
   count: int = 14 # Total number of colors in the colorscale (must be > 0)
+  --colors: list<record> = $brightColors # List of colors to use in the colorscale
 ]: [nothing -> list<list>] {
   # Validate input
   if $count <= 0 {
     error make {msg: "Count must be greater than 0"}
   }
 
-  let colorListLength = ($brightColors | length)
+  let colorListLength = ($colors | length)
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   mut colorscale = []
 
   # Handle the case of count == 1 separately
   if $count == 1 {
-    let color = $brightColors | get 0 | get hex
+    let color = $colors | get 0 | get hex
     $colorscale = [[0.0 $color] [1.0 $color]]
   } else {
     # Calculate step size for normalized values (0 to 1)
     let step = 1.0 / ($count - 1.0)
 
-    # Generate the colorscale by cycling through brightColors with a larger step
+    # Generate the colorscale by cycling through colors with a larger step
     for $i in 0..($count - 1) {
       let value = ($i * $step)
       let colorIndex = (($i * $stepSize) mod $colorListLength)
-      let color = $brightColors | get $colorIndex | get hex
+      let color = $colors | get $colorIndex | get hex
       $colorscale = $colorscale | append [[$value $color]]
     }
   }
