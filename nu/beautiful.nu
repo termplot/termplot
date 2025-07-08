@@ -27,15 +27,6 @@ let beautifulBrightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-let beautifulDataPointScatterTemplate = {
-  type: "scatter"
-  mode: "markers"
-  marker: {
-    size: 10
-    color: "#a6e3a1" # Default color
-  }
-}
-
 # Generates catpuccin-themed plotly configuration files
 def beautiful [] {
   print "Run `beautiful --help` to see available commands."
@@ -80,7 +71,7 @@ def "beautiful colorscale" [
 # input data, the config file will not contain any data. See the plotly
 # documentation for more information on how to configure the data record.
 def "beautiful scatter" [
-  --layout: record = {
+  --layoutTemplate: record = {
     title: {
       text: "Scatter Plot"
       x: 0.5
@@ -155,10 +146,9 @@ def "beautiful scatter" [
 ] {
   mut plotly = {
     data: []
-    layout: $layout
+    layout: $layoutTemplate
     config: $beautifulConfigTemplate
   }
-  $plotly.data = []
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
     for $data in $input_data {
@@ -173,8 +163,6 @@ def "beautiful scatter" [
   } else if ($input_data != null) {
     error make {msg: "Expected a record or a list of records, got $input_data"}
   }
-  $plotly.layout = $layout
-  $plotly.config = $beautifulConfigTemplate
   $plotly
 }
 
@@ -183,6 +171,14 @@ def "beautiful scatter" [
 # record.
 def "beautiful scatter add" [
   data: record
+  --dataPointsTemplate = {
+    type: "scatter"
+    mode: "markers"
+    marker: {
+      size: 10
+      color: "#a6e3a1" # Default color
+    }
+  }
 ]: [record -> record] {
   mut plotly = $in
   if $plotly.data == null {
@@ -191,7 +187,7 @@ def "beautiful scatter add" [
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   let brightColor = $beautifulBrightColors | get (($dataLen * $stepSize) mod ($beautifulBrightColors | length)) | get "hex"
-  mut data = $beautifulDataPointScatterTemplate | merge deep {
+  mut data = $dataPointsTemplate | merge deep {
     marker: {
       color: $brightColor
     }
