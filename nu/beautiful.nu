@@ -1,4 +1,4 @@
-export const beautifulBrightColors = [
+export const brightColors = [
   {name: "Green" hex: "#a6e3a1"}
   {name: "Teal" hex: "#94e2d5"}
   {name: "Sky" hex: "#89dceb"}
@@ -27,13 +27,13 @@ export def "beautiful colorscale" [
     error make {msg: "Count must be greater than 0"}
   }
 
-  let colorListLength = ($beautifulBrightColors | length)
+  let colorListLength = ($brightColors | length)
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   mut colorscale = []
 
   # Handle the case of count == 1 separately
   if $count == 1 {
-    let color = $beautifulBrightColors | get 0 | get hex
+    let color = $brightColors | get 0 | get hex
     $colorscale = [[0.0 $color] [1.0 $color]]
   } else {
     # Calculate step size for normalized values (0 to 1)
@@ -43,7 +43,7 @@ export def "beautiful colorscale" [
     for $i in 0..($count - 1) {
       let value = ($i * $step)
       let colorIndex = (($i * $stepSize) mod $colorListLength)
-      let color = $beautifulBrightColors | get $colorIndex | get hex
+      let color = $brightColors | get $colorIndex | get hex
       $colorscale = $colorscale | append [[$value $color]]
     }
   }
@@ -167,7 +167,7 @@ export def "beautiful scatter add" [
   }
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
-  let brightColor = $beautifulBrightColors | get (($dataLen * $stepSize) mod ($beautifulBrightColors | length)) | get "hex"
+  let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
   mut data = $dataPointsTemplate | merge deep {
     marker: {
       color: $brightColor
@@ -298,7 +298,7 @@ export def "beautiful lines add" [
   }
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
-  let brightColor = $beautifulBrightColors | get (($dataLen * $stepSize) mod ($beautifulBrightColors | length)) | get "hex"
+  let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
   mut data = $dataPointsTemplate | merge deep {
     marker: {
       color: $brightColor
