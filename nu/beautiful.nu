@@ -195,11 +195,11 @@ export def "beautiful colorscale" [
 }
 
 export def "beautiful scatter" [
-  --layoutTemplate: record = $scatterLayoutTemplate
   --configTemplate: record = {
     responsive: false
     staticPlot: true
   }
+  --layoutTemplate: record = $scatterLayoutTemplate
 ]: [
   record -> record list<record> -> record
 ] {
