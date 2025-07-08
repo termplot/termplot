@@ -52,6 +52,10 @@ export def "beautiful colorscale" [
 }
 
 export def "beautiful scatter" [
+  --configTemplate: record = {
+    responsive: false
+    staticPlot: true
+  }
   --layoutTemplate: record = {
     title: {
       text: "Scatter Plot"
@@ -128,10 +132,7 @@ export def "beautiful scatter" [
   mut plotly = {
     data: []
     layout: $layoutTemplate
-    config: {
-      responsive: false
-      staticPlot: true
-    }
+    config: $configTemplate
   }
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
@@ -152,7 +153,7 @@ export def "beautiful scatter" [
 
 export def "beautiful scatter add" [
   data: record
-  --dataPointsTemplate = {
+  --dataTemplate = {
     type: "scatter"
     mode: "markers"
     marker: {
@@ -168,7 +169,7 @@ export def "beautiful scatter add" [
   let dataLen = $plotly.data | length
   let stepSize = 5 # Step size for cycling through colors to increase contrast
   let brightColor = $brightColors | get (($dataLen * $stepSize) mod ($brightColors | length)) | get "hex"
-  mut data = $dataPointsTemplate | merge deep {
+  mut data = $dataTemplate | merge deep {
     marker: {
       color: $brightColor
     }
@@ -183,6 +184,10 @@ export def "beautiful scatter add" [
 }
 
 export def "beautiful lines" [
+  --configTemplate: record = {
+    responsive: false
+    staticPlot: true
+  }
   --layoutTemplate: record = {
     title: {
       text: "Line Plot"
@@ -259,10 +264,7 @@ export def "beautiful lines" [
   mut plotly = {
     data: []
     layout: $layoutTemplate
-    config: {
-      responsive: false
-      staticPlot: true
-    }
+    config: $configTemplate
   }
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
