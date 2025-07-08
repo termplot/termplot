@@ -181,3 +181,134 @@ def "beautiful scatter add" [
   $plotly.data = $plotly.data | append $data
   $plotly
 }
+
+def "beautiful lines" [
+  --layoutTemplate: record = {
+    title: {
+      text: "Line Plot"
+      x: 0.5
+      xanchor: "center"
+      font: {
+        family: "monospace"
+        size: 30
+        color: "#cdd6f4"
+      }
+    }
+    xaxis: {
+      title: {
+        text: "X Axis"
+        font: {
+          family: "monospace"
+          size: 20
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "monospace"
+        size: 18
+        color: "#cdd6f4"
+      }
+    }
+    yaxis: {
+      title: {
+        text: "Y Axis"
+        font: {
+          family: "monospace"
+          size: 20
+          color: "#cdd6f4"
+        }
+      }
+      gridcolor: "#45475a"
+      linecolor: "#45475a"
+      ticks: "outside"
+      tickfont: {
+        family: "monospace"
+        size: 18
+        color: "#cdd6f4"
+      }
+    }
+    width: 1080
+    height: 810
+    plot_bgcolor: "#1e1e2e"
+    paper_bgcolor: "#1e1e2e"
+    font: {
+      family: "monospace"
+      color: "#cdd6f4"
+    }
+    showlegend: true
+    legend: {
+      font: {
+        family: "monospace"
+        size: 20
+        color: "#cdd6f4"
+      }
+      bgcolor: "#313244"
+      bordercolor: "#45475a"
+      borderwidth: 1
+      x: 1
+      xanchor: "right"
+      y: 1
+    }
+  }
+]: [
+  record -> record list<record> -> record
+] {
+  mut plotly = {
+    data: []
+    layout: $layoutTemplate
+    config: {
+      responsive: false
+      staticPlot: true
+    }
+  }
+  let input_data = $in
+  if (($input_data | describe -d | get type) == "list") {
+    for $data in $input_data {
+      if ($data | describe -d | get type) == "record" {
+        $plotly = $plotly | beautiful lines add $data
+      } else {
+        error make {msg: "Expected a list of records, got $data"}
+      }
+    }
+  } else if ($input_data | describe -d | get type) == "record" {
+    $plotly = $plotly | beautiful lines add $input_data
+  } else if ($input_data != null) {
+    error make {msg: "Expected a record or a list of records, got $input_data"}
+  }
+  $plotly
+}
+
+def "beautiful lines add" [
+  data: record
+  --dataPointsTemplate = {
+    type: "scatter"
+    mode: "lines"
+    marker: {
+      size: 10
+      color: "#a6e3a1" # Default color
+    }
+  }
+]: [record -> record] {
+  mut plotly = $in
+  if $plotly.data == null {
+    $plotly = $in | merge deep {data: []}
+  }
+  let dataLen = $plotly.data | length
+  let stepSize = 5 # Step size for cycling through colors to increase contrast
+  let brightColor = $beautifulBrightColors | get (($dataLen * $stepSize) mod ($beautifulBrightColors | length)) | get "hex"
+  mut data = $dataPointsTemplate | merge deep {
+    marker: {
+      color: $brightColor
+    }
+  } | merge deep $data
+  if ((not ('colorscale' in $data.marker)) and ($data.marker.color | describe -d | get type) == "list") {
+    let min = ($data.marker.color | math min | into float)
+    let max = ($data.marker.color | math max | into float)
+    $data.marker.colorscale = beautiful colorscale 14
+  }
+  $plotly.data = $plotly.data | append $data
+  $plotly
+}
