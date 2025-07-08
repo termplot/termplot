@@ -1,8 +1,3 @@
-let beautifulConfigTemplate = {
-  responsive: false
-  staticPlot: true
-}
-
 let beautifulBrightColors = [
   {name: "Green" hex: "#a6e3a1"}
   {name: "Teal" hex: "#94e2d5"}
@@ -133,7 +128,10 @@ def "beautiful scatter" [
   mut plotly = {
     data: []
     layout: $layoutTemplate
-    config: $beautifulConfigTemplate
+    config: {
+      responsive: false
+      staticPlot: true
+    }
   }
   let input_data = $in
   if (($input_data | describe -d | get type) == "list") {
