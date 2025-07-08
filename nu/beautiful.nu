@@ -1,4 +1,4 @@
-let beautifulBrightColors = [
+export const beautifulBrightColors = [
   {name: "Green" hex: "#a6e3a1"}
   {name: "Teal" hex: "#94e2d5"}
   {name: "Sky" hex: "#89dceb"}
@@ -15,11 +15,11 @@ let beautifulBrightColors = [
   {name: "Yellow" hex: "#f9e2af"}
 ]
 
-def beautiful [] {
+export def "main" [] {
   print "Run `beautiful --help` to see available commands."
 }
 
-def "beautiful colorscale" [
+export def "beautiful colorscale" [
   count: int = 14 # Total number of colors in the colorscale (must be > 0)
 ]: [nothing -> list<list>] {
   # Validate input
@@ -51,7 +51,7 @@ def "beautiful colorscale" [
   return $colorscale
 }
 
-def "beautiful scatter" [
+export def "beautiful scatter" [
   --layoutTemplate: record = {
     title: {
       text: "Scatter Plot"
@@ -150,7 +150,7 @@ def "beautiful scatter" [
   $plotly
 }
 
-def "beautiful scatter add" [
+export def "beautiful scatter add" [
   data: record
   --dataPointsTemplate = {
     type: "scatter"
@@ -182,7 +182,7 @@ def "beautiful scatter add" [
   $plotly
 }
 
-def "beautiful lines" [
+export def "beautiful lines" [
   --layoutTemplate: record = {
     title: {
       text: "Line Plot"
@@ -281,7 +281,7 @@ def "beautiful lines" [
   $plotly
 }
 
-def "beautiful lines add" [
+export def "beautiful lines add" [
   data: record
   --dataPointsTemplate = {
     type: "scatter"
