@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import * as process from "node:process";
 import zod from "zod/v4";
 
 const NUSHELL_VERSION = "0.105.1";
@@ -205,7 +206,7 @@ function handleInput(input: any): void {
   if (typeof input === "object" && input !== null) {
     if ("Hello" in input) {
       if (input.Hello.version !== NUSHELL_VERSION) {
-        globalThis.process.exit(1);
+        process.exit(1);
       } else {
         return;
       }
@@ -232,13 +233,13 @@ function handleInput(input: any): void {
       }
     } else {
       console.error("Unknown message: " + JSON.stringify(input));
-      globalThis.process.exit(1);
+      process.exit(1);
     }
   } else if (input === "Goodbye") {
-    globalThis.process.exit(0);
+    process.exit(0);
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
-    globalThis.process.exit(1);
+    process.exit(1);
   }
 }
 
@@ -247,9 +248,9 @@ function plugin(): void {
   tellNushellHello();
 
   let buffer = "";
-  globalThis.process.stdin.setEncoding("utf-8"); // Treat input as strings
+  process.stdin.setEncoding("utf-8"); // Treat input as strings
 
-  globalThis.process.stdin.on("data", (chunk: string) => {
+  process.stdin.on("data", (chunk: string) => {
     buffer += chunk;
     const lines = buffer.split("\n");
     buffer = lines.pop() || ""; // Retain incomplete line for next chunk
@@ -261,14 +262,14 @@ function plugin(): void {
           handleInput(input);
         } catch (err) {
           console.error("Error parsing input: " + err);
-          globalThis.process.exit(1);
+          process.exit(1);
         }
       }
     });
   });
 
-  globalThis.process.stdin.on("end", () => {
-    globalThis.process.exit(0);
+  process.stdin.on("end", () => {
+    process.exit(0);
   });
 }
 
