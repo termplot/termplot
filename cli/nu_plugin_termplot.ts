@@ -64,20 +64,58 @@ async function closeBrowser(): Promise<void> {
   }
 }
 
+// Helper to query terminal for cursor position (returns {row, col})
+function queryCursorPosition(): Promise<{ row: number; col: number }> {
+  return new Promise((resolve, reject) => {
+    process.stdout.write('\x1b[6n');  // CSI 6n: Report cursor position
+
+    const listener = (data: string) => {
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
+      const match = data.match(/\x1b\[(\d+);(\d+)R/);
+      if (match) {
+        process.stdin.removeListener('data', listener);
+        resolve({ row: parseInt(match[1], 10), col: parseInt(match[2], 10) });
+      }
+    };
+
+    process.stdin.on('data', listener);
+    setTimeout(() => reject(new Error('Cursor query timeout')), 500);  // Safety timeout
+  });
+}
+
+// Helper to query terminal window size (returns {rows, cols})
+function queryTerminalSize(): Promise<{ rows: number; cols: number }> {
+  return new Promise((resolve, reject) => {
+    process.stdout.write('\x1b[14t');  // CSI 14t: Report window size in pixels (some terminals support)
+
+    const listener = (data: string) => {
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
+      const match = data.match(/\x1b\[4;(\d+);(\d+)t/);  // Height;Width
+      if (match) {
+        process.stdin.removeListener('data', listener);
+        resolve({ rows: parseInt(match[1], 10), cols: parseInt(match[2], 10) });
+      }
+    };
+
+    process.stdin.on('data', listener);
+    setTimeout(() => reject(new Error('Size query timeout')), 500);
+  });
+}
+
 // ─── Function used by the Run call ────────────────────────────────────────────
 async function generateAndShowPlotly(
   id: number,
   span: any,
   plotConfig: PlotlyBareConfig,
-  width?: number,
-  height?: number,
+  width: number = 1080,
+  height: number = 810,
 ): Promise<void> {
   try {
     // Persistent browser (lazily created)
     const { browser, page } = await getBrowser();
 
     // New page for every call
-    await page.setViewport({ width: width || 1080, height: height || 810 });
+    await page.setViewport({ width: width, height: height });
 
     const plotId = plotlyDb.addPlot(plotConfig);
 
@@ -93,13 +131,32 @@ async function generateAndShowPlotly(
     // Clean up per-call resources
     // await page.close();
 
+    let imageString = ""
+    // Generate the image string
+
+    // Append cursor reset: Move to next line and ensure separation
+    // This prevents overwrites in multi-output scenarios
+    // imageString += ansiescapes.cursorNextLine; // Moves cursor to start of next line
+    // imageString += ansiescapes.cursorDown(500); // Adds one extra line of padding (adjust as needed)
+    // imageString += ansiescapes.cursorTo(0); // Reset to column 0
+    // imageString += ansiescapes.cursorDown(500); // Add padding (experiment with value)
+    // imageString += ansiescapes.image(imageBuffer, {width: `80`, height: `40`, preserveAspectRatio: false});
+    // imageString += ansiescapes.enterAlternativeScreen
+    imageString += ansiescapes.image(imageBuffer);
+    // imageString += ansiescapes.cursorNextLine; // Moves cursor to start of next line
+    // imageString += ansiescapes.cursorDown(500); // Adds one extra line of padding (adjust as needed)
+    // imageString += ansiescapes.cursorTo(0); // Reset to column 0
+    // imageString += ansiescapes.cursorDown(500); // Add padding (experiment with value)
+    // imageString += "\n".repeat(40);
+    // imageString += ansiescapes.exitAlternativeScreen; // Exit alternative screen mode
+
     // Send the image back to Nushell
     const response = {
       PipelineData: {
         Value: [
           {
             String: {
-              val: ansiescapes.image(imageBuffer, {}),
+              val: imageString,
               span,
             },
           },
