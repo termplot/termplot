@@ -210,9 +210,6 @@ function handleInput(input: any): void {
       } else {
         return;
       }
-    } else if ("Signal" in input && input.Signal === "Reset") {
-      // do nothing for now
-      // TODO: Add cleanup
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
       if (pluginCall === "Metadata") {
