@@ -95,8 +95,8 @@ async function generateAndShowPlotly(
 
     let imageString = "";
 
-    imageString += ansiescapes.image(imageBuffer);
-    imageString += ansiescapes.cursorDown(500); // Adds one extra line of padding (adjust as needed)
+    // imageString += ansiescapes.image(imageBuffer);
+    // imageString += ansiescapes.cursorDown(500); // Adds one extra line of padding (adjust as needed)
     // Convert to binary Buffer, then to array of bytes
     // const binaryBuffer = Buffer.from(imageString, 'utf8');
     // const binaryArray = Array.from(binaryBuffer);  // [27, 91, ...] style array
@@ -104,12 +104,15 @@ async function generateAndShowPlotly(
     // Send the image back to Nushell
     const response = {
       PipelineData: {
-        Value: {
-          String: {
-            val: imageString,
-            span,
+        Value: [
+          {
+            Binary: {
+              val: Array.from(Buffer.from(imageBuffer)), // Use the binary array directly
+              span,
+            },
           },
-        },
+          null,
+        ],
       },
     };
 
@@ -229,7 +232,7 @@ function signatures(): { Signature: PluginSignature[] } {
           optional_positional: [],
           rest_positional: null, // Set to null since no rest args are needed
           named: [],
-          input_output_types: [["Any", "String"]],
+          input_output_types: [["Any", "Any"]],
           allow_variants_without_examples: true,
           search_terms: ["JSON", "Convert"],
           is_filter: true, // Set to true for pipeline processing
