@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as process from "node:process";
 import ansiescapes from "ansi-escapes";
-import puppeteer from "puppeteer";
+// import puppeteer from "puppeteer";
 import zod from "zod/v4";
 import { plotlyDb } from "./plotly-db.js";
 import { PORT, server } from "./server.js";
@@ -26,6 +26,7 @@ async function generateAndShowPlotly(
   height?: number,
 ): Promise<void> {
   try {
+    const puppeteer = await import("puppeteer");
     // Launch a headless browser
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
