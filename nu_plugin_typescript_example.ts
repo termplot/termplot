@@ -216,6 +216,10 @@ function handleInput(input: any): void {
       } else {
         return;
       }
+    } else if ("Signal" in input && input.Signal === "Reset") {
+      // Handle Reset signal: No-op or reset state if needed
+      // console.error("Received Reset signal - resetting state (no-op for now)");
+      return; // Or perform any reset logic here
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
       if (pluginCall === "Metadata") {
@@ -247,8 +251,8 @@ function plugin(): void {
 
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout,
-    terminal: false,
+    terminal: false, // Explicitly disable terminal mode
+    // No output stream - this prevents TTY raw mode issues
   });
 
   rl.on('line', (line) => {
