@@ -223,7 +223,8 @@ function handleInput(input: any): void {
       // process.exit(0);
       // process.stdout.write(JSON.stringify({ Reset: true }) + "\n");
       // process.stdout.resume(); // Ensure output is flushed
-      process.stdout.write("something\n");
+      // process.stdout.write("something\n");
+      process.stdout.write(JSON.stringify({}) + "\n"); // Empty object or {"Ack": "Reset"}
       return;
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
