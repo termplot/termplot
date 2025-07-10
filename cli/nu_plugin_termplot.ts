@@ -150,7 +150,7 @@ function signatures(): { Signature: PluginSignature[] } {
           optional_positional: [],
           rest_positional: null, // Set to null since no rest args are needed
           named: [],
-          input_output_types: [["Any", "String"]],
+          input_output_types: [["Any", "Any"]],
           allow_variants_without_examples: true,
           search_terms: ["JSON", "Convert"],
           is_filter: true, // Set to true for pipeline processing
@@ -164,7 +164,7 @@ function signatures(): { Signature: PluginSignature[] } {
   };
 }
 
-function processCall(id: number, pluginCall: any): void {
+async function processCall(id: number, pluginCall: any): Promise<void> {
   // Pretty printing the call to stderr
   console.error(JSON.stringify(pluginCall, null, 4));
 
@@ -187,24 +187,28 @@ function processCall(id: number, pluginCall: any): void {
     const parsedValue = NushellValueSchema.parse(nushellValue);
 
     // Convert to plain JSON object
-    const jsonObj = convertNushellToJson(parsedValue);
+    const jsonConfig = convertNushellToJson(parsedValue);
 
-    // Stringify to JSON string
-    const jsonString = JSON.stringify(jsonObj);
+    let plotlyConfig: PlotlyBareConfig | undefined;
+    try {
+      plotlyConfig = plotlyBareConfigSchema.parse(jsonConfig);
+    } catch (error) {
+      writeError(id, `Invalid Plotly configuration: ${error.message}`, span);
+      return;
+      // console.error("Invalid Plotly configuration:", error);
+      // process.exit(1);
+    }
 
-    const value = {
-      Value: [
-        {
-          String: {
-            val: jsonString,
-            span,
-          },
-        },
-        null,
-      ],
-    };
+    const width = plotlyConfig.layout?.width || 1080;
+    const height = plotlyConfig.layout?.height || 810;
 
-    writeResponse(id, { PipelineData: value });
+    try {
+      await generateAndShowPlotly(plotlyConfig, width, height);
+    } catch (error) {
+      writeError(id, `Error generating plot: ${error.message}`, span);
+      // console.error("Error generating plot:", error);
+      // process.exit(1);
+    }
   } catch (err) {
     writeError(id, `Error processing input: ${err.message}`, span);
   }
