@@ -34,13 +34,13 @@ async function getBrowser(): Promise<{
 
   if (!browser) {
     browser = await puppeteerModule.launch();
-    console.error("Termplot: headless browser launched");
+    // console.error("Termplot: headless browser launched");
   }
 
   // const page = await browser.newPage();
   if (!page) {
     page = await browser.newPage();
-    console.error("Termplot: new page created");
+    // console.error("Termplot: new page created");
   }
 
   return { browser, page };
@@ -48,15 +48,19 @@ async function getBrowser(): Promise<{
 
 // Call this from your Goodbye / shutdown logic
 async function closeBrowser(): Promise<void> {
-  if (browser) {
-    await browser.close();
-    browser = null;
-    // console.error("Termplot: headless browser closed");
-  }
-  if (page) {
-    await page.close();
-    page = null;
-    // console.error("Termplot: page closed");
+  try {
+    if (browser) {
+      await browser.close();
+      browser = null;
+      // console.error("Termplot: headless browser closed");
+    }
+    if (page) {
+      await page.close();
+      page = null;
+      // console.error("Termplot: page closed");
+    }
+  } catch (error) {
+    // suppress errors on close
   }
 }
 
@@ -81,8 +85,8 @@ async function generateAndShowPlotly(
       // waitUntil: "networkidle2",
     });
 
-    // 50ms timeout
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // 20ms timeout to allow the page to render
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
     const imageBuffer = await page.screenshot({ fullPage: true });
 
