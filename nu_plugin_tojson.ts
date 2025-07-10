@@ -176,7 +176,7 @@ function tellNushellHello(): void {
       features: [],
     },
   };
-  console.log(JSON.stringify(hello));
+  process.stdout.write(JSON.stringify(hello) + "\n");
   process.stdout.resume();
 }
 
@@ -184,7 +184,7 @@ function writeResponse(id: number, response: any): void {
   const wrappedResponse = {
     CallResponse: [id, response],
   };
-  console.log(JSON.stringify(wrappedResponse));
+  process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
   process.stdout.resume();
 }
 
@@ -224,7 +224,7 @@ function handleInput(input: any): void {
       // console.log(JSON.stringify({ Reset: true }));
       // process.stdout.resume(); // Ensure output is flushed
       // console.log("something\n");
-      console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
+      process.stdout.write(JSON.stringify({}) + "\n"); // Empty object or {"Ack": "Reset"}
       return;
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
