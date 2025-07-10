@@ -176,7 +176,7 @@ function tellNushellHello(): void {
       features: [],
     },
   };
-  process.stdout.write(JSON.stringify(hello) + "\n");
+  console.log(JSON.stringify(hello));
   process.stdout.resume();
 }
 
@@ -184,7 +184,7 @@ function writeResponse(id: number, response: any): void {
   const wrappedResponse = {
     CallResponse: [id, response],
   };
-  process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
+  console.log(JSON.stringify(wrappedResponse));
   process.stdout.resume();
 }
 
@@ -221,10 +221,10 @@ function handleInput(input: any): void {
     } else if ("Signal" in input && input.Signal === "Reset") {
       // Cleanly exit on Reset signal (no logging, success code)
       // process.exit(0);
-      // process.stdout.write(JSON.stringify({ Reset: true }) + "\n");
+      // console.log(JSON.stringify({ Reset: true }));
       // process.stdout.resume(); // Ensure output is flushed
-      // process.stdout.write("something\n");
-      process.stdout.write(JSON.stringify({}) + "\n"); // Empty object or {"Ack": "Reset"}
+      // console.log("something\n");
+      console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
       return;
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
@@ -249,7 +249,7 @@ function handleInput(input: any): void {
       process.exit(1);
     }
   } else if (input === "Goodbye") {
-    // process.stdout.write(JSON.stringify({ Goodbye: true }) + "\n");
+    // console.log(JSON.stringify({ Goodbye: true }));
     process.exit(0);
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
