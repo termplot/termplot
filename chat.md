@@ -6981,4 +6981,12 @@ logs. Great job spotting the workaround!
 
 # === USER ===
 
+are these two lines equivalent?
 
+```typescript
+process.stdout.write(JSON.stringify({}) + "\n"); // Empty object or {"Ack": "Reset"}
+```
+
+```typescript
+console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
+```
