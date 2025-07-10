@@ -225,7 +225,7 @@ function signatures(): { Signature: PluginSignature[] } {
     Signature: [
       {
         sig: {
-          name: "termplot",
+          name: "termplot render",
           description: "Beautiful plots in your terminal",
           extra_description: "",
           required_positional: [],
