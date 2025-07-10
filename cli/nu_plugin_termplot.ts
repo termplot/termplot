@@ -166,7 +166,7 @@ function signatures(): { Signature: PluginSignature[] } {
 
 async function processCall(id: number, pluginCall: any): Promise<void> {
   // Pretty printing the call to stderr
-  console.error(JSON.stringify(pluginCall, null, 4));
+  // console.error(JSON.stringify(pluginCall, null, 4));
 
   // Get the span from the call
   const span = pluginCall.call.head;
@@ -193,7 +193,9 @@ async function processCall(id: number, pluginCall: any): Promise<void> {
     try {
       plotlyConfig = plotlyBareConfigSchema.parse(jsonConfig);
     } catch (error) {
-      writeError(id, `Invalid Plotly configuration: ${error.message}`, span);
+      if (error instanceof Error) {
+        writeError(id, `Invalid Plotly configuration: ${error.message}`, span);
+      }
       return;
       // console.error("Invalid Plotly configuration:", error);
       // process.exit(1);
@@ -205,12 +207,16 @@ async function processCall(id: number, pluginCall: any): Promise<void> {
     try {
       await generateAndShowPlotly(plotlyConfig, width, height);
     } catch (error) {
-      writeError(id, `Error generating plot: ${error.message}`, span);
+      if (error instanceof Error) {
+        writeError(id, `Error generating plot: ${error.message}`, span);
+      }
       // console.error("Error generating plot:", error);
       // process.exit(1);
     }
   } catch (err) {
-    writeError(id, `Error processing input: ${err.message}`, span);
+    if (err instanceof Error) {
+      writeError(id, `Error processing input: ${err.message}`, span);
+    }
   }
 }
 
