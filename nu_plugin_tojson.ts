@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import * as process from "node:process";
 import zod from "zod/v4";
 
 const NUSHELL_VERSION = "0.105.1";
@@ -12,7 +11,7 @@ type PluginSignature = {
     extra_description: string;
     required_positional: Array<{ name: string; desc: string; shape: string }>;
     optional_positional: Array<{ name: string; desc: string; shape: string }>;
-    rest_positional: { name: string; desc: string; shape: string };
+    rest_positional: { name: string; desc: string; shape: string } | null;
     named: Array<{
       long: string;
       short: string;
@@ -89,16 +88,12 @@ function signatures(): { Signature: PluginSignature[] } {
           extra_description: "",
           required_positional: [],
           optional_positional: [],
-          rest_positional: {
-            name: "rest",
-            desc: "rest value string",
-            shape: "String",
-          },
+          rest_positional: null, // Set to null since no rest args are needed
           named: [],
-          input_output_types: [["Record", "String"]],
+          input_output_types: [["Any", "String"]],
           allow_variants_without_examples: true,
-          search_terms: ["TypeScript", "Example"],
-          is_filter: false,
+          search_terms: ["JSON", "Convert"],
+          is_filter: true, // Set to true for pipeline processing
           creates_scope: false,
           allows_unknown_args: false,
           category: "Experimental",
@@ -116,47 +111,52 @@ function processCall(id: number, pluginCall: any): void {
   // Get the span from the call
   const span = pluginCall.call.head;
 
-  // Extract the pipeline input (assuming it's PipelineData with a Value)
-  const pipelineData = pluginCall.input;
+  try {
+    // Extract the pipeline input (assuming it's PipelineData with a Value)
+    const pipelineData = pluginCall.input;
 
-  if (!pipelineData || !("Value" in pipelineData) || !pipelineData.Value[0]) {
-    throw new Error("No valid pipeline data received");
-  }
+    if (!pipelineData || !("Value" in pipelineData) || !pipelineData.Value[0]) {
+      writeError(id, "No valid pipeline data received", span);
+      return;
+    }
 
-  // The actual Nushell value is in pipelineData.Value[0] (assuming single value; adjust if multiple)
-  const nushellValue = pipelineData.Value[0];
+    // The actual Nushell value is in pipelineData.Value[0] (assuming single value; adjust if multiple)
+    const nushellValue = pipelineData.Value[0];
 
-  // Validate and parse using Zod
-  const parsedValue = NushellValueSchema.parse(nushellValue);
+    // Validate and parse using Zod
+    const parsedValue = NushellValueSchema.parse(nushellValue);
 
-  // Convert to plain JSON object
-  const jsonObj = convertNushellToJson(parsedValue);
+    // Convert to plain JSON object
+    const jsonObj = convertNushellToJson(parsedValue);
 
-  // Stringify to JSON string
-  const jsonString = JSON.stringify(jsonObj);
+    // Stringify to JSON string
+    const jsonString = JSON.stringify(jsonObj);
 
-  const value = {
-    Value: [
-      {
-        String: {
-          val: jsonString,
-          span,
+    const value = {
+      Value: [
+        {
+          String: {
+            val: jsonString,
+            span,
+          },
         },
-      },
-      null,
-    ],
-  };
+        null,
+      ],
+    };
 
-  writeResponse(id, { PipelineData: value });
+    writeResponse(id, { PipelineData: value });
+  } catch (err) {
+    writeError(id, `Error processing input: ${err.message}`, span);
+  }
 }
 
 function tellNushellEncoding(): void {
-  process.stdout.write(String.fromCharCode(4));
+  globalThis.process.stdout.write(String.fromCharCode(4));
   for (const ch of "json") {
-    process.stdout.write(String.fromCharCode(ch.charCodeAt(0)));
+    globalThis.process.stdout.write(String.fromCharCode(ch.charCodeAt(0)));
   }
-  process.stdout.write("\n");
-  process.stdout.resume(); // Ensure output is flushed
+  globalThis.process.stdout.write("\n");
+  globalThis.process.stdout.resume(); // Ensure output is flushed
 }
 
 function tellNushellHello(): void {
@@ -167,16 +167,16 @@ function tellNushellHello(): void {
       features: [],
     },
   };
-  process.stdout.write(JSON.stringify(hello) + "\n");
-  process.stdout.resume();
+  globalThis.process.stdout.write(JSON.stringify(hello) + "\n");
+  globalThis.process.stdout.resume();
 }
 
 function writeResponse(id: number, response: any): void {
   const wrappedResponse = {
     CallResponse: [id, response],
   };
-  process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
-  process.stdout.resume();
+  globalThis.process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
+  globalThis.process.stdout.resume();
 }
 
 function writeError(id: number, text: string, span?: any): void {
@@ -272,7 +272,7 @@ function plugin(): void {
   });
 }
 
-if (process.argv.length === 3 && process.argv[2] === "--stdio") {
+if (globalThis.process.argv.length === 3 && globalThis.process.argv[2] === "--stdio") {
   plugin();
 } else {
   console.log("Run me from inside nushell!");
