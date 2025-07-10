@@ -1,6 +1,57 @@
 #!/usr/bin/env node
 import * as process from "node:process";
+import ansiescapes from "ansi-escapes";
+import puppeteer from "puppeteer";
 import zod from "zod/v4";
+import { plotlyDb } from "./plotly-db.js";
+import { PORT, server } from "./server.js";
+
+// Define the Plotly configuration schema using Zod
+const plotlyBareConfigSchema = zod.object({
+  data: zod.array(zod.any()), // Array of data traces, each can be any valid Plotly trace type
+  layout: zod.looseObject({
+    width: zod.number().optional(), // Optional width for the layout
+    height: zod.number().optional(), // Optional height for the layout
+  }),
+  config: zod.object().optional(), // Optional configuration object for Plotly
+});
+
+type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
+
+async function generateAndShowPlotly(
+  plotConfig: PlotlyBareConfig,
+  width?: number,
+  height?: number,
+): Promise<void> {
+  try {
+    // Launch a headless browser
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.setViewport({ width: width || 1080, height: height || 810 });
+
+    const id = plotlyDb.addPlot(plotConfig);
+
+    // Navigate to the local web server hosting the plot
+    await page.goto(`http://localhost:${PORT}/plotly/${id}`, {
+      waitUntil: "networkidle2",
+    });
+
+    // Take a screenshot
+    const imageBuffer = await page.screenshot({ fullPage: true });
+
+    // Close the page and browser and server
+    await page.close();
+    await browser.close();
+    server.close();
+
+    // Display the image in the terminal
+    console.log(ansiescapes.image(imageBuffer, {}));
+  } catch (error) {
+    console.error("Error generating plot:", error);
+    throw error;
+  }
+}
 
 const NUSHELL_VERSION = process.env.NUSHELL_VERSION || "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
