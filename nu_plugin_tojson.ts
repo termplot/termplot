@@ -31,7 +31,53 @@ type PluginSignature = {
   examples: any[];
 };
 
-// TODO: Add zod schema for nushell value validation and parsing here
+// Recursive Zod schema for Nushell values (assuming basic JSON-mappable types)
+// This schema validates the structure of the incoming Nushell PipelineData
+const NushellSpanSchema = zod.object({
+  start: zod.number(),
+  end: zod.number(),
+});
+
+const NushellValueSchema: zod.ZodType<any> = zod.lazy(() =>
+  zod.union([
+    zod.object({ Int: zod.object({ val: zod.number(), span: NushellSpanSchema }) }),
+    zod.object({ Float: zod.object({ val: zod.number(), span: NushellSpanSchema }) }),
+    zod.object({ String: zod.object({ val: zod.string(), span: NushellSpanSchema }) }),
+    zod.object({ Bool: zod.object({ val: zod.boolean(), span: NushellSpanSchema }) }),
+    zod.object({
+      List: zod.object({
+        vals: zod.array(NushellValueSchema),
+        span: NushellSpanSchema,
+      }),
+    }),
+    zod.object({
+      Record: zod.object({
+        val: zod.record(zod.string(), NushellValueSchema), // Keys are strings, values are recursive
+        span: NushellSpanSchema,
+      }),
+    }),
+  ])
+);
+
+// Function to convert a parsed Nushell value to plain JSON (recursive)
+function convertNushellToJson(nushellValue: any): any {
+  if ("Int" in nushellValue || "Float" in nushellValue) {
+    return nushellValue.Int?.val ?? nushellValue.Float?.val; // Treat as number
+  } else if ("String" in nushellValue) {
+    return nushellValue.String.val;
+  } else if ("Bool" in nushellValue) {
+    return nushellValue.Bool.val;
+  } else if ("List" in nushellValue) {
+    return nushellValue.List.vals.map(convertNushellToJson); // Recurse on array items
+  } else if ("Record" in nushellValue) {
+    const jsonObj: { [key: string]: any } = {};
+    for (const [key, val] of Object.entries(nushellValue.Record.val)) {
+      jsonObj[key] = convertNushellToJson(val); // Recurse on record values
+    }
+    return jsonObj;
+  }
+  throw new Error("Unsupported Nushell value type");
+}
 
 function signatures(): { Signature: PluginSignature[] } {
   return {
@@ -70,14 +116,30 @@ function processCall(id: number, pluginCall: any): void {
   // Get the span from the call
   const span = pluginCall.call.head;
 
-  // TODO: Convert pipeline data to JSON using zod validation
-  // TODO: Convert json object to stringified JSON string
+  // Extract the pipeline input (assuming it's PipelineData with a Value)
+  const pipelineData = pluginCall.input;
+
+  if (!pipelineData || !("Value" in pipelineData) || !pipelineData.Value[0]) {
+    throw new Error("No valid pipeline data received");
+  }
+
+  // The actual Nushell value is in pipelineData.Value[0] (assuming single value; adjust if multiple)
+  const nushellValue = pipelineData.Value[0];
+
+  // Validate and parse using Zod
+  const parsedValue = NushellValueSchema.parse(nushellValue);
+
+  // Convert to plain JSON object
+  const jsonObj = convertNushellToJson(parsedValue);
+
+  // Stringify to JSON string
+  const jsonString = JSON.stringify(jsonObj);
 
   const value = {
     Value: [
       {
         String: {
-          val: "[return json string value here]",
+          val: jsonString,
           span,
         },
       },
