@@ -24,7 +24,7 @@
 // This plugin uses Node.js with TypeScript
 // Note: To debug plugins write to stderr using console.error
 
-import * as process from 'node:process';
+import * as process from "node:process";
 
 const NUSHELL_VERSION = "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
@@ -37,7 +37,13 @@ type PluginSignature = {
     required_positional: Array<{ name: string; desc: string; shape: string }>;
     optional_positional: Array<{ name: string; desc: string; shape: string }>;
     rest_positional: { name: string; desc: string; shape: string };
-    named: Array<{ long: string; short: string; arg: string | null; required: boolean; desc: string }>;
+    named: Array<{
+      long: string;
+      short: string;
+      arg: string | null;
+      required: boolean;
+      desc: string;
+    }>;
     input_output_types: Array<[string, string]>;
     allow_variants_without_examples: boolean;
     search_terms: string[];
@@ -47,7 +53,7 @@ type PluginSignature = {
     category: string;
   };
   examples: any[];
-}
+};
 
 function signatures(): { Signature: PluginSignature[] } {
   return {
@@ -206,7 +212,7 @@ function writeError(id: number, text: string, span?: any): void {
 }
 
 function handleInput(input: any): void {
-  if (typeof input === 'object' && input !== null) {
+  if (typeof input === "object" && input !== null) {
     if ("Hello" in input) {
       if (input.Hello.version !== NUSHELL_VERSION) {
         globalThis.process.exit(1);
@@ -226,7 +232,10 @@ function handleInput(input: any): void {
       } else if ("Run" in pluginCall) {
         processCall(id, pluginCall.Run);
       } else {
-        writeError(id, "Operation not supported: " + JSON.stringify(pluginCall));
+        writeError(
+          id,
+          "Operation not supported: " + JSON.stringify(pluginCall),
+        );
       }
     } else {
       console.error("Unknown message: " + JSON.stringify(input));
@@ -244,13 +253,13 @@ function plugin(): void {
   tellNushellEncoding();
   tellNushellHello();
 
-  let buffer = '';
-  globalThis.process.stdin.setEncoding('utf-8'); // Treat input as strings
+  let buffer = "";
+  globalThis.process.stdin.setEncoding("utf-8"); // Treat input as strings
 
-  globalThis.process.stdin.on('data', (chunk: string) => {
+  globalThis.process.stdin.on("data", (chunk: string) => {
     buffer += chunk;
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || ''; // Retain incomplete line for next chunk
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || ""; // Retain incomplete line for next chunk
 
     lines.forEach((line) => {
       if (line.trim()) {
@@ -265,7 +274,7 @@ function plugin(): void {
     });
   });
 
-  globalThis.process.stdin.on('end', () => {
+  globalThis.process.stdin.on("end", () => {
     globalThis.process.exit(0);
   });
 }

@@ -151,12 +151,12 @@ function processCall(id: number, pluginCall: any): void {
 }
 
 function tellNushellEncoding(): void {
-  globalThis.process.stdout.write(String.fromCharCode(4));
+  process.stdout.write(String.fromCharCode(4));
   for (const ch of "json") {
-    globalThis.process.stdout.write(String.fromCharCode(ch.charCodeAt(0)));
+    process.stdout.write(String.fromCharCode(ch.charCodeAt(0)));
   }
-  globalThis.process.stdout.write("\n");
-  globalThis.process.stdout.resume(); // Ensure output is flushed
+  process.stdout.write("\n");
+  process.stdout.resume(); // Ensure output is flushed
 }
 
 function tellNushellHello(): void {
@@ -167,16 +167,16 @@ function tellNushellHello(): void {
       features: [],
     },
   };
-  globalThis.process.stdout.write(JSON.stringify(hello) + "\n");
-  globalThis.process.stdout.resume();
+  process.stdout.write(JSON.stringify(hello) + "\n");
+  process.stdout.resume();
 }
 
 function writeResponse(id: number, response: any): void {
   const wrappedResponse = {
     CallResponse: [id, response],
   };
-  globalThis.process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
-  globalThis.process.stdout.resume();
+  process.stdout.write(JSON.stringify(wrappedResponse) + "\n");
+  process.stdout.resume();
 }
 
 function writeError(id: number, text: string, span?: any): void {
@@ -272,7 +272,7 @@ function plugin(): void {
   });
 }
 
-if (globalThis.process.argv.length === 3 && globalThis.process.argv[2] === "--stdio") {
+if (process.argv.length === 3 && process.argv[2] === "--stdio") {
   plugin();
 } else {
   console.log("Run me from inside nushell!");
