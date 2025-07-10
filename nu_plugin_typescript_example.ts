@@ -24,12 +24,12 @@
 // This plugin uses Node.js with TypeScript
 // Note: To debug plugins write to stderr using console.error
 
-import * as process from 'process';
+import * as process from 'node:process';
 
 const NUSHELL_VERSION = "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
 
-interface PluginSignature {
+type PluginSignature = {
   sig: {
     name: string;
     description: string;

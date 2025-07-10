@@ -2558,51 +2558,111 @@ reading method (e.g., `fs.createReadStream`). Let me know the results!
 
 # === USER ===
 
-as far as i can tell, this is working. i have pressed ctrl+c after running the plugin many times and have yet to encounter an issue. do you know why `readline` might have been an issue? i suspect because `readline` is primarily meant for user input on the command line, not reading in stdin. is that it?
+as far as i can tell, this is working. i have pressed ctrl+c after running the
+plugin many times and have yet to encounter an issue. do you know why `readline`
+might have been an issue? i suspect because `readline` is primarily meant for
+user input on the command line, not reading in stdin. is that it?
 
 # === ASSISTANT ===
 
-Yes, I'm thrilled to hear that the direct stdin reading approach is working reliably for you now—no more Ctrl+C glitches after running the plugin! That's a big win after all the iterations. It confirms that simplifying to match the Python code's low-level I/O was the right path. I'll explain below why `readline` was likely the culprit, and yes, your suspicion is spot on—it's primarily designed for interactive user input, which made it a poor fit for this non-interactive plugin scenario.
+Yes, I'm thrilled to hear that the direct stdin reading approach is working
+reliably for you now—no more Ctrl+C glitches after running the plugin! That's a
+big win after all the iterations. It confirms that simplifying to match the
+Python code's low-level I/O was the right path. I'll explain below why
+`readline` was likely the culprit, and yes, your suspicion is spot on—it's
+primarily designed for interactive user input, which made it a poor fit for this
+non-interactive plugin scenario.
 
 ### Why Was `readline` an Issue?
 
-In short: **Yes, `readline` is optimized for interactive command-line user input (like in a REPL or CLI prompt), not for passively reading piped stdin data in a non-interactive context like a Nushell plugin**. When misused in a scenario like yours, it introduces side effects that can mess up the terminal (TTY) state. Here's a breakdown of why this happens, based on Node.js internals:
+In short: **Yes, `readline` is optimized for interactive command-line user input
+(like in a REPL or CLI prompt), not for passively reading piped stdin data in a
+non-interactive context like a Nushell plugin**. When misused in a scenario like
+yours, it introduces side effects that can mess up the terminal (TTY) state.
+Here's a breakdown of why this happens, based on Node.js internals:
 
 #### 1. **Readline's Core Purpose and Behavior**
-   - The `readline` module is built for creating interactive interfaces where users type input directly into a terminal (e.g., Node.js's built-in REPL, or tools like inquirer.js for prompts). It provides features like:
-     - Line editing (e.g., arrow keys for history, backspace for corrections).
-     - Prompt rendering.
-     - Handling special keys (e.g., Ctrl+C, Tab completion).
-   - To enable these, `readline.createInterface` (when given `input: process.stdin` and detecting a TTY) automatically switches the terminal to **raw mode** (via internal calls to `tty.ReadStream.setRawMode(true)`). In raw mode:
-     - Input is read character-by-character (no line buffering—keys are processed immediately without waiting for Enter).
-     - The terminal disables its normal signal handling (e.g., Ctrl+C doesn't send SIGINT; it just passes the raw bytes `^C` to the process, which might print them instead of interrupting).
-     - Echoing (showing typed characters) and canonical mode (line buffering) are turned off.
-   - This is perfect for a user-facing CLI where you want fine-grained control over input, but it's unnecessary and problematic for a plugin that's just reading streamed JSON messages from Nushell (piped over stdin, not typed by a user).
+
+- The `readline` module is built for creating interactive interfaces where users
+  type input directly into a terminal (e.g., Node.js's built-in REPL, or tools
+  like inquirer.js for prompts). It provides features like:
+  - Line editing (e.g., arrow keys for history, backspace for corrections).
+  - Prompt rendering.
+  - Handling special keys (e.g., Ctrl+C, Tab completion).
+- To enable these, `readline.createInterface` (when given `input: process.stdin`
+  and detecting a TTY) automatically switches the terminal to **raw mode** (via
+  internal calls to `tty.ReadStream.setRawMode(true)`). In raw mode:
+  - Input is read character-by-character (no line buffering—keys are processed
+    immediately without waiting for Enter).
+  - The terminal disables its normal signal handling (e.g., Ctrl+C doesn't send
+    SIGINT; it just passes the raw bytes `^C` to the process, which might print
+    them instead of interrupting).
+  - Echoing (showing typed characters) and canonical mode (line buffering) are
+    turned off.
+- This is perfect for a user-facing CLI where you want fine-grained control over
+  input, but it's unnecessary and problematic for a plugin that's just reading
+  streamed JSON messages from Nushell (piped over stdin, not typed by a user).
 
 #### 2. **How This Causes Terminal Problems in Your Plugin**
-   - **TTY Inheritance in Subprocesses**: Nushell runs your plugin as a subprocess, sharing the parent shell's TTY (terminal device). When `readline` enables raw mode on `process.stdin`, it alters the shared TTY state. If the plugin doesn't perfectly restore the mode before exiting (e.g., by calling `setRawMode(false)` at exactly the right time), the changes persist after the subprocess ends. The parent shell (Nushell) then inherits this altered state, leading to glitches like:
-     - Ctrl+C printing `^C` instead of interrupting (because signals aren't handled in raw mode).
-     - Inconsistent behavior on partial inputs (e.g., "git " + Ctrl+C failing to cancel the line properly, as buffering is disabled).
-     - These issues might not show up immediately (e.g., full commands like "nvim" work because they spawn their own TTY handling) but appear on interactive shell actions.
-   - **Cleanup Challenges**: Even with explicit cleanup (like we tried with `setRawMode(false)`, `resume()`, and event handlers for 'close'/'exit'), it's tricky to guarantee restoration. Readline sets up internal event listeners and state that can linger if the process exits abruptly (e.g., on "Goodbye" or stdin close). Node.js's asynchronous nature can also mean cleanups happen too late or not at all in edge cases.
-   - **Why Inconsistent?**: The problem was unreliable because it depended on how Nushell closed the pipe, the timing of I/O, or even Node.js versions (e.g., experimental TS support in v24 might exacerbate TTY quirks).
+
+- **TTY Inheritance in Subprocesses**: Nushell runs your plugin as a subprocess,
+  sharing the parent shell's TTY (terminal device). When `readline` enables raw
+  mode on `process.stdin`, it alters the shared TTY state. If the plugin doesn't
+  perfectly restore the mode before exiting (e.g., by calling
+  `setRawMode(false)` at exactly the right time), the changes persist after the
+  subprocess ends. The parent shell (Nushell) then inherits this altered state,
+  leading to glitches like:
+  - Ctrl+C printing `^C` instead of interrupting (because signals aren't handled
+    in raw mode).
+  - Inconsistent behavior on partial inputs (e.g., "git " + Ctrl+C failing to
+    cancel the line properly, as buffering is disabled).
+  - These issues might not show up immediately (e.g., full commands like "nvim"
+    work because they spawn their own TTY handling) but appear on interactive
+    shell actions.
+- **Cleanup Challenges**: Even with explicit cleanup (like we tried with
+  `setRawMode(false)`, `resume()`, and event handlers for 'close'/'exit'), it's
+  tricky to guarantee restoration. Readline sets up internal event listeners and
+  state that can linger if the process exits abruptly (e.g., on "Goodbye" or
+  stdin close). Node.js's asynchronous nature can also mean cleanups happen too
+  late or not at all in edge cases.
+- **Why Inconsistent?**: The problem was unreliable because it depended on how
+  Nushell closed the pipe, the timing of I/O, or even Node.js versions (e.g.,
+  experimental TS support in v24 might exacerbate TTY quirks).
 
 #### 3. **Contrast with Python and Direct Stdin Reading**
-   - Python's `for line in sys.stdin` is a simple, blocking loop that reads stdin as a file-like stream without any TTY assumptions or mode changes. It treats input as buffered lines (splitting on newlines) and doesn't enable raw mode or special key handling—it's purely for data streaming, not user interaction.
-   - In our final TypeScript version, using `process.stdin.on('data')` with manual buffering and splitting achieves the same: it reads stdin as raw chunks, processes them into lines, and avoids all TTY manipulation. No raw mode is triggered, so the terminal state remains untouched, matching Python's behavior.
-   - If we had stuck with `readline`, we might have needed even more hacks (e.g., forcing `terminal: false` and manually managing all events), but ditching it entirely was simpler and more reliable.
+
+- Python's `for line in sys.stdin` is a simple, blocking loop that reads stdin
+  as a file-like stream without any TTY assumptions or mode changes. It treats
+  input as buffered lines (splitting on newlines) and doesn't enable raw mode or
+  special key handling—it's purely for data streaming, not user interaction.
+- In our final TypeScript version, using `process.stdin.on('data')` with manual
+  buffering and splitting achieves the same: it reads stdin as raw chunks,
+  processes them into lines, and avoids all TTY manipulation. No raw mode is
+  triggered, so the terminal state remains untouched, matching Python's
+  behavior.
+- If we had stuck with `readline`, we might have needed even more hacks (e.g.,
+  forcing `terminal: false` and manually managing all events), but ditching it
+  entirely was simpler and more reliable.
 
 #### 4. **When to Use Readline vs. Direct Stdin**
-   - **Use `readline`**: For interactive tools where you need user-friendly input (e.g., a custom shell or prompt-based app).
-   - **Use direct 'data' events**: For non-interactive scripts reading piped data (like your plugin, servers, or data processors). It's lower-level but avoids side effects.
-   - Node.js docs even note this distinction: Readline is for "line-editing facilities," while direct stdin is for "stream-based input."
+
+- **Use `readline`**: For interactive tools where you need user-friendly input
+  (e.g., a custom shell or prompt-based app).
+- **Use direct 'data' events**: For non-interactive scripts reading piped data
+  (like your plugin, servers, or data processors). It's lower-level but avoids
+  side effects.
+- Node.js docs even note this distinction: Readline is for "line-editing
+  facilities," while direct stdin is for "stream-based input."
 
 ### Any Final Tweaks?
 
-Since this is now working consistently, your plugin should be solid! If you encounter any edge cases (e.g., very large inputs or rapid messages), you could add a check for buffer overflow in the 'data' handler, but it's unlikely. For production, consider adding basic error handling for JSON parsing failures (e.g., logging and continuing instead of exiting, if desired).
+Since this is now working consistently, your plugin should be solid! If you
+encounter any edge cases (e.g., very large inputs or rapid messages), you could
+add a check for buffer overflow in the 'data' handler, but it's unlikely. For
+production, consider adding basic error handling for JSON parsing failures
+(e.g., logging and continuing instead of exiting, if desired).
 
-If issues resurface or you want to add features (e.g., msgpack support), just let me know—happy to help refine further! 🎉
+If issues resurface or you want to add features (e.g., msgpack support), just
+let me know—happy to help refine further! 🎉
 
 # === USER ===
-
-
