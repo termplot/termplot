@@ -62,13 +62,10 @@ function getPluginSignature() {
           name: "termplot2",
           description: "Demonstration plugin for Node.js",
           extra_description: "",
-          required_positional: [
-          ],
-          optional_positional: [
-          ],
+          required_positional: [],
+          optional_positional: [],
           rest_positional: null,
-          named: [
-          ],
+          named: [],
           input_output_types: [["Any", "Any"]],
           allow_variants_without_examples: true,
           search_terms: ["nodejs", "example"],
@@ -152,6 +149,10 @@ function handleCallMessage(id, call) {
 function handleSignal(signal) {
   if (signal !== "Reset") {
     process.stderr.write(`Unhandled signal: ${signal}\n`);
+  } else {
+    // prevent weird terminal behavior by sending something back
+    // console.log(JSON.stringify({ Reset: false }));
+    // writeResponse(0, "{}");
   }
 }
 

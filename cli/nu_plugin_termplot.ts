@@ -285,7 +285,7 @@ function tellNushellHello(): void {
     Hello: {
       protocol: "nu-plugin", // always this value
       version: NUSHELL_VERSION,
-      features: ["persistent"],
+      features: [],
     },
   };
   console.log(JSON.stringify(hello));
@@ -344,7 +344,7 @@ function handleInput(input: any): void {
     } else if ("Signal" in input && input.Signal === "Reset") {
       // Cleanly exit on Reset signal (no logging, success code)
       // process.exit(0);
-      console.log(JSON.stringify({ Reset: false }));
+      // console.log(JSON.stringify({ Reset: false }));
       // process.stdout.resume(); // Ensure output is flushed
       // console.log("something\n");
       // console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
