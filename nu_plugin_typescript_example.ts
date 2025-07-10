@@ -26,6 +26,7 @@
 
 import * as readline from 'readline';
 import * as process from 'process';
+import * as tty from 'tty';
 
 const NUSHELL_VERSION = "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
@@ -207,19 +208,13 @@ function writeError(id: number, text: string, span?: any): void {
 }
 
 function handleInput(input: any): void {
-  if (input === "Goodbye") {
-    process.exit(0);
-  } else if (typeof input === 'object' && input !== null) {
+  if (typeof input === 'object' && input !== null) {
     if ("Hello" in input) {
       if (input.Hello.version !== NUSHELL_VERSION) {
-        process.exit(1);
+        globalThis.process.exit(1);
       } else {
         return;
       }
-    } else if ("Signal" in input && input.Signal === "Reset") {
-      // Handle Reset signal: No-op or reset state if needed
-      // console.error("Received Reset signal - resetting state (no-op for now)");
-      return; // Or perform any reset logic here
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
       if (pluginCall === "Metadata") {
@@ -237,11 +232,13 @@ function handleInput(input: any): void {
       }
     } else {
       console.error("Unknown message: " + JSON.stringify(input));
-      process.exit(1);
+      globalThis.process.exit(1);
     }
+  } else if (input === "Goodbye") {
+    globalThis.process.exit(0);
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
-    process.exit(1);
+    globalThis.process.exit(1);
   }
 }
 
@@ -249,24 +246,29 @@ function plugin(): void {
   tellNushellEncoding();
   tellNushellHello();
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    terminal: false, // Explicitly disable terminal mode
-    // No output stream - this prevents TTY raw mode issues
+  let buffer = '';
+  globalThis.process.stdin.setEncoding('utf-8'); // Treat input as strings
+
+  globalThis.process.stdin.on('data', (chunk: string) => {
+    buffer += chunk;
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || ''; // Retain incomplete line for next chunk
+
+    lines.forEach((line) => {
+      if (line.trim()) {
+        try {
+          const input = JSON.parse(line.trim());
+          handleInput(input);
+        } catch (err) {
+          console.error("Error parsing input: " + err);
+          globalThis.process.exit(1);
+        }
+      }
+    });
   });
 
-  rl.on('line', (line) => {
-    try {
-      const input = JSON.parse(line.trim());
-      handleInput(input);
-    } catch (err) {
-      console.error("Error parsing input: " + err);
-      process.exit(1);
-    }
-  });
-
-  rl.on('close', () => {
-    process.exit(0);
+  globalThis.process.stdin.on('end', () => {
+    globalThis.process.exit(0);
   });
 }
 
