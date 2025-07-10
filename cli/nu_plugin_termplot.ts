@@ -232,7 +232,7 @@ function signatures(): { Signature: PluginSignature[] } {
           optional_positional: [],
           rest_positional: null, // Set to null since no rest args are needed
           named: [],
-          input_output_types: [["Any", "Any"]],
+          input_output_types: [["Any", "Binary"]],
           allow_variants_without_examples: true,
           search_terms: ["JSON", "Convert"],
           is_filter: true, // Set to true for pipeline processing
