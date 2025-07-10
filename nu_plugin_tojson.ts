@@ -2,7 +2,7 @@
 import * as process from "node:process";
 import zod from "zod/v4";
 
-const NUSHELL_VERSION = "0.105.1";
+const NUSHELL_VERSION = process.env.NUSHELL_VERSION || "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
 
 type PluginSignature = {
