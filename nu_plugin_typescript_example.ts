@@ -207,28 +207,33 @@ function writeError(id: number, text: string, span?: any): void {
 }
 
 function handleInput(input: any): void {
-  if ("Hello" in input) {
-    if (input.Hello.version !== NUSHELL_VERSION) {
-      process.exit(1);
-    } else {
-      return;
-    }
-  } else if (input === "Goodbye") {
+  if (input === "Goodbye") {
     process.exit(0);
-  } else if ("Call" in input) {
-    const [id, pluginCall] = input.Call;
-    if (pluginCall === "Metadata") {
-      writeResponse(id, {
-        Metadata: {
-          version: PLUGIN_VERSION,
-        },
-      });
-    } else if (pluginCall === "Signature") {
-      writeResponse(id, signatures());
-    } else if ("Run" in pluginCall) {
-      processCall(id, pluginCall.Run);
+  } else if (typeof input === 'object' && input !== null) {
+    if ("Hello" in input) {
+      if (input.Hello.version !== NUSHELL_VERSION) {
+        process.exit(1);
+      } else {
+        return;
+      }
+    } else if ("Call" in input) {
+      const [id, pluginCall] = input.Call;
+      if (pluginCall === "Metadata") {
+        writeResponse(id, {
+          Metadata: {
+            version: PLUGIN_VERSION,
+          },
+        });
+      } else if (pluginCall === "Signature") {
+        writeResponse(id, signatures());
+      } else if ("Run" in pluginCall) {
+        processCall(id, pluginCall.Run);
+      } else {
+        writeError(id, "Operation not supported: " + JSON.stringify(pluginCall));
+      }
     } else {
-      writeError(id, "Operation not supported: " + JSON.stringify(pluginCall));
+      console.error("Unknown message: " + JSON.stringify(input));
+      process.exit(1);
     }
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
