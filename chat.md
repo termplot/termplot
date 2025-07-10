@@ -6028,4 +6028,112 @@ other messages are handled differently in practice. Let me know the results!
 
 # === USER ===
 
+ah, i believe that was it. i have updated the code and it seems to work now with no issues with ctrl+c.
+
+however, now there is a new issue. when i run the plugin, it prints:
+
+```
+Unknown message: {"Signal":"Reset"}
+```
+
+what is the best way to handle that? of course, we can just cleanly exit the problem. that is probably best in this case. however, in future plugins, i actually don't want it to exist. i want it to stay in memory for a while. let's solve this one step at a time, first of all, how do we cleanly exist on the reset signal?
+
+# === ASSISTANT ===
+
+I'm glad removing the no-op "Signal: Reset" handler resolved the Ctrl+C issue—that aligns with our diagnosis of needing a clean exit on such signals for simple plugins. Now, let's address the new logging issue ("Unknown message: {"Signal":"Reset"}") and how to handle "Reset" cleanly for this plugin. I'll explain step by step, provide the updated code, and then briefly touch on future plugins (as requested, we'll keep it one step at a time).
+
+### Understanding the "Reset" Signal and Logging Issue
+
+- **What "Reset" Means**: As discussed earlier, "Reset" is a control signal from Nushell to instruct the plugin to reset its internal state (e.g., clear caches or prepare for a new command). For simple, stateless plugins like `tojson`, you can safely treat it as a signal to exit, as there's no state to reset. Nushell often sends it after a command completes, especially for filters (`is_filter: true`).
+- **Why the Log Appears**: In the current code, "Reset" falls into the `else` branch of `handleInput`, which logs "Unknown message" to stderr and exits with code 1. This is "noisy" (visible error log) but functional (it exits, preventing hangs).
+- **Best Way to Handle It**: For a clean exit without logging:
+  - Add an explicit check for "Signal: Reset" that calls `process.exit(0)` (clean exit code, no error implied).
+  - Don't log anything (or log minimally if debugging). This avoids cluttering stderr while ensuring the process terminates properly, releasing resources and restoring terminal state.
+  - Exit with 0 (success) instead of 1 (error) to indicate normal shutdown—Nushell won't interpret it as a failure.
+
+This keeps the code simple and matches the working test plugin's effective behavior (exiting on unknown messages), but without the log for "Reset" specifically.
+
+### Updated Code for Clean Exit on "Reset"
+
+Update the `handleInput` function in your `nu_plugin_tojson.ts` with this version. It adds a dedicated "Reset" handler that exits cleanly without logging. The rest of the code remains unchanged.
+
+```typescript
+function handleInput(input: any): void {
+  if (typeof input === "object" && input !== null) {
+    if ("Hello" in input) {
+      if (input.Hello.version !== NUSHELL_VERSION) {
+        process.exit(1);
+      } else {
+        return;
+      }
+    } else if ("Signal" in input && input.Signal === "Reset") {
+      // Cleanly exit on Reset signal (no logging, success code)
+      process.exit(0);
+    } else if ("Call" in input) {
+      const [id, pluginCall] = input.Call;
+      if (pluginCall === "Metadata") {
+        writeResponse(id, {
+          Metadata: {
+            version: PLUGIN_VERSION,
+          },
+        });
+      } else if (pluginCall === "Signature") {
+        writeResponse(id, signatures());
+      } else if ("Run" in pluginCall) {
+        processCall(id, pluginCall.Run);
+      } else {
+        writeError(
+          id,
+          "Operation not supported: " + JSON.stringify(pluginCall),
+        );
+      }
+    } else {
+      console.error("Unknown message: " + JSON.stringify(input));
+      process.exit(1);
+    }
+  } else if (input === "Goodbye") {
+    process.exit(0);
+  } else {
+    console.error("Unknown message: " + JSON.stringify(input));
+    process.exit(1);
+  }
+}
+```
+
+#### Why This Works
+- **Clean Exit**: `process.exit(0)` ensures the process terminates successfully, releasing stdin listeners and TTY resources without hanging.
+- **No Logging for Reset**: By handling it explicitly, we skip the "Unknown message" log, keeping stderr clean.
+- **Placement**: I placed the check early (after "Hello") to catch it quickly, but before "Call" to not interfere with command processing.
+- **Error Code 0 vs 1**: Using 0 tells Nushell "all good, done processing"—no failure reported. If you prefer to log minimally for debugging, add `console.error("Received Reset - exiting cleanly");` before the exit.
+
+#### Testing
+1. Update `handleInput` with the above.
+2. Re-register the plugin in Nushell.
+3. Run a command (e.g., `{ foo: 42 } | tojson`).
+4. Check stderr—no "Unknown message" for "Reset" should appear.
+5. Test Ctrl+C after the command—it should remain normal.
+6. If "Reset" isn't sent in your setup, you can simulate by checking if the plugin exits silently after use.
+
+If you still see the log or issues, add temporary logging like `console.error("Received message type:", Object.keys(input));` at the top of `handleInput` to inspect what messages are coming in.
+
+### For Future Plugins (Staying in Memory)
+
+Once this is solid, for plugins where you want to **stay in memory** (e.g., for termplot to reuse a persistent browser instance across multiple commands without restarting the process):
+
+- **Handle "Reset" as a No-Op or State Reset**: Instead of exiting, just return (as you had originally). But add logic to reset any internal state (e.g., clear caches, reset variables). Example:
+  ```typescript
+  } else if ("Signal" in input && input.Signal === "Reset") {
+    // Reset internal state (e.g., for termplot: clear plot cache)
+    resetPluginState(); // Custom function
+    return; // Don't exit, keep listening for next call
+  }
+  ```
+- **Persistent Process**: Nushell keeps the plugin process running for the session if it doesn't exit on signals. This is ideal for performance (e.g., keeping Puppeteer open).
+- **Goodbye Handling**: Still exit on "Goodbye" to clean up when the session ends.
+- **Potential Gotchas**: If not exiting on "Reset", ensure no memory leaks or state leakage between calls. Test with multiple invocations in one session.
+
+Let me know if this fixes the logging/exit for `tojson`, or if you'd like to jump to adapting it for termplot now!
+
+# === USER ===
+
 

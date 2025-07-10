@@ -40,10 +40,18 @@ const NushellSpanSchema = zod.object({
 
 const NushellValueSchema: zod.ZodType<any> = zod.lazy(() =>
   zod.union([
-    zod.object({ Int: zod.object({ val: zod.number(), span: NushellSpanSchema }) }),
-    zod.object({ Float: zod.object({ val: zod.number(), span: NushellSpanSchema }) }),
-    zod.object({ String: zod.object({ val: zod.string(), span: NushellSpanSchema }) }),
-    zod.object({ Bool: zod.object({ val: zod.boolean(), span: NushellSpanSchema }) }),
+    zod.object({
+      Int: zod.object({ val: zod.number(), span: NushellSpanSchema }),
+    }),
+    zod.object({
+      Float: zod.object({ val: zod.number(), span: NushellSpanSchema }),
+    }),
+    zod.object({
+      String: zod.object({ val: zod.string(), span: NushellSpanSchema }),
+    }),
+    zod.object({
+      Bool: zod.object({ val: zod.boolean(), span: NushellSpanSchema }),
+    }),
     zod.object({
       List: zod.object({
         vals: zod.array(NushellValueSchema),
@@ -56,7 +64,7 @@ const NushellValueSchema: zod.ZodType<any> = zod.lazy(() =>
         span: NushellSpanSchema,
       }),
     }),
-  ])
+  ]),
 );
 
 // Function to convert a parsed Nushell value to plain JSON (recursive)
@@ -210,6 +218,9 @@ function handleInput(input: any): void {
       } else {
         return;
       }
+    } else if ("Signal" in input && input.Signal === "Reset") {
+      // Cleanly exit on Reset signal (no logging, success code)
+      process.exit(0);
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
       if (pluginCall === "Metadata") {
