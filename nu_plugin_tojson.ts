@@ -220,7 +220,11 @@ function handleInput(input: any): void {
       }
     } else if ("Signal" in input && input.Signal === "Reset") {
       // Cleanly exit on Reset signal (no logging, success code)
-      process.exit(0);
+      // process.exit(0);
+      // process.stdout.write(JSON.stringify({ Reset: true }) + "\n");
+      // process.stdout.resume(); // Ensure output is flushed
+      process.stdout.write("something\n");
+      return;
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
       if (pluginCall === "Metadata") {
@@ -244,6 +248,7 @@ function handleInput(input: any): void {
       process.exit(1);
     }
   } else if (input === "Goodbye") {
+    // process.stdout.write(JSON.stringify({ Goodbye: true }) + "\n");
     process.exit(0);
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
