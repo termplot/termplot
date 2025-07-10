@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// import { PORT, server } from "build/cli/server.js";
+import { PORT, server } from "./build/cli/server.js";
 
 /**
  * Node.js Nushell Plugin Example
