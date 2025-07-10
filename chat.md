@@ -2844,3 +2844,63 @@ If you share more details about termplot's plugin needs (e.g., input params,
 output format), I can help adapt the code further!
 
 # === USER ===
+
+great. now, we're going to need to build the termplot plugin. but not yet. i
+know that termplot will need to take in a nushell value and convert that into
+json internally. the way it will work is like this:
+
+```nu
+$nushellvalue | termplot
+```
+
+that will print a plot to the screen
+
+however, that means we're going to need to interpet a nushell value as json. and
+this is easier said than done, because the actual value we get from nushell is a
+json-encoded nushell value. we will need to parse this and encode it into normal
+json. nushell infact already has a tool for this called `to json`. but this
+needs to be inside our plugin, beacuse we need to internally represent this
+value as json so we can pass it to plotly.js.
+
+ultimately, what this means is that it is easier to start with creating a new
+plugin called `nu_plugin_tojson` where we basically re-implement the nushell
+`to json` command as a new plugin called `tojson`. the `tojson` plugin will
+simply take ANY value from nushell and convert it into a json object for
+display. now, we don't necessarily need to worry about reimplmenting support for
+all nushell data types. when someone uses our plugin, it is assumed they are
+passing in something that easily transcodes to json. for instance, they won't
+have any sort of nushell data values or size values, which do not map to json
+cleanly (they have to be represented as string). thus, we need to create a
+simpler version of `tojson` which assumes the values are as follows:
+
+- records
+- lists
+- ints
+- floats
+- numbers
+- strings
+- booleans
+
+these are the basic data types of json which also happen to map quite cleanly to
+nushell. the only catch are the way numbers work. when we get an int or a float
+from nushell, we have to map that to a json number, as json does not distinguish
+different types of numbers. for our purposes, that is ok. to the best of my
+knowledge, nushell also has a generic number type that can map cleanly to a json
+number.
+
+later on, we can expand our plugin to support other types such as date and size,
+which will simply translate these values to strings.
+
+furthermore, we are going to assume the input value is a record, which can in
+turn contain lists, numbers, etc. this simplifies things if the top-level value
+is always a record.
+
+finally, in typescript, we have a tool called zod which is useful for parsing
+complex json data structures like the structure we get from nushell. thus, the
+primary goal of the `tojson` plugin will basically be to write a zod schema that
+understands and parses the nushell value structure, so that we know we are
+getting a valid nushell value. this zod schema should be called
+`NushellValueSchema`. after parsing this schema, we then have a function that
+converts this to json, which should be straightforward, seeing as we know the
+type will perfectly match the schema. then, we convert this json object to a
+string, and then send it to nushell as a string.
