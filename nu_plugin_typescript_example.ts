@@ -24,9 +24,7 @@
 // This plugin uses Node.js with TypeScript
 // Note: To debug plugins write to stderr using console.error
 
-import * as readline from 'readline';
 import * as process from 'process';
-import * as tty from 'tty';
 
 const NUSHELL_VERSION = "0.105.1";
 const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!

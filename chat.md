@@ -2392,3 +2392,217 @@ def plugin():
 this is very simple and logical code. it reads stdin line by line, with none of
 the extra "cleanup" and "on" methods and whatnot that we added to the typescript
 code.
+
+what is the most straightforward way to implement this code in typescript?
+
+# === ASSISTANT ===
+
+Thank you for the summary confirmation—it's helpful to have a clean slate for
+bug fixing. I completely agree that the Python code's simplicity is key, and
+we've likely overcomplicated the TypeScript version with unnecessary event
+handlers, cleanup, and libraries that inadvertently alter TTY state (e.g., raw
+mode via `readline` or manual `tty` manipulations). The root problem in
+TypeScript has been Node.js's handling of stdin in TTY contexts, which Python
+avoids by reading directly from `sys.stdin` without side effects.
+
+To fix this, we'll implement the most straightforward equivalent in TypeScript:
+
+- **Directly read from `process.stdin` using the 'data' event**, buffering input
+  and processing lines on newlines. This mimics Python's `for line in sys.stdin`
+  loop without any libraries, mode changes, or extra events.
+- **No `readline`**, **no `tty`**, **no manual cleanup** (e.g., no `setRawMode`,
+  `resume`, or `unref`—these were attempts to mitigate issues but aren't needed
+  if we avoid triggering raw mode in the first place).
+- **Minimal event setup**: Only 'data' for input and 'end' for clean exit
+  (similar to Python's loop ending when stdin closes).
+- **Rely on globals**: Use `globalThis.process` (as before) to avoid import
+  shadowing issues in ESM/Node.js 24.
+- **Why this should work without terminal issues**: Like Python, this reads
+  stdin as a stream without touching TTY modes, pausing/resuming, or enabling
+  raw input. It processes chunks as strings, splits on newlines, and handles
+  complete lines—just like `sys.stdin`. No side effects on the parent shell's
+  terminal state.
+
+This is as close as possible to the Python code's logic and simplicity. Below is
+the updated code for `plugin()` and `handleInput()`. Replace these in your
+existing script (keep the rest unchanged, e.g., `signatures()`, `processCall()`,
+`writeResponse()`, etc.). I've also included a note on running it.
+
+### Simplified TypeScript Code
+
+```typescript
+// ... (rest of your script's top-level code, e.g., constants, signatures(), processCall(), tellNushellEncoding(), tellNushellHello(), writeResponse(), writeError()) ...
+
+function handleInput(input: any): void {
+  if (typeof input === 'object' && input !== null) {
+    if ("Hello" in input) {
+      if (input.Hello.version !== NUSHELL_VERSION) {
+        globalThis.process.exit(1);
+      } else {
+        return;
+      }
+    } else if ("Call" in input) {
+      const [id, pluginCall] = input.Call;
+      if (pluginCall === "Metadata") {
+        writeResponse(id, {
+          Metadata: {
+            version: PLUGIN_VERSION,
+          },
+        });
+      } else if (pluginCall === "Signature") {
+        writeResponse(id, signatures());
+      } else if ("Run" in pluginCall) {
+        processCall(id, pluginCall.Run);
+      } else {
+        writeError(id, "Operation not supported: " + JSON.stringify(pluginCall));
+      }
+    } else {
+      console.error("Unknown message: " + JSON.stringify(input));
+      globalThis.process.exit(1);
+    }
+  } else if (input === "Goodbye") {
+    globalThis.process.exit(0);
+  } else {
+    console.error("Unknown message: " + JSON.stringify(input));
+    globalThis.process.exit(1);
+  }
+}
+
+function plugin(): void {
+  tellNushellEncoding();
+  tellNushellHello();
+
+  let buffer = '';
+  globalThis.process.stdin.setEncoding('utf-8'); // Treat input as strings
+
+  globalThis.process.stdin.on('data', (chunk: string) => {
+    buffer += chunk;
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || ''; // Retain incomplete line for next chunk
+
+    lines.forEach((line) => {
+      if (line.trim()) {
+        try {
+          const input = JSON.parse(line.trim());
+          handleInput(input);
+        } catch (err) {
+          console.error("Error parsing input: " + err);
+          globalThis.process.exit(1);
+        }
+      }
+    });
+  });
+
+  globalThis.process.stdin.on('end', () => {
+    globalThis.process.exit(0);
+  });
+}
+
+// ... (rest of your script, e.g., if (globalThis.process.argv.length === 3 && globalThis.process.argv[2] === "--stdio") { plugin(); } else { console.log("Run me from inside nushell!"); } ...
+```
+
+### Key Explanations and Why This Is Straightforward
+
+- **Mirrors Python Exactly**:
+  - `plugin()`: Sends encoding/hello, then loops over stdin lines (via buffered
+    'data' events), parses JSON, and calls `handleInput`—just like Python's
+    `for line in sys.stdin`.
+  - `handleInput()`: Identical logic to Python, with added object checks to
+    safely handle non-objects (e.g., "Goodbye"). No extras like "Reset" handling
+    (you can add if needed, but it's not in the Python code).
+  - Error handling: Exits on parse errors or unknown messages, like Python.
+
+- **Stdin Handling**:
+  - `setEncoding('utf-8')`: Ensures chunks are strings (avoids Buffer handling).
+  - 'data' event: Accumulates input in a buffer, splits on '\n', processes
+    complete lines, and keeps partial lines for the next event. This handles
+    streamed input efficiently without blocking or altering TTY state.
+  - 'end' event: Exits cleanly when stdin closes (e.g., Nushell ends the pipe),
+    like Python's loop ending.
+
+- **No Terminal Interference**:
+  - No `readline`, no `tty`, no raw mode toggles, no pause/resume/unref. This
+    reads stdin passively as a stream, leaving the TTY untouched—exactly like
+    Python's `sys.stdin`.
+  - If Nushell sends "Goodbye" or closes stdin, the process exits without
+    lingering effects.
+
+- **Dependencies**: None—uses only Node.js builtins. No imports needed beyond
+  what's already in your script (e.g., for JSON).
+
+### Running and Testing
+
+1. **Update Your Script**: Replace `handleInput` and `plugin` with the above.
+   Ensure `globalThis.process` is used consistently (as it fixed your previous
+   error).
+2. **Run It**: Use Node.js 24 with experimental flags if needed:
+   ```bash
+   node --experimental-strip-types nu_plugin_typescript_example.ts --stdio
+   ```
+   Or compile to JS: `tsc nu_plugin_typescript_example.ts` then
+   `node nu_plugin_typescript_example.js --stdio`.
+3. **Test in Nushell**:
+   - Register the plugin.
+   - Run `nu-typescript 4 5 6`.
+   - After it completes, test Ctrl+C on partial inputs (e.g., type "git " and
+     press Ctrl+C)—it should cancel normally.
+   - Compare TTY state with `stty -a` before/after to confirm no changes.
+4. **Debugging**: If issues persist, add
+   `console.error('Received line:', line);` in the 'data' event to log input
+   without affecting behavior.
+
+This should finally resolve the terminal state issue by matching Python's
+simplicity. If it still doesn't work (e.g., due to a Node.js-specific quirk), we
+could explore wrapping the code in a child process or using a different stdin
+reading method (e.g., `fs.createReadStream`). Let me know the results!
+
+# === USER ===
+
+as far as i can tell, this is working. i have pressed ctrl+c after running the plugin many times and have yet to encounter an issue. do you know why `readline` might have been an issue? i suspect because `readline` is primarily meant for user input on the command line, not reading in stdin. is that it?
+
+# === ASSISTANT ===
+
+Yes, I'm thrilled to hear that the direct stdin reading approach is working reliably for you now—no more Ctrl+C glitches after running the plugin! That's a big win after all the iterations. It confirms that simplifying to match the Python code's low-level I/O was the right path. I'll explain below why `readline` was likely the culprit, and yes, your suspicion is spot on—it's primarily designed for interactive user input, which made it a poor fit for this non-interactive plugin scenario.
+
+### Why Was `readline` an Issue?
+
+In short: **Yes, `readline` is optimized for interactive command-line user input (like in a REPL or CLI prompt), not for passively reading piped stdin data in a non-interactive context like a Nushell plugin**. When misused in a scenario like yours, it introduces side effects that can mess up the terminal (TTY) state. Here's a breakdown of why this happens, based on Node.js internals:
+
+#### 1. **Readline's Core Purpose and Behavior**
+   - The `readline` module is built for creating interactive interfaces where users type input directly into a terminal (e.g., Node.js's built-in REPL, or tools like inquirer.js for prompts). It provides features like:
+     - Line editing (e.g., arrow keys for history, backspace for corrections).
+     - Prompt rendering.
+     - Handling special keys (e.g., Ctrl+C, Tab completion).
+   - To enable these, `readline.createInterface` (when given `input: process.stdin` and detecting a TTY) automatically switches the terminal to **raw mode** (via internal calls to `tty.ReadStream.setRawMode(true)`). In raw mode:
+     - Input is read character-by-character (no line buffering—keys are processed immediately without waiting for Enter).
+     - The terminal disables its normal signal handling (e.g., Ctrl+C doesn't send SIGINT; it just passes the raw bytes `^C` to the process, which might print them instead of interrupting).
+     - Echoing (showing typed characters) and canonical mode (line buffering) are turned off.
+   - This is perfect for a user-facing CLI where you want fine-grained control over input, but it's unnecessary and problematic for a plugin that's just reading streamed JSON messages from Nushell (piped over stdin, not typed by a user).
+
+#### 2. **How This Causes Terminal Problems in Your Plugin**
+   - **TTY Inheritance in Subprocesses**: Nushell runs your plugin as a subprocess, sharing the parent shell's TTY (terminal device). When `readline` enables raw mode on `process.stdin`, it alters the shared TTY state. If the plugin doesn't perfectly restore the mode before exiting (e.g., by calling `setRawMode(false)` at exactly the right time), the changes persist after the subprocess ends. The parent shell (Nushell) then inherits this altered state, leading to glitches like:
+     - Ctrl+C printing `^C` instead of interrupting (because signals aren't handled in raw mode).
+     - Inconsistent behavior on partial inputs (e.g., "git " + Ctrl+C failing to cancel the line properly, as buffering is disabled).
+     - These issues might not show up immediately (e.g., full commands like "nvim" work because they spawn their own TTY handling) but appear on interactive shell actions.
+   - **Cleanup Challenges**: Even with explicit cleanup (like we tried with `setRawMode(false)`, `resume()`, and event handlers for 'close'/'exit'), it's tricky to guarantee restoration. Readline sets up internal event listeners and state that can linger if the process exits abruptly (e.g., on "Goodbye" or stdin close). Node.js's asynchronous nature can also mean cleanups happen too late or not at all in edge cases.
+   - **Why Inconsistent?**: The problem was unreliable because it depended on how Nushell closed the pipe, the timing of I/O, or even Node.js versions (e.g., experimental TS support in v24 might exacerbate TTY quirks).
+
+#### 3. **Contrast with Python and Direct Stdin Reading**
+   - Python's `for line in sys.stdin` is a simple, blocking loop that reads stdin as a file-like stream without any TTY assumptions or mode changes. It treats input as buffered lines (splitting on newlines) and doesn't enable raw mode or special key handling—it's purely for data streaming, not user interaction.
+   - In our final TypeScript version, using `process.stdin.on('data')` with manual buffering and splitting achieves the same: it reads stdin as raw chunks, processes them into lines, and avoids all TTY manipulation. No raw mode is triggered, so the terminal state remains untouched, matching Python's behavior.
+   - If we had stuck with `readline`, we might have needed even more hacks (e.g., forcing `terminal: false` and manually managing all events), but ditching it entirely was simpler and more reliable.
+
+#### 4. **When to Use Readline vs. Direct Stdin**
+   - **Use `readline`**: For interactive tools where you need user-friendly input (e.g., a custom shell or prompt-based app).
+   - **Use direct 'data' events**: For non-interactive scripts reading piped data (like your plugin, servers, or data processors). It's lower-level but avoids side effects.
+   - Node.js docs even note this distinction: Readline is for "line-editing facilities," while direct stdin is for "stream-based input."
+
+### Any Final Tweaks?
+
+Since this is now working consistently, your plugin should be solid! If you encounter any edge cases (e.g., very large inputs or rapid messages), you could add a check for buffer overflow in the 'data' handler, but it's unlikely. For production, consider adding basic error handling for JSON parsing failures (e.g., logging and continuing instead of exiting, if desired).
+
+If issues resurface or you want to add features (e.g., msgpack support), just let me know—happy to help refine further! 🎉
+
+# === USER ===
+
+
