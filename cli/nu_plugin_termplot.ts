@@ -51,7 +51,12 @@ async function closeBrowser(): Promise<void> {
   if (browser) {
     await browser.close();
     browser = null;
-    console.error("Termplot: headless browser closed");
+    // console.error("Termplot: headless browser closed");
+  }
+  if (page) {
+    await page.close();
+    page = null;
+    // console.error("Termplot: page closed");
   }
 }
 
@@ -73,8 +78,11 @@ async function generateAndShowPlotly(
     const plotId = plotlyDb.addPlot(plotConfig);
 
     await page.goto(`http://localhost:${PORT}/plotly/${plotId}`, {
-      waitUntil: "networkidle2",
+      // waitUntil: "networkidle2",
     });
+
+    // 50ms timeout
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const imageBuffer = await page.screenshot({ fullPage: true });
 
@@ -216,9 +224,6 @@ function signatures(): { Signature: PluginSignature[] } {
 }
 
 async function processCall(id: number, pluginCall: any): Promise<void> {
-  // Pretty printing the call to stderr
-  // console.error(JSON.stringify(pluginCall, null, 4));
-
   // Get the span from the call
   const span = pluginCall.call.head;
 
@@ -248,8 +253,6 @@ async function processCall(id: number, pluginCall: any): Promise<void> {
         writeError(id, `Invalid Plotly configuration: ${error.message}`, span);
       }
       return;
-      // console.error("Invalid Plotly configuration:", error);
-      // process.exit(1);
     }
 
     const width = plotlyConfig.layout?.width || 1080;
@@ -261,8 +264,6 @@ async function processCall(id: number, pluginCall: any): Promise<void> {
       if (error instanceof Error) {
         writeError(id, `Error generating plot: ${error.message}`, span);
       }
-      // console.error("Error generating plot:", error);
-      // process.exit(1);
     }
   } catch (err) {
     if (err instanceof Error) {
@@ -328,20 +329,17 @@ function writeError(id: number, text: string, span?: any): void {
   writeResponse(id, error);
 }
 
-function handleInput(input: any): void {
+async function handleInput(input: any): Promise<void> {
   if (typeof input === "object" && input !== null) {
     if ("Hello" in input) {
       if (input.Hello.version !== NUSHELL_VERSION) {
-        // if (browser) {
-        //   closeBrowser().catch((err) =>
-        //     console.error("Error closing browser:", err),
-        //   );
-        // }
-        // process.exit(1);
+        await closeBrowser();
+        process.exit(0);
       } else {
         return;
       }
     } else if ("Signal" in input && input.Signal === "Reset") {
+      // Do not respond to this message, or the plugin will be killed!
       // Cleanly exit on Reset signal (no logging, success code)
       // process.exit(0);
       // console.log(JSON.stringify({ Reset: false }));
@@ -369,32 +367,16 @@ function handleInput(input: any): void {
       }
     } else {
       console.error("Unknown message: " + JSON.stringify(input));
-      // if (browser) {
-      //   closeBrowser().catch((err) =>
-      //     console.error("Error closing browser:", err),
-      //   );
-      // }
-      // process.exit(1);
+      await closeBrowser();
+      process.exit(0);
     }
   } else if (input === "Goodbye") {
-    // console.log(JSON.stringify({ Goodbye: true }));
-    // if (browser) {
-    //   closeBrowser().catch((err) =>
-    //     console.error("Error closing browser:", err),
-    //   );
-    // }
-    // process.exit(0);
-    console.log(JSON.stringify({})); // or just `console.log("")`
-    process.stdout.resume();
-    return; // <-- stay alive
+    await closeBrowser();
+    process.exit(0);
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
-    // if (browser) {
-    //   closeBrowser().catch((err) =>
-    //     console.error("Error closing browser:", err),
-    //   );
-    // }
-    // process.exit(1);
+    await closeBrowser();
+    process.exit(0);
   }
 }
 
@@ -410,31 +392,23 @@ function plugin(): void {
     const lines = buffer.split("\n");
     buffer = lines.pop() || ""; // Retain incomplete line for next chunk
 
-    lines.forEach((line) => {
+    lines.forEach(async (line) => {
       if (line.trim()) {
         try {
           const input = JSON.parse(line.trim());
           handleInput(input);
         } catch (err) {
           console.error("Error parsing input: " + err);
-          // if (browser) {
-          //   closeBrowser().catch((error) =>
-          //     console.error("Error closing browser:", error),
-          //   );
-          // }
-          // process.exit(1);
+          await closeBrowser();
+          process.exit(0);
         }
       }
     });
   });
 
-  process.stdin.on("end", () => {
-    // if (browser) {
-    //   closeBrowser().catch((error) =>
-    //     console.error("Error closing browser:", error),
-    //   );
-    // }
-    // process.exit(0);
+  process.stdin.on("end", async () => {
+    await closeBrowser();
+    process.exit(0);
   });
 }
 
