@@ -19,6 +19,8 @@ const plotlyBareConfigSchema = zod.object({
 type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
 
 async function generateAndShowPlotly(
+  id: number,
+  span: any,
   plotConfig: PlotlyBareConfig,
   width?: number,
   height?: number,
@@ -30,10 +32,10 @@ async function generateAndShowPlotly(
 
     await page.setViewport({ width: width || 1080, height: height || 810 });
 
-    const id = plotlyDb.addPlot(plotConfig);
+    const plotId = plotlyDb.addPlot(plotConfig);
 
     // Navigate to the local web server hosting the plot
-    await page.goto(`http://localhost:${PORT}/plotly/${id}`, {
+    await page.goto(`http://localhost:${PORT}/plotly/${plotId}`, {
       waitUntil: "networkidle2",
     });
 
@@ -46,7 +48,23 @@ async function generateAndShowPlotly(
     server.close();
 
     // Display the image in the terminal
-    console.log(ansiescapes.image(imageBuffer, {}));
+    // console.log(ansiescapes.image(imageBuffer, {}));
+    const response = {
+      PipelineData: {
+        Value: [
+          {
+            String: {
+              val: ansiescapes.image(imageBuffer, {}),
+              span: span
+            },
+          },
+          null, // Second value can be null if not needed
+        ],
+      },
+    };
+    writeResponse(id, response);
+    // writeResponse(id, ansiescapes.image(imageBuffer, {}));
+    // writeResponse(id, "testing output");
   } catch (error) {
     console.error("Error generating plot:", error);
     throw error;
@@ -205,7 +223,7 @@ async function processCall(id: number, pluginCall: any): Promise<void> {
     const height = plotlyConfig.layout?.height || 810;
 
     try {
-      await generateAndShowPlotly(plotlyConfig, width, height);
+      await generateAndShowPlotly(id, span, plotlyConfig, width, height);
     } catch (error) {
       if (error instanceof Error) {
         writeError(id, `Error generating plot: ${error.message}`, span);
