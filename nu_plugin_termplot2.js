@@ -63,51 +63,11 @@ function getPluginSignature() {
           description: "Demonstration plugin for Node.js",
           extra_description: "",
           required_positional: [
-            {
-              name: "a",
-              desc: "Required integer parameter",
-              shape: "Int",
-            },
-            {
-              name: "b",
-              desc: "Required string parameter",
-              shape: "String",
-            },
           ],
           optional_positional: [
-            {
-              name: "opt",
-              desc: "Optional numeric parameter",
-              shape: "Int",
-            },
           ],
-          rest_positional: {
-            name: "rest",
-            desc: "Variable-length string parameters",
-            shape: "String",
-          },
+          rest_positional: null,
           named: [
-            {
-              long: "help",
-              short: "h",
-              arg: null,
-              required: false,
-              desc: "Display help information",
-            },
-            {
-              long: "flag",
-              short: "f",
-              arg: null,
-              required: false,
-              desc: "Example boolean flag",
-            },
-            {
-              long: "named",
-              short: "n",
-              arg: "String",
-              required: false,
-              desc: "Example named parameter",
-            },
           ],
           input_output_types: [["Any", "Any"]],
           allow_variants_without_examples: true,
@@ -131,24 +91,12 @@ function getPluginSignature() {
 function processExecutionCall(id, callData) {
   const span = callData.call.head;
 
-  // Generate sample tabular data
-  const tableData = Array.from({ length: 10 }, (_, index) => ({
-    Record: {
-      val: {
-        one: { Int: { val: index * 1, span } },
-        two: { Int: { val: index * 2, span } },
-        three: { Int: { val: index * 3, span } },
-      },
-      span,
-    },
-  }));
-
   writeResponse(id, {
     PipelineData: {
       Value: [
         {
-          List: {
-            vals: tableData,
+          String: {
+            val: "my output string",
             span,
           },
         },

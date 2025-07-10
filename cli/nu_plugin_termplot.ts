@@ -18,6 +18,44 @@ const plotlyBareConfigSchema = zod.object({
 
 type PlotlyBareConfig = zod.infer<typeof plotlyBareConfigSchema>;
 
+// These live at module scope, above generateAndShowPlotly
+let browser: import("puppeteer").Browser | null = null;
+let page: import("puppeteer").Page | null = null;
+let puppeteerModule: typeof import("puppeteer") | null = null; // cache the imported module
+
+async function getBrowser(): Promise<{
+  browser: import("puppeteer").Browser;
+  page: import("puppeteer").Page;
+}> {
+  // Lazy-import puppeteer only once
+  if (!puppeteerModule) {
+    puppeteerModule = await import("puppeteer");
+  }
+
+  if (!browser) {
+    browser = await puppeteerModule.launch();
+    console.error("Termplot: headless browser launched");
+  }
+
+  // const page = await browser.newPage();
+  if (!page) {
+    page = await browser.newPage();
+    console.error("Termplot: new page created");
+  }
+
+  return { browser, page };
+}
+
+// Call this from your Goodbye / shutdown logic
+async function closeBrowser(): Promise<void> {
+  if (browser) {
+    await browser.close();
+    browser = null;
+    console.error("Termplot: headless browser closed");
+  }
+}
+
+// ─── Function used by the Run call ────────────────────────────────────────────
 async function generateAndShowPlotly(
   id: number,
   span: any,
@@ -26,49 +64,43 @@ async function generateAndShowPlotly(
   height?: number,
 ): Promise<void> {
   try {
-    const puppeteer = await import("puppeteer");
-    // Launch a headless browser
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    // Persistent browser (lazily created)
+    const { browser, page } = await getBrowser();
 
+    // New page for every call
     await page.setViewport({ width: width || 1080, height: height || 810 });
 
     const plotId = plotlyDb.addPlot(plotConfig);
 
-    // Navigate to the local web server hosting the plot
     await page.goto(`http://localhost:${PORT}/plotly/${plotId}`, {
       waitUntil: "networkidle2",
     });
 
-    // Take a screenshot
     const imageBuffer = await page.screenshot({ fullPage: true });
 
-    // Close the page and browser and server
-    await page.close();
-    await browser.close();
-    server.close();
+    // Clean up per-call resources
+    // await page.close();
 
-    // Display the image in the terminal
-    // console.log(ansiescapes.image(imageBuffer, {}));
+    // Send the image back to Nushell
     const response = {
       PipelineData: {
         Value: [
           {
             String: {
               val: ansiescapes.image(imageBuffer, {}),
-              span: span
+              span,
             },
           },
-          null, // Second value can be null if not needed
+          null,
         ],
       },
     };
     writeResponse(id, response);
-    // writeResponse(id, ansiescapes.image(imageBuffer, {}));
-    // writeResponse(id, "testing output");
   } catch (error) {
     console.error("Error generating plot:", error);
-    throw error;
+    if (error instanceof Error) {
+      writeError(id, error.message, span);
+    }
   }
 }
 
@@ -253,10 +285,16 @@ function tellNushellHello(): void {
     Hello: {
       protocol: "nu-plugin", // always this value
       version: NUSHELL_VERSION,
-      features: [],
+      features: ["persistent"],
     },
   };
   console.log(JSON.stringify(hello));
+  const disableGC = {
+    Option: {
+      GcDisabled: true,
+    },
+  };
+  console.log(JSON.stringify(disableGC));
   process.stdout.resume();
 }
 
@@ -294,17 +332,22 @@ function handleInput(input: any): void {
   if (typeof input === "object" && input !== null) {
     if ("Hello" in input) {
       if (input.Hello.version !== NUSHELL_VERSION) {
-        process.exit(1);
+        // if (browser) {
+        //   closeBrowser().catch((err) =>
+        //     console.error("Error closing browser:", err),
+        //   );
+        // }
+        // process.exit(1);
       } else {
         return;
       }
     } else if ("Signal" in input && input.Signal === "Reset") {
       // Cleanly exit on Reset signal (no logging, success code)
       // process.exit(0);
-      // console.log(JSON.stringify({ Reset: true }));
+      console.log(JSON.stringify({ Reset: false }));
       // process.stdout.resume(); // Ensure output is flushed
       // console.log("something\n");
-      console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
+      // console.log(JSON.stringify({})); // Empty object or {"Ack": "Reset"}
       return;
     } else if ("Call" in input) {
       const [id, pluginCall] = input.Call;
@@ -326,14 +369,32 @@ function handleInput(input: any): void {
       }
     } else {
       console.error("Unknown message: " + JSON.stringify(input));
-      process.exit(1);
+      // if (browser) {
+      //   closeBrowser().catch((err) =>
+      //     console.error("Error closing browser:", err),
+      //   );
+      // }
+      // process.exit(1);
     }
   } else if (input === "Goodbye") {
     // console.log(JSON.stringify({ Goodbye: true }));
-    process.exit(0);
+    // if (browser) {
+    //   closeBrowser().catch((err) =>
+    //     console.error("Error closing browser:", err),
+    //   );
+    // }
+    // process.exit(0);
+    console.log(JSON.stringify({})); // or just `console.log("")`
+    process.stdout.resume();
+    return; // <-- stay alive
   } else {
     console.error("Unknown message: " + JSON.stringify(input));
-    process.exit(1);
+    // if (browser) {
+    //   closeBrowser().catch((err) =>
+    //     console.error("Error closing browser:", err),
+    //   );
+    // }
+    // process.exit(1);
   }
 }
 
@@ -356,14 +417,24 @@ function plugin(): void {
           handleInput(input);
         } catch (err) {
           console.error("Error parsing input: " + err);
-          process.exit(1);
+          // if (browser) {
+          //   closeBrowser().catch((error) =>
+          //     console.error("Error closing browser:", error),
+          //   );
+          // }
+          // process.exit(1);
         }
       }
     });
   });
 
   process.stdin.on("end", () => {
-    process.exit(0);
+    // if (browser) {
+    //   closeBrowser().catch((error) =>
+    //     console.error("Error closing browser:", error),
+    //   );
+    // }
+    // process.exit(0);
   });
 }
 
