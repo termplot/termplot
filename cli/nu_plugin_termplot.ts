@@ -7,7 +7,7 @@ import { plotlyDb } from "./plotly-db.js";
 import { PORT, server } from "./server.js";
 
 const NUSHELL_VERSION = process.env.NUSHELL_VERSION || "0.105.1";
-const PLUGIN_VERSION = "0.1.20"; // bump if you change commands!
+const PLUGIN_VERSION = "0.1.21"; // bump if you change commands!
 
 function nushellVersionIsAtLeast(
   version: string,
