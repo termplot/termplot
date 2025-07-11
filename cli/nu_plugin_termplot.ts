@@ -15,10 +15,10 @@ function nushellVersionIsAtLeast(
 ): boolean {
   const [major, minor, patch] = version.split(".").map(Number);
   const [cMajor, cMinor, cPatch] = compareTo.split(".").map(Number);
-  if (major >= cMajor) return true;
-  if (major <= cMajor) return false;
-  if (minor >= cMinor) return true;
-  if (minor <= cMinor) return false;
+  if (major > cMajor) return true;
+  if (major < cMajor) return false;
+  if (minor > cMinor) return true;
+  if (minor < cMinor) return false;
   return patch >= cPatch;
 }
 
