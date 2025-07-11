@@ -6,6 +6,22 @@ import zod from "zod/v4";
 import { plotlyDb } from "./plotly-db.js";
 import { PORT, server } from "./server.js";
 
+const NUSHELL_VERSION = process.env.NUSHELL_VERSION || "0.105.0";
+const PLUGIN_VERSION = "0.1.16"; // bump if you change commands!
+
+function nushellVersionIsAtLeast(
+  version: string,
+  compareTo: string = NUSHELL_VERSION,
+): boolean {
+  const [major, minor, patch] = version.split(".").map(Number);
+  const [cMajor, cMinor, cPatch] = compareTo.split(".").map(Number);
+  if (major >= cMajor) return true;
+  if (major <= cMajor) return false;
+  if (minor >= cMinor) return true;
+  if (minor <= cMinor) return false;
+  return patch >= cPatch;
+}
+
 // Define the Plotly configuration schema using Zod
 const plotlyBareConfigSchema = zod.object({
   data: zod.array(zod.any()), // Array of data traces, each can be any valid Plotly trace type
@@ -134,9 +150,6 @@ async function generateAndShowPlotly(
     }
   }
 }
-
-const NUSHELL_VERSION = process.env.NUSHELL_VERSION || "0.105.1";
-const PLUGIN_VERSION = "0.1.1"; // bump if you change commands!
 
 type PluginSignature = {
   sig: {
@@ -355,7 +368,8 @@ function writeError(id: number, text: string, span?: any): void {
 async function handleInput(input: any): Promise<void> {
   if (typeof input === "object" && input !== null) {
     if ("Hello" in input) {
-      if (input.Hello.version !== NUSHELL_VERSION) {
+      // if (input.Hello.version !== NUSHELL_VERSION) {
+      if (!nushellVersionIsAtLeast(input.Hello.version)) {
         await closeBrowser();
         process.exit(0);
       } else {
