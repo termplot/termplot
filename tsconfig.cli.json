@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["cli/**/*.ts", "vite.config.ts"],
+  "include": ["cli/**/*.ts", "display-image.ts", "vite.config.ts"],
   "compilerOptions": {
     "outDir": "./build",
     "noEmit": false,
