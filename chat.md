@@ -6113,3 +6113,63 @@ def termplot []: [record -> nothing] {
 ```
 
 that code works fine if you call it from the directory where display-image.ts is. however, it does not work if you source the file from some other location. is there any way to get the directy of the "current file" in nushell, so that i can run `node __DIRNAME__/display-image.ts`?
+
+# === ASSISTANT ===
+
+Yes, Nushell provides a way to get the directory of the current file (similar to `__dirname` in Node.js), which works reliably when the file is sourced (e.g., via `source your-file.nu`). I'll explain how it works and provide an updated version of your code below.
+
+### Quick Explanation
+
+- **Key Variables**:
+  - `$env.CURRENT_FILE`: This gives the full path to the current script file
+    (e.g., `/path/to/your-file.nu`).
+  - To get just the directory, use `($env.CURRENT_FILE | path dirname)`, which
+    extracts the directory path (e.g., `/path/to`).
+- **Caveats**:
+  - This works when the file is sourced (e.g., `source your-file.nu`). If run
+    directly (e.g., `nu your-file.nu`), `$env.CURRENT_FILE` might not be set, so
+    fall back to `$env.FILE_PWD` (the directory where the file was executed
+    from).
+  - It's relative to the sourced file's location, so it should handle your
+    scenario perfectly (e.g., sourcing from another directory).
+
+### Updated Code
+
+Save this in your `.nu` file (e.g., `termplot.nu`):
+
+```nu
+# termplot.nu
+
+# Get the directory of this file (handles sourcing from other locations)
+let dirname = if ($env.CURRENT_FILE? | is-empty) {
+  $env.FILE_PWD  # Fallback if not sourced
+} else {
+  ($env.CURRENT_FILE | path dirname)
+}
+
+# Your def (updated with dynamic path)
+def termplot []: [record -> nothing] {
+  termplot render | node $"($dirname)/display-image.ts"
+}
+```
+
+### How to Use
+
+1. **Source the File**: From any directory, run `source /path/to/termplot.nu`.
+2. **Call the Command**: Now `termplot` should work regardless of your current
+   working directory—it resolves `display-image.ts` relative to `termplot.nu`'s
+   location.
+3. **Testing**:
+   - Add a debug print: `echo $dirname` inside the def to verify the path.
+   - Run from a different directory: `cd /some/other/dir; termplot`—it should
+     still find `display-image.ts`.
+
+If `$env.CURRENT_FILE` isn't available in your Nushell version (it's in 0.105+),
+upgrade or use `$env.FILE_PWD` as the primary (it's usually close enough). If
+you run into edge cases (e.g., symlinks), `path expand` can help: `($env.CURRENT_FILE | path dirname | path expand)`.
+
+Let me know if this resolves it or if you need further tweaks!
+
+# === USER ===
+
+
