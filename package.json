@@ -1,6 +1,6 @@
 {
   "name": "termplot.nu",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Beautiful plots in your terminal.",
   "author": "Ryan X. Charles <ryan@ryanxcharles.com> (http://ryanxcharles.com)",
   "type": "module",
