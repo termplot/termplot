@@ -42,7 +42,7 @@ pnpm install termplot.nu
 Then, add the Termplot plugin to your current Nushell environment:
 
 ```nu
-plugin add node_modules/bin/nu_plugin_termplot
+plugin add node_modules/.bin/nu_plugin_termplot
 ```
 
 Finally, you must "use" the plugin and load the Termplot module:
