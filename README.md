@@ -45,11 +45,11 @@ Then, add the Termplot plugin to your current Nushell environment:
 plugin add node_modules/.bin/nu_plugin_termplot
 ```
 
-Finally, you must "use" the plugin and load the Termplot module:
+Finally, you must "use" the plugin and source the Termplot script:
 
 ```nu
 plugin use termplot
-use node_modules/termplot.nu *
+source node_modules/termplot.nu/termplot.nu
 ```
 
 ## Usage

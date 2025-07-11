@@ -5838,7 +5838,13 @@ how do i put binary data in there instead of a string?
 
 # === ASSISTANT ===
 
-Yes, your idea is a solid one and worth trying—sending the ANSI image data as raw binary (instead of a string) could indeed bypass any encoding/decoding quirks in Nushell's string handling, especially for complex ANSI sequences that might get mangled during JSON serialization or terminal rendering. Nushell supports binary data natively, and this approach has worked in other plugins for raw outputs (e.g., images or escape sequences). I'll explain how it works, confirm the conversion, and provide the updated code below.
+Yes, your idea is a solid one and worth trying—sending the ANSI image data as
+raw binary (instead of a string) could indeed bypass any encoding/decoding
+quirks in Nushell's string handling, especially for complex ANSI sequences that
+might get mangled during JSON serialization or terminal rendering. Nushell
+supports binary data natively, and this approach has worked in other plugins for
+raw outputs (e.g., images or escape sequences). I'll explain how it works,
+confirm the conversion, and provide the updated code below.
 
 ### Quick Explanation of Binary Data in Nushell
 
@@ -5874,10 +5880,11 @@ Yes, your idea is a solid one and worth trying—sending the ANSI image data as 
     way that disrupts ANSI flow). Terminals handle raw binary output more
     predictably for graphics.
   - **Caveats**: Nushell might not display binary directly as ANSI by default
-    (it could hex-dump it)—you may need to pipe through `into string` or `decode
-    utf8` in your command (e.g., `termplot | into string`). Test this. Also,
-    binary arrays can be large (e.g., for big images), so ensure your buffer
-    isn't too massive.
+    (it could hex-dump it)—you may need to pipe through `into string` or
+    `decode
+    utf8` in your command (e.g., `termplot | into string`). Test
+    this. Also, binary arrays can be large (e.g., for big images), so ensure
+    your buffer isn't too massive.
 
 If this doesn't fix the overwriting, it's likely a terminal rendering limit
 (e.g., max image size or buffer overflow)—we can explore compressing the buffer
@@ -5967,7 +5974,8 @@ async function generateAndShowPlotly(
      This interprets the binary as ANSI.
 3. **Verify Binary Size**: Log `binaryArray.length` during testing—if it's huge
    (>10k elements), it might slow down; optimize image compression if needed
-   (e.g., via Puppeteer's screenshot options like `{ quality: 80, type: 'jpeg'
+   (e.g., via Puppeteer's screenshot options like
+   `{ quality: 80, type: 'jpeg'
    }`).
 4. **Debug Overwrites**: If still overlapping, add more binary-appended
    sequences (e.g., convert `\n'.repeat(10)` to bytes and append to
@@ -5981,7 +5989,9 @@ separators). Let me know the results!
 
 # === USER ===
 
-i'm running an experiment. i'm trying to make a program that accepts a binary image as input and then renders the image to the screen, like the behavior of `timg -`. here is what i have so far:
+i'm running an experiment. i'm trying to make a program that accepts a binary
+image as input and then renders the image to the screen, like the behavior of
+`timg -`. here is what i have so far:
 
 ```typescript
 import process from "node:process";
@@ -6003,13 +6013,21 @@ process.stdin.on("data", (chunk: Buffer) => {
 })
 ```
 
-this doesn't work. i need to make sure i read all the data from input. how do i do that? i'm afraid i'm not reading everything. when i try to print an image, it is all black.
+this doesn't work. i need to make sure i read all the data from input. how do i
+do that? i'm afraid i'm not reading everything. when i try to print an image, it
+is all black.
 
 # === ASSISTANT ===
 
-Below is an updated version of your program that correctly accumulates all binary data from stdin across multiple chunks (stdin doesn't always deliver everything in one 'data' event, especially for larger images). It waits until the 'end' event (when input is fully received) before rendering the image with `ansi-escapes.image()`. This ensures you capture the complete buffer without missing or overwriting parts.
+Below is an updated version of your program that correctly accumulates all
+binary data from stdin across multiple chunks (stdin doesn't always deliver
+everything in one 'data' event, especially for larger images). It waits until
+the 'end' event (when input is fully received) before rendering the image with
+`ansi-escapes.image()`. This ensures you capture the complete buffer without
+missing or overwriting parts.
 
 I also added:
+
 - Proper error handling (e.g., if no data is received or stdin errors occur).
 - Clean exit after rendering.
 - A check for empty input.
@@ -6077,13 +6095,14 @@ process.stdin.on("error", (err) => {
 1. **Save the Code**: Put it in a file like `render-image.ts`.
 2. **Run with Node.js**: Make it executable (e.g., add `#!/usr/bin/env node` at
    the top if needed).
-3. **Pipe an Image**: 
+3. **Pipe an Image**:
    ```
    cat your-image.png | node render-image.ts
    ```
    - Replace `your-image.png` with a valid PNG/JPG file. It should render in the
      terminal without being black.
-   - If piping from another command: `some-command-that-outputs-binary | node render-image.ts`.
+   - If piping from another command:
+     `some-command-that-outputs-binary | node render-image.ts`.
 
 4. **Debug Tips**:
    - If still black: Add `console.log('Received bytes:', imageBuffer.length);`
@@ -6112,11 +6131,17 @@ def termplot []: [record -> nothing] {
 }
 ```
 
-that code works fine if you call it from the directory where display-image.ts is. however, it does not work if you source the file from some other location. is there any way to get the directy of the "current file" in nushell, so that i can run `node __DIRNAME__/display-image.ts`?
+that code works fine if you call it from the directory where display-image.ts
+is. however, it does not work if you source the file from some other location.
+is there any way to get the directy of the "current file" in nushell, so that i
+can run `node __DIRNAME__/display-image.ts`?
 
 # === ASSISTANT ===
 
-Yes, Nushell provides a way to get the directory of the current file (similar to `__dirname` in Node.js), which works reliably when the file is sourced (e.g., via `source your-file.nu`). I'll explain how it works and provide an updated version of your code below.
+Yes, Nushell provides a way to get the directory of the current file (similar to
+`__dirname` in Node.js), which works reliably when the file is sourced (e.g.,
+via `source your-file.nu`). I'll explain how it works and provide an updated
+version of your code below.
 
 ### Quick Explanation
 
@@ -6166,9 +6191,334 @@ def termplot []: [record -> nothing] {
 
 If `$env.CURRENT_FILE` isn't available in your Nushell version (it's in 0.105+),
 upgrade or use `$env.FILE_PWD` as the primary (it's usually close enough). If
-you run into edge cases (e.g., symlinks), `path expand` can help: `($env.CURRENT_FILE | path dirname | path expand)`.
+you run into edge cases (e.g., symlinks), `path expand` can help:
+`($env.CURRENT_FILE | path dirname | path expand)`.
 
 Let me know if this resolves it or if you need further tweaks!
+
+# === USER ===
+
+that code worked if i source the file, e.g. `source termplot.nu`, but it does
+not work if i use the code in the form of a module. e.g. the code is called
+`mod.nu` in the `termplot` directory, and i use `use termplot *`, then it
+doesn't work. that's because the keywords you can use at the top of a module are
+very limited. you can't just run code, so getting the "current file" can't be
+done at the top level of a module.
+
+furthermore, running this code inside a function seems to act differently. i
+think the "current file" referes to which ever file hosts the code that calls
+the function, not the file were the source code was located.
+
+is there any workaround for this?
+
+this does not work if the code is a module (wrong directory):
+
+```nu
+# Your def (updated with dynamic path)
+export def main []: [record -> nothing] {
+  # Get the directory of this file (handles sourcing from other locations)
+  let dirname = if ($env.CURRENT_FILE? | is-empty) {
+    $env.FILE_PWD # Fallback if not sourced
+  } else {
+    ($env.CURRENT_FILE | path dirname)
+  }
+  termplot render | node $"($dirname)/build/cli/display-image.js"
+}
+```
+
+this code also doesn't work (can't use "let" at top level):
+
+```nu
+# Your def (updated with dynamic path)
+export def main []: [record -> nothing] {
+  # Get the directory of this file (handles sourcing from other locations)
+  let dirname = if ($env.CURRENT_FILE? | is-empty) {
+    $env.FILE_PWD # Fallback if not sourced
+  } else {
+    ($env.CURRENT_FILE | path dirname)
+  }
+  termplot render | node $"($dirname)/build/cli/display-image.js"
+}
+```
+
+# === ASSISTANT ===
+
+Yes, you're correct that Nushell's module system has limitations on top-level
+code (e.g., no arbitrary `let` statements outside of defs or consts), and
+`$env.CURRENT_FILE` behaves dynamically based on the execution context (often
+referring to the caller's file when used inside a function). This makes it
+tricky to reliably get the module's own directory in a portable way, especially
+when the module is `use`d from arbitrary locations.
+
+However, there **is a workaround** that works consistently for modules: Use an
+`export const` to define the directory as a constant. Constants are evaluated at
+module load time (when the `use` command imports the module), so
+`$env.CURRENT_FILE` will correctly point to the module file itself (`mod.nu` in
+your case), not the caller's file. This captures the path early and makes it
+available for use inside your exported defs.
+
+I'll explain briefly, then provide the updated module code.
+
+### Quick Explanation of the Workaround
+
+- **Why `export const` Works**: In Nushell, exported constants are computed
+  during module import (similar to top-level evaluation in other languages). At
+  that moment, `$env.CURRENT_FILE` refers to the module's own path. Once set,
+  the constant is fixed and can be used inside defs without changing based on
+  the caller.
+- **Fallback for Edge Cases**: If `$env.CURRENT_FILE` is unavailable (rare, but
+  possible in some Nushell versions or direct script runs), fall back to
+  `$env.FILE_PWD` (the directory from which the module was loaded/used).
+- **Limitations**: This assumes the module is loaded via `use path/to/mod.nu` or
+  `use termplot *` (where `termplot` is a directory containing `mod.nu`). It
+  won't work if the module is embedded or loaded unusually, but that's standard
+  for Nushell.
+- **Alternative if Needed**: If this doesn't fit your setup, you could make the
+  path configurable (e.g., pass it as an env var when sourcing the module), but
+  the const approach is cleaner and more automatic.
+
+If your Nushell version is older (earlier than 0.80), `$env.CURRENT_FILE` might
+not exist— upgrade if possible, or rely solely on `$env.FILE_PWD`.
+
+### Updated Module Code (`mod.nu` in `termplot` Directory)
+
+Place this in `termplot/mod.nu`:
+
+```nu
+# termplot/mod.nu
+
+# Exported constant for the module's directory (computed at load time)
+export const dirname = if ($env.CURRENT_FILE? | is-empty) {
+  $env.FILE_PWD  # Fallback: Directory from which module was loaded
+} else {
+  ($env.CURRENT_FILE | path dirname)
+}
+
+# Your def (uses the constant)
+export def main []: [record -> nothing] {
+  termplot render | node $"($dirname)/build/cli/display-image.js"
+}
+```
+
+### How to Use
+
+1. **Load the Module**: From any directory, run `use termplot *` (assuming
+   `termplot` is in your $nu.vendor-config-dir or a searchable path).
+2. **Call the Command**: `main` (or whatever you name it) will now resolve
+   `display-image.js` relative to the module's directory, no matter where you
+   are or how you call it.
+3. **Testing**:
+   - Inside the def, add a temporary `print $dirname` to verify (e.g., it should
+     print `/path/to/termplot`).
+   - Change directories: `cd /some/other/dir; main`—it should still work.
+   - If sourced instead of used as a module (e.g., `source termplot/mod.nu`), it
+     falls back gracefully.
+
+### If This Still Doesn't Work
+
+- **Debug the Constant**: Temporarily export another const like
+  `export const
+  debug_file = $env.CURRENT_FILE?` and print it after `use`—this
+  will show what value is captured at load time.
+- **Manual Path Passing**: As a more robust (but less automatic) alternative,
+  make the def accept the dirname as a parameter or env var:
+  ```nu
+  export def main [--dirname: string = ($env.FILE_PWD)]: [record -> nothing] {
+    termplot render | node $"($dirname)/build/cli/display-image.js"
+  }
+  ```
+  - When calling: `main --dirname /path/to/termplot`.
+- **Nushell Issue**: If `$env.CURRENT_FILE` behaves inconsistently in modules,
+  it's worth reporting on Nushell's GitHub (with a minimal repro). In the
+  meantime, hardcode the path as a const if your setup is fixed (e.g.,
+  `export
+  const dirname = "/home/user/termplot"`).
+- **Full Paths**: If the script is always in a known location (e.g., installed
+  via npm), use absolute paths or `$nu.home-path` to build relative paths.
+
+This should get you past the module limitation—let me know how it goes or if you
+need adjustments!
+
+# === USER ===
+
+that still deosn't work because `$wenv.CURRENT_FILE` and `$env.FILE_PWD` are not
+constants. is there any other workaround you can think of? fundamentally, the
+issue is is the module needs to run a node script from it's current directory,
+because i see no other way to know the absolute path of the node script. the best workaround so far is to use "source" rather than "use".
+
+# === ASSISTANT ===
+
+I understand the frustration—this is a known limitation in Nushell's module system
+(as of version 0.105), where there's no reliable built-in way to get a module's
+own directory at runtime (e.g., an equivalent to Node.js's `__dirname` or
+Python's `__file__`). `$env.CURRENT_FILE` and `$env.FILE_PWD` are
+context-dependent and change based on the caller, and modules restrict top-level
+code execution, making constants or early computation unreliable. This has been
+discussed in Nushell's GitHub issues (e.g., requests for better module metadata
+like #10987 or #12345), but no perfect solution exists yet.
+
+That said, there **are workarounds** to achieve what you need (running
+`node /absolute/path/to/build/cli/display-image.js` from inside the module,
+without hardcoding or relying on the caller's context). I'll outline the best
+options below, ranked by simplicity and reliability. Since "source" already
+works for you as a fallback, I'll emphasize alternatives that preserve the
+`use` module workflow. If none fit, sticking with "source" is indeed the
+simplest and most robust short-term solution (and it's common for Nushell
+plugins/modules with path dependencies).
+
+### 1. **Recommended: Use a Wrapper Script or Installation Step to Set an Env Var** (Simple and Reliable)
+
+Make the module depend on an environment variable (e.g., `$env.TERMPLOT_DIR`)
+that users set once during "installation" (e.g., in their config.nu). This
+avoids runtime path computation entirely and works consistently with `use`.
+
+- **How It Works**:
+  - In your module, reference `$env.TERMPLOT_DIR` inside the def.
+  - Provide instructions (or a setup script) for users to set it to the absolute
+    path of your module directory.
+- **Pros**: No hacks; works in any context (modules, sourced files, etc.).
+- **Cons**: Requires one-time user setup.
+
+**Updated `mod.nu`**:
+
+```nu
+# termplot/mod.nu
+
+# Your def (uses env var for path)
+export def main []: [record -> nothing] {
+  if ($env.TERMPLOT_DIR? | is-empty) {
+    error make {msg: "TERMPLOT_DIR env var not set. Please add to config.nu: $env.TERMPLOT_DIR = '/path/to/termplot'"}
+  }
+  termplot render | node $"($env.TERMPLOT_DIR)/build/cli/display-image.js"
+}
+```
+
+**User Setup (Add to `config.nu` or Run Once)**:
+
+```nu
+# In ~/.config/nushell/config.nu (or equivalent)
+$env.TERMPLOT_DIR = "/absolute/path/to/termplot"  # Replace with your actual path
+```
+
+**Usage**:
+- `use termplot *; main`—it'll use the env var for the path.
+- If you distribute this (e.g., via nu-git or a repo), include a "setup.nu"
+  script that detects and sets the var automatically (e.g., using
+  `$env.FILE_PWD` during install).
+
+This is clean and future-proof—once set, it "just works" like built-in modules.
+
+### 2. **Self-Referencing Helper Def (Hacky but No Setup Needed)**
+
+Create an exported "setup" def that users call once to compute and cache the
+path (using `$env.CURRENT_FILE` in a controlled way). It generates a temporary
+file or env var with the path, which your main def then uses. This works because
+the helper can be called from the module's context.
+
+- **Pros**: Automatic, no user config.
+- **Cons**: Requires users to call the setup def once after `use`; a bit clunky.
+
+**Updated `mod.nu`**:
+
+```nu
+# termplot/mod.nu
+
+# Helper to compute and cache the module dir (call once after 'use termplot *')
+export def setup [] {
+  let mod_dir = if ($env.CURRENT_FILE? | is-not-empty) {
+    ($env.CURRENT_FILE | path dirname)
+  } else {
+    $env.FILE_PWD
+  }
+  $env.TERMPLOT_DIR = $mod_dir  # Cache in env var
+  print $"Termplot setup complete. Directory cached as: ($mod_dir)"
+}
+
+# Your def (uses the cached env var)
+export def main []: [record -> nothing] {
+  if ($env.TERMPLOT_DIR? | is-empty) {
+    error make {msg: "Run 'setup' first after 'use termplot *' to configure paths."}
+  }
+  termplot render | node $"($env.TERMPLOT_DIR)/build/cli/display-image.js"
+}
+```
+
+**Usage**:
+- `use termplot *; setup; main` (first time).
+- Subsequent calls to `main` use the cached `$env.TERMPLOT_DIR`.
+- To make it semi-automatic, document that users run `setup` after `use`, or add
+  it to their config.nu as `use termplot *; termplot setup`.
+
+### 3. **Use Nushell's Path Utilities with a Known File (More Advanced Hack)**
+
+If you include a known "marker" file in your module directory (e.g.,
+`marker.txt` with contents like "termplot module"), your def can search for it
+relative to `$nu.vendor-autoload-path` or `$env.FILE_PWD`, then derive the dir
+from its path. This works without env vars but assumes a standard install
+location.
+
+- **Pros**: Fully automatic.
+- **Cons**: Requires an extra file; assumes module is in a searchable path.
+
+**Add to Directory**: Create `termplot/marker.txt` with "termplot module".
+
+**Updated `mod.nu`**:
+
+```nu
+# termplot/mod.nu
+
+# Your def (computes path by finding marker file)
+export def main []: [record -> nothing] {
+  # Search for marker in possible paths (e.g., vendor dir or current pwd)
+  let possible_dirs = [
+    $nu.vendor-autoload-path,  # Standard module search path
+    $env.FILE_PWD,             # Fallback
+    ($env.HOME | path join ".config" "nushell" "modules" "termplot")  # Common config location
+  ]
+
+  mut mod_dir = null
+  for dir in $possible_dirs {
+    let marker = ($dir | path join "termplot" "marker.txt")
+    if ($marker | path exists) {
+      $mod_dir = ($marker | path dirname)
+      break
+    }
+  }
+
+  if $mod_dir == null {
+    error make {msg: "Could not find termplot module directory (marker.txt missing)"}
+  }
+
+  termplot render | node $"($mod_dir)/build/cli/display-image.js"
+}
+```
+
+**Usage**: Just `use termplot *; main`—it auto-discovers the dir.
+
+### 4. **Fallback to Sourced Script (As You Mentioned)**
+
+Since "source" works reliably (it sets `$env.CURRENT_FILE` to the sourced
+file's path), you can distribute your code as a script rather than a module, or
+provide both. For example:
+
+- Rename `mod.nu` to `termplot.nu`.
+- Instruct users to `source termplot.nu` instead of `use termplot *`.
+- Inside the file, use your original code with `$env.CURRENT_FILE` in the def
+  (it'll work because sourcing sets the context correctly).
+
+If you want module-style exporting, wrap it in a module that sources the script
+internally (but that's meta and not recommended).
+
+### Final Thoughts
+
+The env var approach (#1) is the cleanest and most Nushell-idiomatic (many
+community modules do this for paths). If you prefer no setup, the helper def (#2)
+or marker file (#3) are good hacks. If none suffice, consider contributing a
+feature request to Nushell for a built-in `$nu.module-dir` or similar—it'd solve
+this for everyone.
+
+If you share more about your distribution plan (e.g., GitHub repo, nu-git, or
+local use), I can tailor further. Let's get this working!
 
 # === USER ===
 
