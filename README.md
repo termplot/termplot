@@ -54,9 +54,6 @@ use node_modules/termplot.nu *
 
 ## Usage
 
-**Note**: Termplot is only tested with iterm-compatible terminals like iTerm2
-and WezTerm.
-
 ### In Bash or Zsh
 
 Simply pipe a Plotly configuration JSON file directly into Termplot in any
@@ -88,9 +85,9 @@ open plotly-config.json | termplot
 ## Compatibility
 
 Termplot only supports the iTerm image protocol, which works in iTerm2 and
-Wezterm.
+WezTerm.
 
-## Plotting tools
+## Plotting Tools
 
 Termplot currently only supports Plotly plots.
 
@@ -114,11 +111,11 @@ These tools make Termplot possible:
 ## TODO
 
 - [x] Cat files into termplot and render the images in iTerm2/Wezterm
-- [ ] Support config templates for easy plotting
+- [x] Support config templates for easy plotting: See beautiful.nu
 - [ ] Support png file output
 - [ ] Support other image protocols for other terminals
 - [ ] Support other plotting libraries
-- [ ] nushell plugin to hold browser open for faster rendering
+- [x] Nushell plugin to hold browser open for faster rendering
 - [ ] Provide `serve` alternative for viewing interactive plots in a browser
 
 ---
