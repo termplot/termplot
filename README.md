@@ -14,23 +14,76 @@ screenshot, and using modern escape codes to render the image.
 
 ## Installation
 
-```nushell
-npm install -g @termplot/termplot
+### Any Shell
+
+In bash, zsh, or any other shell, you can install Termplot globally with npm:
+
+```bash
+npm install -g termplot.nu
+```
+
+However, this form of Termplot opens a new browser window for every call, making
+plots render a bit slowly. You can render plots much faster by using the Nushell
+plugin instead.
+
+### Nushell Plugin
+
+If you are in [Nushell](https://nushell.sh), you can access the advanced form of
+Termplot that manages a browser automatically in the background.
+
+Instead of simply installing `termplot` globally, you can install the plugin.
+
+First, install Termplot in your project with [pnpm](https://pnpm.io/):
+
+```nu
+pnpm install termplot.nu
+```
+
+Then, add the Termplot plugin to your current Nushell environment:
+
+```nu
+plugin add node_modules/bin/nu_plugin_termplot
+```
+
+Finally, you must "use" the plugin and load the Termplot module:
+
+```nu
+plugin use termplot
+use node_modules/termplot.nu *
 ```
 
 ## Usage
 
+**Note**: Termplot is only tested with iterm-compatible terminals like iTerm2
+and WezTerm.
+
+### In Bash or Zsh
+
 Simply pipe a Plotly configuration JSON file directly into Termplot in any
 terminal that supports the iterm image protocol:
 
-```nushell
+```bash
 cat plotly-config.json | termplot
 ```
+
+This will render the plot in your terminal.
 
 You can see examples in [./examples](./examples).
 
 Learn how to write Plotly configuration files in their
 [documentation](https://plotly.com/javascript/).
+
+### In Nushell
+
+If you have followed the Nushell plugin installation instructions above, you can
+pipe a Nushell value directory into Termplot. Do this by using the `open`
+command in Nushell instead of the `cat` command. Termplot will manage the
+browser window automatically, so that subsequent calls to Termplot will render
+plots almost instantly.
+
+```nu
+open plotly-config.json | termplot
+```
 
 ## Compatibility
 
