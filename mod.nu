@@ -2,7 +2,7 @@
 # plugin use termplot
 
 # Your def (updated with dynamic path)
-export def termplot []: [record -> nothing] {
+export def main []: [record -> nothing] {
   let input = $in
   # Get the directory of this file (handles sourcing from other locations)
   let dirname = if ($env.CURRENT_FILE? | is-empty) {
