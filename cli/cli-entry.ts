@@ -59,7 +59,7 @@ program
   .name("termplot")
   .argument("[config]", "JSON plot configuration file (optional; can be piped)")
   .description("Termplot: Beautiful plots in your terminal")
-  .version("0.1.9")
+  .version("0.1.10")
   .action(async (input: string) => {
     let configStr = input;
     if (!configStr && !process.stdin.isTTY) {
