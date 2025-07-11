@@ -4,7 +4,9 @@
   "description": "Beautiful plots in your terminal.",
   "type": "module",
   "bin": {
-    "termplot": "./bin/termplot"
+    "termplot": "./bin/termplot",
+    "nu_plugin_termplot": "./bin/nu_plugin_termplot",
+    "termplot.nu": "./bin/termplot.nu"
   },
   "scripts": {
     "build:icons": "tsx process-icons.ts",

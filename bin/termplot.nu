@@ -9,5 +9,5 @@ let dirname = if ($env.CURRENT_FILE? | is-empty) {
 
 # Your def (updated with dynamic path)
 def termplot []: [record -> nothing] {
-  termplot render | node $"($dirname)/build/cli/display-image.js"
+  termplot render | node $"($dirname)/../build/cli/display-image.js"
 }
