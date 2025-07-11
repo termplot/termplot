@@ -96,7 +96,11 @@ Termplot currently only supports Plotly plots.
 Termplot finds an open port, runs a React Router / express web app, runs a
 [puppeteer](https://github.com/puppeteer/puppeteer) web browser, and navigates
 to the web app, loading the desired plot, taking a screenshot of the plot,
-rendeirng the screenshot in the terminal, and then exiting.
+rendering the screenshot in the terminal, and then exiting.
+
+If using the Nushell plugin, Termplot will keep the browser and webapp open in
+the background, so that subsequent calls to Termplot will render plots almost
+instantly.
 
 ## Dependencies
 
