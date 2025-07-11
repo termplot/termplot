@@ -1,11 +1,11 @@
 {
-  "name": "@termplot/termplot",
-  "version": "0.1.12",
+  "name": "termplot.nu",
+  "version": "0.1.13",
   "description": "Beautiful plots in your terminal.",
   "type": "module",
   "bin": {
     "termplot": "./bin/termplot",
-    "nu_plugin_termplot": "./bin/nu_plugin_termplot",
+    "nu_plugin_termplot": "./bin/nu_plugin_termplot"
   },
   "scripts": {
     "build:icons": "tsx process-icons.ts",
