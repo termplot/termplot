@@ -89,6 +89,12 @@ WezTerm.
 
 ## Plotting Tools
 
+### Operating Systems
+
+Termplot is only tested on macOs at this time.
+
+### Plotting Libraries
+
 Termplot currently only supports Plotly plots.
 
 ## How it Works
@@ -121,7 +127,9 @@ These tools make Termplot possible:
 - [ ] Support other plotting libraries
 - [x] Nushell plugin to hold browser open for faster rendering
 - [ ] Provide `serve` alternative for viewing interactive plots in a browser
+- [ ] Support Windows
+- [ ] Support Linux
 
 ---
 
-Copyright (C) 2025 Ryan X. Charles
+Copyright (C) 2025 EarthBucks Inc.
