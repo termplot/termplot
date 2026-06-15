@@ -193,3 +193,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 6: Implement terminal image display](06-implement-terminal-image-display.md) -
   **Pass**
+- [Experiment 7: Verify full-stack terminal rendering](07-verify-full-stack-terminal-rendering.md) -
+  **Designed**
