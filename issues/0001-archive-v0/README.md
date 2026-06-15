@@ -46,4 +46,4 @@ ready for the next version.
 ## Experiments
 
 - [Experiment 1: Define the v0 archive boundary](01-define-v0-archive-boundary.md) -
-  **Designed**
+  **Pass**

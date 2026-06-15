@@ -67,3 +67,132 @@ experiment with status `Designed`, the experiment contains the required
 Description, Changes, Verification, and Design Review sections, scope is narrow,
 verification has concrete pass/fail criteria, `git diff --check` is included,
 and no production move started before the plan commit.
+
+## Result
+
+**Result:** Pass
+
+The archive boundary is defined below from current-state evidence:
+
+- `git ls-files | awk -F/ '{print $1}' | sort -u` reported 37 tracked top-level
+  paths.
+- `find . -maxdepth 1 -mindepth 1 -print | sed 's#^./##' | sort` reported the
+  visible top-level tree, including untracked `.git` and `node_modules`.
+- `find . -maxdepth 2 -type l -not -path './node_modules/*' -print -exec
+  readlink {} \\;`
+  reported the three repository symlinks: `CLAUDE.md -> AGENTS.md`,
+  `.codex/skills -> ../skills`, and `.claude/skills -> ../skills`.
+
+### Keep at Root
+
+These paths are repository workflow, policy, issue-tracking, or shared legal
+surface and should remain outside `v0/`:
+
+| Path          | Reason                                                                       |
+| ------------- | ---------------------------------------------------------------------------- |
+| `.claude/`    | Agent runtime folder; `.claude/skills` must remain a symlink to `../skills`. |
+| `.codex/`     | Agent runtime folder; `.codex/skills` must remain a symlink to `../skills`.  |
+| `AGENTS.md`   | Root agent contract and workflow source of truth.                            |
+| `CLAUDE.md`   | Must remain a symlink to `AGENTS.md`.                                        |
+| `LICENSE`     | Repository-level license.                                                    |
+| `NOTICE`      | Repository-level notice.                                                     |
+| `dprint.json` | Repository formatting config used by issue docs and workflow files.          |
+| `issues/`     | Active issue and experiment record.                                          |
+| `scripts/`    | Contains `scripts/build-issues-index.sh`, the active issue index generator.  |
+| `skills/`     | Shared project-local skills for Codex and Claude.                            |
+
+### Move to `v0/`
+
+These paths belong to the current prototype and should move together into the
+archive:
+
+| Path                     | Reason                                                                |
+| ------------------------ | --------------------------------------------------------------------- |
+| `.npmignore`             | npm package ignore rules for the prototype package.                   |
+| `CHANGELOG.md`           | Prototype package changelog.                                          |
+| `README.md`              | Prototype user-facing README.                                         |
+| `app/`                   | Prototype React Router app.                                           |
+| `bin/`                   | Prototype executable shims.                                           |
+| `biome.json`             | Prototype code-format/lint config.                                    |
+| `chat.archive.1.md`      | Prototype development record.                                         |
+| `chat.archive.2.md`      | Prototype development record.                                         |
+| `chat.md`                | Prototype development record.                                         |
+| `cli/`                   | Prototype CLI, Nushell plugin, server bootstrap, and stdin utilities. |
+| `examples/`              | Prototype Plotly examples.                                            |
+| `package.json`           | Prototype package manifest.                                           |
+| `pnpm-lock.yaml`         | Prototype dependency lockfile.                                        |
+| `pnpm-workspace.yaml`    | Prototype workspace/build-policy file.                                |
+| `process-icons.ts`       | Prototype icon processing script.                                     |
+| `public/`                | Prototype public assets.                                              |
+| `raw-icons/`             | Prototype source icon asset.                                          |
+| `raw-images/`            | Prototype screenshot asset.                                           |
+| `react-router.config.ts` | Prototype React Router config.                                        |
+| `server/`                | Prototype React Router Express app wrapper.                           |
+| `termplot.nu`            | Prototype Nushell wrapper script.                                     |
+| `tsconfig.cli.json`      | Prototype CLI TypeScript config.                                      |
+| `tsconfig.json`          | Prototype TypeScript root config.                                     |
+| `tsconfig.node.json`     | Prototype Node TypeScript config.                                     |
+| `tsconfig.vite.json`     | Prototype Vite/app TypeScript config.                                 |
+| `vite.config.ts`         | Prototype Vite config.                                                |
+
+### Special Handling
+
+| Path            | Handling                                                                                                                                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.gitignore`    | Keep a root `.gitignore` for repository-level ignores, and create or copy `v0/.gitignore` so the archived package still ignores `node_modules`, build output, React Router output, and TypeScript build info when worked on from inside `v0/`. |
+| `.git/`         | Untracked repository metadata; never move.                                                                                                                                                                                                     |
+| `node_modules/` | Untracked install output; never move or commit. It can be removed or left ignored, but it is not part of the v0 archive.                                                                                                                       |
+
+### Symlink Boundary
+
+The root symlink contract remains unchanged:
+
+- `CLAUDE.md -> AGENTS.md`
+- `.codex/skills -> ../skills`
+- `.claude/skills -> ../skills`
+
+No v0-local symlink is required for the archive move. The v0 prototype can rely
+on ordinary files and directories inside `v0/`.
+
+### Next Experiment Input
+
+The next experiment should execute this boundary mechanically:
+
+1. Create `v0/`.
+2. Move every path listed in `Move to v0/` into `v0/`.
+3. Preserve root workflow paths listed in `Keep at Root`.
+4. Apply `.gitignore` special handling.
+5. Verify there are no unclassified tracked top-level paths left at root.
+6. Verify symlink targets are unchanged.
+7. Verify the archived prototype remains inspectable and, if dependency
+   installation is available, buildable from `v0/`.
+
+Verification command results:
+
+- `git diff --check`: pass.
+
+## Conclusion
+
+The archive boundary is clear enough to move the prototype in the next
+experiment. The only non-mechanical decision is `.gitignore`: root needs to keep
+repository-level ignore behavior, while `v0/` should receive equivalent
+prototype ignore rules so the archived package remains pleasant to work on from
+inside its new directory.
+
+## Completion Review
+
+Reviewer: `Rawls` (`019ecac5-108e-73e1-ac3a-c7414daea800`), fresh-context Codex
+subagent with `fork_context: false`.
+
+Findings:
+
+- Blocker: none.
+- Major: none.
+- Minor: none.
+
+Approval: approved. The reviewer confirmed that the completed experiment stayed
+within the approved documentation-only scope, the experiment has `## Result` and
+`## Conclusion`, the issue README status matches `Pass`, the next-experiment
+input is recorded, `git diff --check` passed, the result commit had not yet been
+made, and no build or typecheck was required because no production files moved
+or changed.
