@@ -212,3 +212,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 8: Implement Nushell integration](08-implement-nushell-integration.md) -
   **Pass**
+- [Experiment 9: Package and document v1](09-package-and-document-v1.md) -
+  **Designed**
