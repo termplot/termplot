@@ -189,3 +189,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 4: Implement browser renderer](04-implement-browser-renderer.md) -
   **Pass**
+- [Experiment 5: Implement CLI render workflow](05-implement-cli-render-workflow.md) -
+  **Designed**
