@@ -185,3 +185,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 2: Implement termplotd lifecycle skeleton](02-implement-termplotd-lifecycle-skeleton.md) -
   **Pass**
+- [Experiment 3: Implement plot registry protocol](03-implement-plot-registry-protocol.md) -
+  **Designed**
