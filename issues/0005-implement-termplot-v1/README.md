@@ -35,8 +35,10 @@ until Issue 4 has closed with an evidence-backed recommendation for:
 
 ## Architecture
 
-The daemon side is expected to remain TypeScript/Node unless Issue 4 or a later
-accepted experiment reopens that decision. `termplotd` owns:
+The daemon and foreground client/display layer are TypeScript/Node for v1. Issue
+4 proved that Node.js can emit the required macOS terminal image protocols
+directly, so v1 does not need a Rust client unless a later accepted experiment
+reopens that decision. `termplotd` owns:
 
 - local IPC server;
 - lifecycle state;
@@ -46,15 +48,15 @@ accepted experiment reopens that decision. `termplotd` owns:
 - screenshot pipeline;
 - structured render responses.
 
-The foreground client language is deliberately unresolved here. Issue 4 decides
-whether the client/display layer should be:
+The foreground `termplot` client owns:
 
-- TypeScript/Node;
-- Rust;
-- a hybrid, such as Node daemon plus Rust display client.
+- CLI parsing and daemon auto-start/connect behavior;
+- terminal detection and protocol selection;
+- direct in-repo encoders for terminal image display;
+- PNG file output when terminal display is not requested.
 
 The implementation should keep the daemon protocol stable enough that the client
-can change without rewriting the renderer.
+can change in a later issue without rewriting the renderer.
 
 ## Stage Checklist
 
@@ -62,12 +64,26 @@ Experiments should implement these stages in order after Issue 4 closes. The
 stage list is a roadmap, not permission to implement everything in one
 experiment.
 
-- [ ] Stage 1: Adopt Issue 4's protocol and client-language decision.
-  - Record the chosen client/display implementation language.
-  - Record the protocol priority and terminal support target.
-  - Record libraries or in-repo encoders selected by Issue 4.
-  - Update this issue if Issue 4 changes any assumptions below.
+- [x] Stage 1: Adopt Issue 4's protocol and client-language decision.
+  - Chosen client/display language: TypeScript/Node.
+  - Protocol priority: Ghostty Kitty graphics first, iTerm2 OSC 1337 second,
+    iTerm2 SIXEL compatibility third.
+  - Supported macOS terminals for v1: Ghostty and iTerm2.
+  - Initial implementation path: direct in-repo encoders, not external renderers
+    or C bindings.
+  - Selected encoders:
+    - Ghostty: direct Kitty graphics encoder.
+    - iTerm2 default: direct OSC 1337 `File=` PNG emitter.
+    - iTerm2 compatibility: direct SIXEL encoder only if needed after the
+      default path works.
+  - Deferred paths:
+    - ANSI/Unicode block fallback.
+    - iTerm2 Kitty graphics.
+    - Rust client/display layer.
+    - non-macOS terminals and multiplexers.
+  - Keep `timg` as a test oracle only, not production rendering.
 - [ ] Stage 2: `termplotd` lifecycle skeleton.
+  - Start from a new v1 TypeScript/Node workspace outside `v0/`.
   - Create `termplotd` entrypoint.
   - Add local socket IPC and request/response framing.
   - Implement probe-before-bind so a new daemon never steals a live daemon's
@@ -164,4 +180,4 @@ terminals and protocols, known limitations, and follow-up issues.
 ## Experiments
 
 - [Experiment 1: Adopt protocol decision](01-adopt-protocol-decision.md) -
-  **Designed**
+  **Pass**
