@@ -105,3 +105,5 @@ Important constraints:
   **Fail**
 - [Experiment 2: Probe Ghostty startup input](02-probe-ghostty-startup-input.md) -
   **Pass**
+- [Experiment 3: Render timg through Ghostty input](03-render-timg-through-ghostty-input.md) -
+  **Designed**
