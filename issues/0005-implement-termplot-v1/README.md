@@ -125,13 +125,19 @@ experiment.
   - Detect supported terminals conservatively.
   - Report unsupported terminals clearly.
   - Keep `timg` as a test oracle only if Issue 4 found it useful.
-- [ ] Stage 7: full-stack verification.
+- [x] Stage 7: full-stack verification.
   - Reuse the Issue 2/Issue 4 screenshot harnesses to verify real terminal image
     rendering with TermPlot output.
   - Assert pixels from rendered Plotly output.
   - Verify daemon reuse makes second render faster than cold start.
   - Verify cleanup leaves no probe-owned daemon, browser, terminal, or helper
     process running.
+  - Ghostty and iTerm2 full-stack probes passed with real TermPlot output,
+    screenshot pixel assertions, daemon reuse timing evidence, and attributed
+    cleanup.
+  - Stage 8 can rely on the daemon/client contract. Local setup still requires
+    macOS Screen Recording permission, target terminals, and GraphicsMagick for
+    screenshot probes.
 - [ ] Stage 8: Nushell integration.
   - Provide a Nushell-friendly command or plugin path that uses the same daemon.
   - Accept Nushell pipeline values and convert them to Plotly JSON.
@@ -194,4 +200,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 6: Implement terminal image display](06-implement-terminal-image-display.md) -
   **Pass**
 - [Experiment 7: Verify full-stack terminal rendering](07-verify-full-stack-terminal-rendering.md) -
-  **Designed**
+  **Pass**

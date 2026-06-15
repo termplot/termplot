@@ -187,3 +187,226 @@ samples, cleanup attribution is specified before cleanup for daemon, browser,
 Node, terminal/iTermServer, socket, log, temp resources, and child process tree,
 Stage 8-relevant learnings are required in the Issue 5 README when needed, and
 git state still showed only plan docs changed with no implementation started.
+
+## Result
+
+**Result:** Pass
+
+Implemented full-stack terminal probes for the two v1 target terminals. Both
+probes run the real built TermPlot CLI against a deterministic Plotly config,
+open isolated terminal windows, render terminal image output, capture
+screenshots, assert colored pixels, prove daemon reuse timing, and clean up
+probe-owned processes and files.
+
+Changed files:
+
+- `scripts/fixtures/full-stack-plotly-config.json`: deterministic Plotly config
+  with explicit dimensions and red, green, blue, and white pixel evidence.
+- `scripts/probe-ghostty-termplot.sh`: Ghostty full-stack probe using the proven
+  `--input=path:<input-file>` launch path, private socket/log/temp resources,
+  Kitty protocol output, screenshot capture, pixel assertions, daemon warm
+  timing checks, and attributed cleanup.
+- `scripts/probe-iterm2-termplot.sh`: iTerm2 full-stack probe using the proven
+  command launch path, temporary iTerm2 default suppression/restoration,
+  CoreGraphics window discovery, OSC 1337 output, screenshot capture, pixel
+  assertions, daemon warm timing checks, and attributed cleanup.
+- `issues/0005-implement-termplot-v1/README.md`: marked Stage 7 complete,
+  updated Experiment 7 to `Pass`, and added the Stage 8 handoff note.
+
+Implementation correction:
+
+- The first Ghostty run failed because the probe used the default macOS
+  `$TMPDIR`, making the Unix socket path too long for local socket binding. Both
+  probes now create short temp roots under `/tmp/tp-ghostty.*` and
+  `/tmp/tp-iterm2.*`.
+- The second Ghostty run passed rendering and pixels but found the probe-owned
+  `termplotd` process still running by its private socket path. Cleanup now
+  stops the daemon, kills only socket-attributed `termplotd` processes if
+  needed, and excludes the cleanup-check command itself from process leftovers.
+
+Verification run:
+
+```text
+pnpm run build
+```
+
+Passed.
+
+```text
+pnpm test
+```
+
+Passed: 23 tests, 23 pass.
+
+```text
+sh -n scripts/probe-ghostty-termplot.sh
+sh -n scripts/probe-iterm2-termplot.sh
+test -x scripts/probe-ghostty-termplot.sh
+test -x scripts/probe-iterm2-termplot.sh
+```
+
+Passed.
+
+```text
+pnpm exec dprint fmt issues/0005-implement-termplot-v1/README.md issues/0005-implement-termplot-v1/07-verify-full-stack-terminal-rendering.md
+```
+
+Passed.
+
+```text
+git add -N scripts/fixtures/full-stack-plotly-config.json scripts/probe-ghostty-termplot.sh scripts/probe-iterm2-termplot.sh && git diff --check
+```
+
+Passed.
+
+```text
+rg --fixed-strings 'timg' scripts/probe-ghostty-termplot.sh scripts/probe-iterm2-termplot.sh || true
+rg --fixed-strings 'imgcat' scripts/probe-ghostty-termplot.sh scripts/probe-iterm2-termplot.sh || true
+rg --fixed-strings 'kitty +kitten' scripts/probe-ghostty-termplot.sh scripts/probe-iterm2-termplot.sh || true
+rg --fixed-strings 'ansi-escapes' scripts/probe-ghostty-termplot.sh scripts/probe-iterm2-termplot.sh || true
+```
+
+Passed with no matches.
+
+```text
+GHOSTTY_TERMPLOT_PROBE_TIMEOUT_SECONDS=90 scripts/probe-ghostty-termplot.sh
+```
+
+Passed. Key evidence:
+
+```text
+pixel_screenshot=/tmp/termplot-ghostty-full-stack-tp-ghostty.V9RQDG.png
+pixel_crop=760x700+0+820
+pixel_threshold=80
+red_count=8004
+green_count=4028
+blue_count=8004
+white_count=172306
+timing_pair_1_cold_ms=1326
+timing_pair_1_warm_ms=464
+timing_pair_1_cold_pid=74211
+timing_pair_1_warm_pid=74211
+timing_pair_1_cold_child_pids=74215
+timing_pair_1_warm_child_pids=74215
+timing_pair_2_cold_ms=1182
+timing_pair_2_warm_ms=462
+timing_pair_2_cold_pid=74286
+timing_pair_2_warm_pid=74286
+timing_pair_2_cold_child_pids=74287
+timing_pair_2_warm_child_pids=74287
+timing_pair_3_cold_ms=1189
+timing_pair_3_warm_ms=446
+timing_pair_3_cold_pid=74352
+timing_pair_3_warm_pid=74352
+timing_pair_3_cold_child_pids=74356
+timing_pair_3_warm_child_pids=74356
+timing_timing_successes=3
+browser_pids=74215 74287 74356
+ghostty_processes=cleaned
+termplot_daemon=stopped
+pass: Ghostty rendered TermPlot output, pixels matched, daemon warmed, and cleanup completed
+```
+
+```text
+ITERM2_TERMPLOT_PROBE_TIMEOUT_SECONDS=90 scripts/probe-iterm2-termplot.sh
+```
+
+Passed. Key evidence:
+
+```text
+window_owner=iTerm2
+window_title=TermPlot iTerm2 full stack tp-iterm2.5seKaa
+window_bounds=600,379,587,462
+pixel_screenshot=/tmp/termplot-iterm2-full-stack-tp-iterm2.5seKaa.png
+pixel_threshold=80
+red_count=10880
+green_count=8056
+blue_count=10882
+white_count=287034
+timing_pair_1_cold_ms=1242
+timing_pair_1_warm_ms=492
+timing_pair_1_cold_pid=74586
+timing_pair_1_warm_pid=74586
+timing_pair_1_cold_child_pids=74590
+timing_pair_1_warm_child_pids=74590
+timing_pair_2_cold_ms=1231
+timing_pair_2_warm_ms=464
+timing_pair_2_cold_pid=74656
+timing_pair_2_warm_pid=74656
+timing_pair_2_cold_child_pids=74660
+timing_pair_2_warm_child_pids=74660
+timing_pair_3_cold_ms=1240
+timing_pair_3_warm_ms=475
+timing_pair_3_cold_pid=74725
+timing_pair_3_warm_pid=74725
+timing_pair_3_cold_child_pids=74727
+timing_pair_3_warm_child_pids=74727
+timing_timing_successes=3
+browser_pids=74590 74660 74727
+cleanup_iterm2_pids=74538
+cleanup_iterm2_server_pids=74544
+iterm2_processes=cleaned
+termplot_daemon=stopped
+pass: iTerm2 rendered TermPlot output, pixels matched, daemon warmed, and cleanup completed
+```
+
+```text
+ps -axo pid=,ppid=,command= | rg 'tp-(ghostty|iterm2)|termplot-ghostty-full-stack|termplot-iterm2-full-stack|probe-(ghostty|iterm2)-termplot|termplotd\.js.*tp-' || true
+```
+
+Passed. The only matches were the check command and `rg` process themselves.
+
+## Conclusion
+
+Stage 7 proves TermPlot v1 can render through the daemon and display real images
+inside both target macOS terminals:
+
+- Ghostty renders TermPlot Kitty output and passes screenshot pixel assertions.
+- iTerm2 renders TermPlot OSC 1337 output and passes screenshot pixel
+  assertions.
+- In both terminals, warm renders reused the daemon PID and were faster than
+  cold renders in all three sampled cold/warm pairs.
+- Probe-owned terminal, daemon, browser, Node, socket, log, and temporary
+  resources were cleaned up with process attribution.
+
+Stage 8 can proceed with Nushell integration against the same `termplotd` and
+CLI/client contract. The remaining setup assumptions for full-stack probes are
+macOS, target terminal installation, Screen Recording permission for
+`screencapture`, and GraphicsMagick.
+
+## Completion Review
+
+Reviewer: Planck (`019ecbec-55d1-7f52-8f99-7e2083839bef`), fresh-context Codex
+completion reviewer.
+
+Initial findings:
+
+- Blocker: the verification record omitted the required `dprint fmt` and
+  `git diff --check` hygiene evidence.
+- Blocker: the approved scope required renderer browser PID attribution before
+  cleanup, but the probe outputs and experiment evidence did not record browser
+  PIDs or child-process-tree evidence.
+- Major: the iTerm2 probe could leave a new iTermServer helper running when
+  preexisting iTerm2/iTermServer processes existed, because it treated that case
+  as diagnostic instead of a failure.
+
+Fixes:
+
+- Ran and recorded `pnpm exec dprint fmt` for the changed Issue 5 Markdown files
+  and `git add -N ... && git diff --check` for the new fixture and probe
+  scripts.
+- Updated both probes to record daemon child PIDs for every cold/warm render
+  pair, require nonempty browser child PID attribution, print `browser_pids=...`
+  in probe output, and verify those PIDs are gone after daemon cleanup.
+- Updated the iTerm2 probe to fail if a new iTermServer helper appears while
+  preexisting iTerm2/iTermServer processes make safe attribution impossible.
+- Re-ran both live probes successfully and updated the recorded evidence with
+  browser PID attribution.
+
+Re-review: approved. Planck confirmed the hygiene evidence is recorded, browser
+and renderer attribution is present in both probe scripts and the experiment
+record, browser PIDs are verified gone after cleanup, iTerm2 no longer silently
+passes when a new iTermServer helper cannot be safely attributed,
+`git diff
+--check` passed, and the result commit had not been made before
+re-review approval.
