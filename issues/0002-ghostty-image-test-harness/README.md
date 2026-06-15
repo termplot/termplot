@@ -83,6 +83,11 @@ Current findings:
   hung because follow-up shell commands were still queued in PTY input while
   `timg` was running; wrapping the Ghostty-side logic in a shell function fixed
   that by ensuring the shell parsed the post-render logic before `timg` started.
+- Experiment 4 proved that the rendered Ghostty window can be captured
+  unattended with `screencapture`. CoreGraphics window-ID discovery through
+  `osascript` could not see the Ghostty window in this environment, so the probe
+  instead positions the isolated Ghostty window at a controlled rectangle and
+  captures that rectangle with `screencapture -x -R...`.
 
 Important constraints:
 
@@ -113,4 +118,4 @@ Important constraints:
 - [Experiment 3: Render timg through Ghostty input](03-render-timg-through-ghostty-input.md) -
   **Pass**
 - [Experiment 4: Capture Ghostty render screenshot](04-capture-ghostty-render-screenshot.md) -
-  **Designed**
+  **Pass**
