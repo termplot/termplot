@@ -98,3 +98,5 @@ Important constraints:
 
 - [Experiment 1: Probe isolated Ghostty launch](01-probe-isolated-ghostty-launch.md) -
   **Fail**
+- [Experiment 2: Probe Ghostty startup input](02-probe-ghostty-startup-input.md) -
+  **Designed**
