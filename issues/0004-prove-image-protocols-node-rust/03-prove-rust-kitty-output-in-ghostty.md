@@ -137,3 +137,169 @@ Findings:
 
 Approval: approved from a blocker standpoint. The reviewer recommended fixing
 the major findings before committing the plan; those fixes are recorded above.
+
+## Result
+
+**Result:** Pass
+
+Experiment 3 proved that Rust can emit Kitty graphics bytes directly and that
+Ghostty renders those bytes as a visible image under the same screenshot/pixel
+harness used for the Node proof. The implementation uses a dependency-free raw
+RGB24 Kitty encoder compiled with `rustc`, not `timg`, `kitty +kitten icat`, the
+Node fixture, a Rust crate, or another terminal image renderer.
+
+Implemented files:
+
+- `scripts/fixtures/rust-kitty-direct.rs`
+  - generates a deterministic `64x64` RGB image with red, green, blue, and white
+    quadrants;
+  - implements base64 encoding with the Rust standard library only;
+  - emits Kitty APC chunks with `a=T`, `f=24`, `s=64`, `v=64`, `c=16`, `r=16`,
+    `q=2`, and `m=<chunk-state>`;
+  - builds one output byte buffer and writes that exact buffer both to
+    `--capture=<path>` and stdout;
+  - asserts locally that output contains Kitty APC bytes and does not contain
+    iTerm2 OSC 1337 `File=` output.
+- `scripts/probe-ghostty-rust-kitty.sh`
+  - compiles the Rust fixture to a temp binary with `rustc`;
+  - launches Ghostty without `-e`, using `--input=path:<input-file>`;
+  - feeds a shell function so post-render logic is parsed before the Rust
+    command runs;
+  - runs the Rust fixture inside Ghostty and captures the exact emitted bytes;
+  - verifies those bytes contain Kitty APC `ESC_G` chunks, RGB24 metadata, and
+    no iTerm2 `File=` output;
+  - captures the controlled Ghostty rectangle with `screencapture`;
+  - asserts red, green, blue, and white pixels in the same crop and tolerance
+    method used by Experiment 2;
+  - records pre-existing Ghostty PIDs, probe-owned Ghostty PIDs, cleanup target
+    PIDs, and final process evidence;
+  - cleans up only probe-owned Ghostty processes and removes the probe temp dir
+    while retaining the screenshot artifact.
+
+Verification commands:
+
+```bash
+chmod +x scripts/probe-ghostty-rust-kitty.sh
+sh -n scripts/probe-ghostty-rust-kitty.sh
+rustc scripts/fixtures/rust-kitty-direct.rs -o /tmp/termplot-rust-kitty-direct
+test -x scripts/probe-ghostty-rust-kitty.sh
+rustc scripts/fixtures/rust-kitty-direct.rs -o /tmp/termplot-rust-kitty-direct-check
+/tmp/termplot-rust-kitty-direct-check --capture=/tmp/termplot-rust-kitty-test.bin >/tmp/termplot-rust-kitty-test.out 2>/tmp/termplot-rust-kitty-test.err
+wc -c /tmp/termplot-rust-kitty-test.bin /tmp/termplot-rust-kitty-test.out
+perl -0777 -ne 'exit(!(/\x1b_G/ && /\x1b\\/ && /f=24/ && /s=64/ && /v=64/ && !/File=/))' /tmp/termplot-rust-kitty-test.bin
+cat /tmp/termplot-rust-kitty-test.err
+rg --fixed-strings 'timg' scripts/probe-ghostty-rust-kitty.sh scripts/fixtures/rust-kitty-direct.rs || true
+rg --fixed-strings 'node-kitty' scripts/probe-ghostty-rust-kitty.sh scripts/fixtures/rust-kitty-direct.rs || true
+rg --fixed-strings -- '-e' scripts/probe-ghostty-rust-kitty.sh || true
+scripts/probe-ghostty-rust-kitty.sh
+out=/tmp/termplot-ghostty-rust-kitty-verify.log
+scripts/probe-ghostty-rust-kitty.sh > "$out" 2>&1
+cat "$out"
+tmpdir=$(sed -n 's/^rust_kitty_probe_tmpdir=//p' "$out" | tail -n 1)
+artifact=$(sed -n 's/^pixel_screenshot=//p' "$out" | tail -n 1)
+test -n "$tmpdir"
+test ! -e "$tmpdir"
+test -n "$artifact"
+test -s "$artifact"
+ps -axo pid=,ppid=,command= | rg 'Ghostty|termplot-ghostty-rust-kitty|rust-kitty-direct' || true
+dprint fmt issues/0004-prove-image-protocols-node-rust/README.md issues/0004-prove-image-protocols-node-rust/03-prove-rust-kitty-output-in-ghostty.md
+git diff --check
+git add -N scripts/fixtures/rust-kitty-direct.rs scripts/probe-ghostty-rust-kitty.sh
+git diff --check
+```
+
+The fixture byte check passed:
+
+```text
+16466 /tmp/termplot-rust-kitty-test.bin
+16466 /tmp/termplot-rust-kitty-test.out
+rust_kitty_fixture=direct
+rust_kitty_protocol=kitty
+rust_kitty_format=rgb24
+rust_kitty_size=64x64
+rust_kitty_cells=16x16
+rust_kitty_bytes=16466
+```
+
+The successful live Ghostty run reported:
+
+```text
+probe_ghostty_pids=53415
+rust_kitty_protocol=kitty
+rust_kitty_bytes=16466
+rust_status=0
+rust_kitty_protocol_attribution=kitty-apc
+rust_kitty_output_bytes=16466
+rust_kitty_apc_chunks=4
+rust_kitty_contains_iterm_file=no
+screenshot=/tmp/termplot-ghostty-rust-kitty-termplot-ghostty-rust-kitty-probe.XdhsGT.png
+screenshot_bytes=1084155
+screenshot_  pixelWidth: 2400
+screenshot_  pixelHeight: 1600
+pixel_crop=520x520+0+980
+pixel_threshold=20
+red_count=7938
+green_count=8127
+blue_count=33895
+white_count=35718
+cleanup_ghostty_pids=53415
+ghostty_processes=cleaned
+pass: Ghostty rendered Rust Kitty output, pixels matched, and cleanup completed
+```
+
+The wrapper verification run also passed:
+
+```text
+rust_kitty_protocol_attribution=kitty-apc
+rust_kitty_apc_chunks=4
+rust_status=0
+red_count=7938
+green_count=8127
+blue_count=33895
+white_count=35218
+cleanup_ghostty_pids=53541
+ghostty_processes=cleaned
+rust_kitty_tmpdir_removed=yes
+rust_kitty_artifact_exists=yes
+```
+
+The final process check showed only the pre-existing Ghostty process and the
+check command itself:
+
+```text
+1173     1 /Applications/Ghostty.app/Contents/MacOS/ghostty
+```
+
+## Conclusion
+
+Rust is also viable for emitting Kitty graphics in Ghostty on macOS. The direct
+Rust proof reached parity with the direct Node.js proof: same image dimensions,
+same RGB24 Kitty path, same number of APC chunks, same byte count, same real
+Ghostty pixel assertion, and same attributed cleanup behavior.
+
+This means Ghostty Kitty support does not force the TermPlot client/display
+layer toward Rust. Both Node.js and Rust can implement the core Kitty protocol
+path directly. The next experiment should move to iTerm2 OSC 1337 proof from
+Node.js, because v0 used that path and iTerm2 is the other target terminal.
+
+## Completion Review
+
+Reviewer: Peirce (`019ecb5c-88c2-7080-8fe2-91c945460fe6`), fresh-context Codex
+subagent, read-only.
+
+Findings:
+
+- Blocker: none.
+- Major: none.
+- Minor: the initial `git diff --check` did not cover the untracked Rust fixture
+  and probe files. Fixed by running
+  `git add -N scripts/fixtures/rust-kitty-direct.rs scripts/probe-ghostty-rust-kitty.sh`
+  followed by `git diff --check`, which passed.
+
+Approval: approved. The reviewer confirmed that the implementation matches the
+approved scope, the experiment result and conclusion are present, the README
+marks Experiment 3 as `Pass`, static verification passed, the Rust proof is
+dependency-free and does not use `timg`, Node.js, or another terminal image
+renderer, byte attribution proves Kitty APC output and rejects iTerm2 `File=`,
+cleanup is attributed to probe-owned Ghostty processes, and the result had not
+been committed before review.
