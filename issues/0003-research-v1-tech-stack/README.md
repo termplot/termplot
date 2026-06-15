@@ -69,3 +69,8 @@ language/runtime choices, daemon lifecycle model, rendering pipeline, image
 output strategy, and a ranked list of implementation risks. After this research
 issue closes, later issues can implement the daemon, CLI, renderer API, and
 terminal image output paths as separate experiments.
+
+## Experiments
+
+- [Experiment 1: Research v1 stack options](01-research-v1-stack-options.md) -
+  **Designed**
