@@ -82,7 +82,7 @@ experiment.
     - Rust client/display layer.
     - non-macOS terminals and multiplexers.
   - Keep `timg` as a test oracle only, not production rendering.
-- [ ] Stage 2: `termplotd` lifecycle skeleton.
+- [x] Stage 2: `termplotd` lifecycle skeleton.
   - Start from a new v1 TypeScript/Node workspace outside `v0/`.
   - Create `termplotd` entrypoint.
   - Add local socket IPC and request/response framing.
@@ -92,6 +92,8 @@ experiment.
     redirection, bounded socket polling, and clear startup errors.
   - Add `termplot daemon status|start|stop|restart|ttl`.
   - Add default one-hour idle TTL with flag/env/runtime override.
+    - Env override: `TERMPLOTD_TTL_MS`.
+    - Precedence: `--ttl-ms` flag, then `TERMPLOTD_TTL_MS`, then one hour.
   - Ensure render-like activity renews the lease while status/config inspection
     does not.
   - Cleanly unlink sockets on explicit shutdown, idle expiry, SIGTERM, and
@@ -182,4 +184,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 1: Adopt protocol decision](01-adopt-protocol-decision.md) -
   **Pass**
 - [Experiment 2: Implement termplotd lifecycle skeleton](02-implement-termplotd-lifecycle-skeleton.md) -
-  **Designed**
+  **Pass**

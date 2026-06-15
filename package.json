@@ -1,0 +1,22 @@
+{
+  "name": "termplot",
+  "version": "1.0.0-dev",
+  "description": "Render Plotly plots in terminals.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "termplot": "./build/bin/termplot.js",
+    "termplotd": "./build/bin/termplotd.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/write-bin-shims.mjs",
+    "test": "pnpm run build && node --test build/tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.8",
+    "typescript": "^5.8.3"
+  }
+}
