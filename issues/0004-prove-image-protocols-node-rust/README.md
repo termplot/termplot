@@ -152,3 +152,5 @@ be implemented in Node.js, Rust, or a hybrid.
   **Pass**
 - [Experiment 2: Prove Node.js Kitty output in Ghostty](02-prove-nodejs-kitty-output-in-ghostty.md) -
   **Pass**
+- [Experiment 3: Prove Rust Kitty output in Ghostty](03-prove-rust-kitty-output-in-ghostty.md) -
+  **Designed**
