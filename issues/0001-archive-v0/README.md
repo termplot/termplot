@@ -42,3 +42,8 @@ The first experiment should design and verify the archive boundary before moving
 files. The second experiment, if the design passes, should perform the move and
 verify that the archived prototype remains understandable and that the root is
 ready for the next version.
+
+## Experiments
+
+- [Experiment 1: Define the v0 archive boundary](01-define-v0-archive-boundary.md) -
+  **Designed**
