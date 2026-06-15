@@ -154,3 +154,5 @@ be implemented in Node.js, Rust, or a hybrid.
   **Pass**
 - [Experiment 3: Prove Rust Kitty output in Ghostty](03-prove-rust-kitty-output-in-ghostty.md) -
   **Pass**
+- [Experiment 4: Prove Node.js iTerm2 OSC 1337 output](04-prove-nodejs-iterm2-osc1337-output.md) -
+  **Designed**
