@@ -164,3 +164,5 @@ be implemented in Node.js, Rust, or a hybrid.
   **Pass**
 - [Experiment 5: Prove Rust iTerm2 OSC 1337 output](05-prove-rust-iterm2-osc1337-output.md) -
   **Pass**
+- [Experiment 6: Prove SIXEL output in iTerm2](06-prove-sixel-output-in-iterm2.md) -
+  **Designed**
