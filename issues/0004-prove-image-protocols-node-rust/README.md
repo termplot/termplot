@@ -145,3 +145,5 @@ be implemented in Node.js, Rust, or a hybrid.
 
 - [Experiment 1: Research terminal protocol support and libraries](01-research-terminal-protocol-support-and-libraries.md) -
   **Pass**
+- [Experiment 2: Prove Node.js Kitty output in Ghostty](02-prove-nodejs-kitty-output-in-ghostty.md) -
+  **Designed**
