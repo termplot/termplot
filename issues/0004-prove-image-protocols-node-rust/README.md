@@ -74,12 +74,12 @@ of:
 
 Fill this matrix as experiments run:
 
-| Protocol                       | Ghostty support                                                                | iTerm2 support                                                        | Node.js path                                                                            | Rust path                                                                                                             | Node proof | Rust proof |
-| ------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| Kitty graphics                 | Supported by Ghostty docs; Issue 2 proved `timg -p kitty` only                 | Not official in iTerm2 docs; third-party detector claims iTerm2 v3.6+ | Candidate: `terminal-image`, direct spec encoder; `term-kitty-img` is stale/risky       | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `kitty-graphics-protocol`, direct spec                              | Pending    | Pending    |
-| iTerm2 inline image / OSC 1337 | Unsupported by current Ghostty evidence; feature request closed as not planned | Supported by iTerm2 docs                                              | v0 used `ansi-escapes.image(...)`; candidate: `terminal-image`, direct spec encoder     | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `iterm2img`, direct spec                                            | Pending    | Pending    |
-| SIXEL                          | Not documented by Ghostty; treat unsupported until proof or official evidence  | iTerm2 feature-reporting spec defines SIXEL support                   | Candidate: `sixel`, direct encoder; no strong maintained terminal-display wrapper found | Candidate: `ratatui-image`, `viuer` with feature, `rasteroid`, `icy_sixel`, `a-sixel`; C/FFI via libsixel last resort | Pending    | Pending    |
-| ANSI/Unicode block fallback    | Expected text/truecolor capability                                             | Expected text/truecolor capability                                    | Candidate: `terminal-image` fallback or custom half-block renderer                      | Candidate: `ratatui-image` halfblocks, `viuer` default, custom renderer                                               | Pending    | Pending    |
+| Protocol                       | Ghostty support                                                                | iTerm2 support                                                        | Node.js path                                                                                        | Rust path                                                                                                             | Node proof                     | Rust proof |
+| ------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ---------- |
+| Kitty graphics                 | Supported by Ghostty docs; Issue 2 proved `timg -p kitty` only                 | Not official in iTerm2 docs; third-party detector claims iTerm2 v3.6+ | Pass in Ghostty with dependency-free direct RGB24 Kitty encoder; library candidates remain untested | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `kitty-graphics-protocol`, direct spec                              | Ghostty: Pass; iTerm2: Pending | Pending    |
+| iTerm2 inline image / OSC 1337 | Unsupported by current Ghostty evidence; feature request closed as not planned | Supported by iTerm2 docs                                              | v0 used `ansi-escapes.image(...)`; candidate: `terminal-image`, direct spec encoder                 | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `iterm2img`, direct spec                                            | Pending                        | Pending    |
+| SIXEL                          | Not documented by Ghostty; treat unsupported until proof or official evidence  | iTerm2 feature-reporting spec defines SIXEL support                   | Candidate: `sixel`, direct encoder; no strong maintained terminal-display wrapper found             | Candidate: `ratatui-image`, `viuer` with feature, `rasteroid`, `icy_sixel`, `a-sixel`; C/FFI via libsixel last resort | Pending                        | Pending    |
+| ANSI/Unicode block fallback    | Expected text/truecolor capability                                             | Expected text/truecolor capability                                    | Candidate: `terminal-image` fallback or custom half-block renderer                                  | Candidate: `ratatui-image` halfblocks, `viuer` default, custom renderer                                               | Pending                        | Pending    |
 
 Experiment 1 filled the first researched matrix version. The support/path
 columns are evidence-backed research findings, not proof results. The proof
@@ -137,6 +137,11 @@ Each proof experiment should:
 6. record process cleanup evidence;
 7. retain enough artifact information for debugging failures.
 
+Experiment 2 established an additional proof requirement for Kitty paths:
+capture the emitted bytes, assert Kitty APC `ESC_G` protocol output, and reject
+iTerm2 OSC 1337 `File=` output so a visible image cannot accidentally pass
+through a fallback protocol.
+
 Issue 4 closes when the protocol matrix is filled with evidence-backed statuses
 and the conclusion recommends whether the TermPlot client/display layer should
 be implemented in Node.js, Rust, or a hybrid.
@@ -146,4 +151,4 @@ be implemented in Node.js, Rust, or a hybrid.
 - [Experiment 1: Research terminal protocol support and libraries](01-research-terminal-protocol-support-and-libraries.md) -
   **Pass**
 - [Experiment 2: Prove Node.js Kitty output in Ghostty](02-prove-nodejs-kitty-output-in-ghostty.md) -
-  **Designed**
+  **Pass**
