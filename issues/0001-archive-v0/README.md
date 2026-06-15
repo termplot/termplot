@@ -47,3 +47,5 @@ ready for the next version.
 
 - [Experiment 1: Define the v0 archive boundary](01-define-v0-archive-boundary.md) -
   **Pass**
+- [Experiment 2: Move the prototype into v0](02-move-prototype-into-v0.md) -
+  **Designed**
