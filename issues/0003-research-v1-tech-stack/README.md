@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-15"
+closed = "2026-06-15"
 +++
 
 # Issue 3: Research TermPlot v1 tech stack
@@ -73,4 +74,42 @@ terminal image output paths as separate experiments.
 ## Experiments
 
 - [Experiment 1: Research v1 stack options](01-research-v1-stack-options.md) -
-  **Designed**
+  **Pass**
+
+## Conclusion
+
+TermPlot v1 should use TypeScript/Node for both `termplotd` and the foreground
+`termplot` CLI. The daemon should own the React Router/Express app, warm browser
+controller, in-memory plot registry, Plotly rendering route, screenshot capture,
+and lifecycle state. The CLI should stay thin: parse input, auto-start the
+daemon, send render requests, receive PNG bytes and metadata, and emit terminal
+image escape codes or write a PNG file.
+
+Rust is deferred. It remains a good future option for a native CLI, packaging,
+or terminal display module, but it does not remove the browser/Plotly.js runtime
+that makes TermPlot work. Introducing Rust before the daemon API is stable would
+add a second build system and cross-language packaging without solving the
+highest-risk part of v1.
+
+The daemon lifecycle should copy the proven `nutorchd` contract: local socket,
+probe-before-bind, auto-start, log beside socket,
+`status|start|stop|restart|ttl` commands, default one-hour idle TTL,
+activity-based renewal, non-renewing status, clean signal/shutdown/expiry
+cleanup, and no socket theft from a live daemon. Plot configs can remain in
+memory, referenced by ID, removable individually, and cleared when `termplotd`
+exits.
+
+The rendering pipeline should port v0's working approach: store Plotly configs
+by ID, serve a React Router route, render Plotly.js in a browser, screenshot to
+PNG, and return the PNG. V0's plain CLI paid server/browser startup on every
+call; v0's Nushell plugin proved that keeping the browser warm is the speed win.
+V1 turns that plugin-local optimization into a cross-shell daemon.
+
+Terminal output should be isolated behind a display module. First support Kitty
+graphics for Ghostty, then iTerm2 inline images for iTerm2 and WezTerm. Use
+`timg` as an independent benchmark/oracle in tests, not as a required runtime
+dependency. Defer production SIXEL support until the core daemon and Ghostty
+path are working.
+
+Recommended next issue: implement the `termplotd` lifecycle skeleton and CLI
+daemon commands before moving rendering into the daemon.
