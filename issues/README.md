@@ -2,8 +2,9 @@
 
 ## Open
 
-| # | Title | Opened |
-| - | ----- | ------ |
+| #                                                 | Title                      | Opened     |
+| ------------------------------------------------- | -------------------------- | ---------- |
+| [0002](0002-ghostty-image-test-harness/README.md) | Ghostty image test harness | 2026-06-15 |
 
 ## Closed
 
