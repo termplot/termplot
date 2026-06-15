@@ -2,6 +2,7 @@ import fs from "node:fs";
 import net from "node:net";
 import type { Request, Response, Status } from "../ipc/protocol.js";
 import { isRequest } from "../ipc/protocol.js";
+import { PlotRegistry, RegistryError } from "./plot-registry.js";
 
 export type DaemonOptions = {
   socketPath: string;
@@ -31,6 +32,7 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
   let idleDeadline = Date.now() + ttlMs;
   let stopping = false;
   let idleTimer: NodeJS.Timeout | undefined;
+  const registry = new PlotRegistry();
   const server = net.createServer();
 
   function status(): Status {
@@ -115,21 +117,44 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
     }
 
     const request = parsed as Request;
-    if (request.method === "status") {
-      writeResponse(socket, ok(request.id, status()));
-    } else if (request.method === "renew") {
-      writeResponse(socket, ok(request.id, renew()));
-    } else if (request.method === "setTtl") {
-      ttlMs = normalizeTtl(request.ttlMs);
-      writeResponse(socket, ok(request.id, renew()));
-    } else if (request.method === "shutdown") {
-      writeResponse(socket, ok(request.id, { shuttingDown: true, pid: process.pid }));
-      socket.end();
-      setImmediate(() => {
-        void stop().then(() => {
-          process.exitCode = 0;
+    try {
+      if (request.method === "status") {
+        writeResponse(socket, ok(request.id, status()));
+      } else if (request.method === "renew") {
+        writeResponse(socket, ok(request.id, renew()));
+      } else if (request.method === "setTtl") {
+        ttlMs = normalizeTtl(request.ttlMs);
+        writeResponse(socket, ok(request.id, renew()));
+      } else if (request.method === "render") {
+        const record = registry.render(request.config);
+        renew();
+        writeResponse(socket, ok(request.id, record));
+      } else if (request.method === "getPlot") {
+        writeResponse(socket, ok(request.id, registry.get(request.plotId)));
+      } else if (request.method === "listPlots") {
+        writeResponse(socket, ok(request.id, registry.list()));
+      } else if (request.method === "deletePlot") {
+        writeResponse(socket, ok(request.id, registry.delete(request.plotId)));
+      } else if (request.method === "clearPlots") {
+        writeResponse(socket, ok(request.id, registry.clear()));
+      } else if (request.method === "shutdown") {
+        writeResponse(socket, ok(request.id, { shuttingDown: true, pid: process.pid }));
+        socket.end();
+        setImmediate(() => {
+          void stop().then(() => {
+            process.exitCode = 0;
+          });
         });
-      });
+      }
+    } catch (error) {
+      if (error instanceof RegistryError) {
+        writeResponse(socket, fail(request.id, error.code, error.message));
+      } else {
+        writeResponse(
+          socket,
+          fail(request.id, "INTERNAL_ERROR", error instanceof Error ? error.message : String(error)),
+        );
+      }
     }
   }
 

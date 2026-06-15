@@ -99,7 +99,7 @@ experiment.
   - Cleanly unlink sockets on explicit shutdown, idle expiry, SIGTERM, and
     SIGINT.
   - Add tests using private temporary sockets so no real daemon is harmed.
-- [ ] Stage 3: daemon plot registry and protocol.
+- [x] Stage 3: daemon plot registry and protocol.
   - Define request/response schemas for render, get/list/delete/clear plots,
     status, ttl, and shutdown.
   - Store Plotly configs in memory by ID.
@@ -186,4 +186,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 2: Implement termplotd lifecycle skeleton](02-implement-termplotd-lifecycle-skeleton.md) -
   **Pass**
 - [Experiment 3: Implement plot registry protocol](03-implement-plot-registry-protocol.md) -
-  **Designed**
+  **Pass**

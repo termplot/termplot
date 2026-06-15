@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import { defaultSocketPath } from "../ipc/socket-path.js";
 import { getStatus, renew, restartDaemon, setTtl, startOrProbe, stopDaemon } from "../client/daemon.js";
+import { IpcError, requestResult } from "../ipc/client.js";
 
 type GlobalOptions = {
   socket: string;
   ttlMs?: number;
   logPath?: string;
   timeoutMs?: number;
+  json?: string;
 };
 
 function parseOptions(argv: string[]): { command: string[]; options: GlobalOptions } {
@@ -23,6 +25,8 @@ function parseOptions(argv: string[]): { command: string[]; options: GlobalOptio
       options.logPath = requireValue(argv, (index += 1), arg);
     } else if (arg === "--timeout-ms") {
       options.timeoutMs = Number(requireValue(argv, (index += 1), arg));
+    } else if (arg === "--json") {
+      options.json = requireValue(argv, (index += 1), arg);
     } else {
       command.push(arg);
     }
@@ -45,11 +49,18 @@ function printJson(value: unknown): void {
 
 async function main(): Promise<void> {
   const { command, options } = parseOptions(process.argv.slice(2));
-  if (command[0] !== "daemon") {
-    throw new Error("usage: termplot daemon <status|start|stop|restart|ttl|renew> [options]");
+  if (command[0] === "daemon") {
+    await handleDaemon(command[1] ?? "status", options);
+  } else if (command[0] === "render") {
+    await handleRender(options);
+  } else if (command[0] === "plots") {
+    await handlePlots(command.slice(1), options);
+  } else {
+    throw new Error("usage: termplot <daemon|render|plots> ...");
   }
+}
 
-  const action = command[1] ?? "status";
+async function handleDaemon(action: string, options: GlobalOptions): Promise<void> {
   if (action === "status") {
     const status = await getStatus(options.socket);
     printJson(status ? { running: true, status } : { running: false, socketPath: options.socket });
@@ -81,9 +92,55 @@ async function main(): Promise<void> {
   }
 }
 
+async function handleRender(options: GlobalOptions): Promise<void> {
+  if (!options.json) {
+    throw new IpcError("INVALID_JSON", "render requires --json <json>");
+  }
+
+  let config: unknown;
+  try {
+    config = JSON.parse(options.json);
+  } catch (error) {
+    throw new IpcError("INVALID_JSON", error instanceof Error ? error.message : String(error));
+  }
+
+  printJson(await requestResult(options.socket, { method: "render", config }, { timeoutMs: 1_000 }));
+}
+
+async function handlePlots(command: string[], options: GlobalOptions): Promise<void> {
+  const action = command[0] ?? "list";
+  if (action === "list") {
+    printJson(await requestResult(options.socket, { method: "listPlots" }, { timeoutMs: 1_000 }));
+  } else if (action === "get") {
+    printJson(await requestResult(options.socket, { method: "getPlot", plotId: requireCommandArg(command, 1, "id") }, {
+      timeoutMs: 1_000,
+    }));
+  } else if (action === "delete") {
+    printJson(await requestResult(options.socket, { method: "deletePlot", plotId: requireCommandArg(command, 1, "id") }, {
+      timeoutMs: 1_000,
+    }));
+  } else if (action === "clear") {
+    printJson(await requestResult(options.socket, { method: "clearPlots" }, { timeoutMs: 1_000 }));
+  } else {
+    throw new Error(`unknown plots command: ${action}`);
+  }
+}
+
+function requireCommandArg(command: string[], index: number, name: string): string {
+  const value = command[index];
+  if (!value) {
+    throw new Error(`missing ${name}`);
+  }
+  return value;
+}
+
 try {
   await main();
 } catch (error) {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  if (error instanceof IpcError) {
+    printJson({ ok: false, error: { code: error.code, message: error.message } });
+  } else {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  }
   process.exit(1);
 }
