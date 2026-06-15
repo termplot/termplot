@@ -134,3 +134,8 @@ Each proof experiment should:
 Issue 4 closes when the protocol matrix is filled with evidence-backed statuses
 and the conclusion recommends whether the TermPlot client/display layer should
 be implemented in Node.js, Rust, or a hybrid.
+
+## Experiments
+
+- [Experiment 1: Research terminal protocol support and libraries](01-research-terminal-protocol-support-and-libraries.md) -
+  **Designed**
