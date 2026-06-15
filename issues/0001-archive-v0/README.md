@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-15"
+closed = "2026-06-15"
 +++
 
 # Issue 1: Archive v0
@@ -48,4 +49,16 @@ ready for the next version.
 - [Experiment 1: Define the v0 archive boundary](01-define-v0-archive-boundary.md) -
   **Pass**
 - [Experiment 2: Move the prototype into v0](02-move-prototype-into-v0.md) -
-  **Designed**
+  **Pass**
+
+## Conclusion
+
+The v0 prototype is archived under `v0/`. The repository root now keeps the
+shared workflow and policy surface: `AGENTS.md`, `CLAUDE.md`, `.codex/`,
+`.claude/`, `skills/`, `issues/`, `scripts/`, `LICENSE`, `NOTICE`,
+`dprint.json`, `.gitignore`, and `v0/`.
+
+The archived prototype remains a coherent package. It has its own package
+metadata, lockfile, workspace file, source tree, examples, assets, docs, and
+prototype-local `.gitignore`. Verification from `v0/` passed for `pnpm install`,
+`pnpm run build`, and `pnpm run typecheck`.
