@@ -10,7 +10,9 @@ opened = "2026-06-15"
 Create a Ghostty-based macOS integration test harness for TermPlot that proves
 terminal image rendering works end to end: launch an isolated Ghostty window,
 display a known test image, capture the window, and assert from screenshot
-pixels that the expected image is visible.
+pixels that the expected image is visible. The harness must be unattended:
+interactive permission prompts are failures to detect and avoid, not dialogs for
+automation to accept.
 
 ## Background
 
@@ -52,12 +54,41 @@ The first experiments should avoid TermPlot rendering code entirely. Once the
 Ghostty automation and screenshot assertion path is reliable with `timg`, later
 experiments can replace `timg` with TermPlot's own Kitty protocol output.
 
+Current findings:
+
+- Experiment 1's initial probe proved that
+  `open -na Ghostty.app --args
+  --wait-after-command=false -e <script>` can
+  launch an isolated Ghostty command on macOS and let the parent process observe
+  marker output from that command. It also exposed a cleanup requirement:
+  Ghostty app processes can remain alive after the child command exits, so every
+  probe must explicitly clean up only the processes it opened.
+- The temp-script launch form is not acceptable for unattended automation. It
+  triggers a macOS confirmation dialog asking whether Ghostty should be allowed
+  to execute the generated script. Future experiments must find a prompt-free
+  launch mechanism, such as running a trusted shell command directly, using
+  Ghostty configuration, or another deterministic path that does not require
+  Accessibility API click-through.
+- The inline `/bin/sh -lc` launch form still uses Ghostty's explicit `-e`
+  command path and also triggered an interactive approval prompt. The failure is
+  broader than generated temp scripts: `open -na Ghostty.app --args -e ...` is
+  not a viable unattended launch mechanism on this machine.
+
 Important constraints:
 
-- Prefer deterministic command launch with `open -na Ghostty.app --args -e
-  <script>` before using Accessibility API keyboard injection.
+- Do not use Ghostty's explicit `-e` launch path for unattended automation on
+  this machine; Experiment 1 showed that it can trigger interactive command
+  execution prompts.
+- Do not use Accessibility API automation to accept permission prompts as part
+  of the default harness. Permission prompts should be preflighted, avoided, or
+  reported as setup failures.
 - Keep test windows isolated and identifiable.
+- Every experiment must clean up after itself before it can be closed. Any
+  process, window, temporary file, or permission state an experiment creates
+  must be removed or explicitly documented as intentionally persistent.
 - Avoid depending on a user's active Ghostty shell state.
+- Cleanup must be attributed. A harness may kill only processes it opened, never
+  a generic Ghostty process that may belong to the user's active terminal.
 - Record any macOS permissions needed for screenshot capture or Accessibility
   control.
 - Pixel assertions should use a simple known image with distinctive colors and
@@ -66,4 +97,4 @@ Important constraints:
 ## Experiments
 
 - [Experiment 1: Probe isolated Ghostty launch](01-probe-isolated-ghostty-launch.md) -
-  **Designed**
+  **Fail**
