@@ -1,5 +1,5 @@
 +++
-status = "designed"
+status = "passed"
 opened = "2026-06-15"
 +++
 
@@ -92,3 +92,117 @@ Approval: approved. The reviewer confirmed that the issue README links this
 experiment with status `Designed`, the required sections are present, the scope
 is narrow, implementation has not started, verification is concrete, and the
 technical direction plausibly avoids Ghostty's failed explicit `-e` path.
+
+## Result
+
+**Result:** Pass
+
+Verification commands:
+
+```bash
+chmod +x scripts/probe-ghostty-input-launch.sh
+dprint fmt issues/0002-ghostty-image-test-harness/README.md issues/0002-ghostty-image-test-harness/02-probe-ghostty-startup-input.md
+sh -n scripts/probe-ghostty-input-launch.sh
+rg --fixed-strings -- '-e' scripts/probe-ghostty-input-launch.sh || true
+scripts/probe-ghostty-input-launch.sh
+out=/tmp/termplot-ghostty-input-verify.log
+scripts/probe-ghostty-input-launch.sh > "$out" 2>&1
+cat "$out"
+tmpdir=$(sed -n 's/^probe_tmpdir=//p' "$out" | tail -n 1)
+test -n "$tmpdir"
+test ! -e "$tmpdir"
+ps -axo pid=,ppid=,command= | rg 'Ghostty|termplot-ghostty-input-probe|probe-ghostty-input-launch' || true
+git diff --check
+```
+
+Two live runs succeeded without using Ghostty's `-e` path. The script launched
+Ghostty with configuration arguments including:
+
+```bash
+open -na "$ghostty_app" --args \
+  --config-default-files=false \
+  --window-save-state=never \
+  --confirm-close-surface=false \
+  --quit-after-last-window-closed=true \
+  --title="$title" \
+  "--input=path:$input"
+```
+
+The first live run reached the normal shell, wrote the marker, and exited:
+
+```text
+preexisting_ghostty_pids=1173
+marker_state=done
+child_pid=44063
+child_ppid=44062
+tty=/dev/ttys006
+ghostty_processes=cleaned
+pass: Ghostty startup input ran without using -e, wrote the marker, and cleaned up
+```
+
+The second live run wrote its output to `/tmp/termplot-ghostty-input-verify.log`
+and reported:
+
+```text
+probe_tmpdir=/var/folders/vx/wbmx10nd7tx8259xgg3v4vf80000gn/T//termplot-ghostty-input-probe.wkwG71
+preexisting_ghostty_pids=1173
+marker_state=done
+child_pid=44164
+child_ppid=44163
+tty=/dev/ttys006
+ghostty_processes=cleaned
+pass: Ghostty startup input ran without using -e, wrote the marker, and cleaned up
+```
+
+The second run's temporary directory was checked dynamically:
+
+```bash
+tmpdir=$(sed -n 's/^probe_tmpdir=//p' "$out" | tail -n 1)
+test -n "$tmpdir"
+test ! -e "$tmpdir"
+```
+
+It passed and printed:
+
+```text
+tmpdir_removed=yes
+```
+
+The follow-up process check showed only the pre-existing active Ghostty process
+and the check command itself:
+
+```text
+1173 1 /Applications/Ghostty.app/Contents/MacOS/ghostty
+```
+
+Completion review:
+
+Reviewer: Codex subagent `019ecaf8-18c6-72d3-a865-be2c5c39d413` with fresh
+context.
+
+Findings:
+
+- Blocker: none.
+- Major: the initial result record was incomplete and mixed evidence from the
+  first and second runs. Fixed by recording the formatting command, both live
+  runs, the dynamic temporary-directory cleanup check for the second run, and
+  the post-run process check.
+- Minor: none.
+
+Approval: approved. The reviewer confirmed that the issue README status matches
+`Pass`, the result and conclusion are present, later-work learnings are
+recorded, `git diff --check` passed, no result commit had been made, the script
+does not launch Ghostty with `-e`, and cleanup only targets Ghostty processes
+whose command line contains the probe temp directory.
+
+## Conclusion
+
+Ghostty startup `input` is a viable unattended control-plane mechanism for the
+next layer of the harness. It avoids Ghostty's explicit `-e` command-execution
+path, feeds commands to a normal shell through the PTY, and can be paired with
+attributed cleanup based on pre-launch process snapshots plus run-specific temp
+paths.
+
+The next experiment can use this launch pattern to render a known image with
+`timg -p kitty` inside Ghostty, while still deferring screenshot capture and
+pixel analysis until the rendering command path itself is proven.

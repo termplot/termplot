@@ -73,6 +73,11 @@ Current findings:
   command path and also triggered an interactive approval prompt. The failure is
   broader than generated temp scripts: `open -na Ghostty.app --args -e ...` is
   not a viable unattended launch mechanism on this machine.
+- Experiment 2 found a viable unattended control-plane path: launch Ghostty
+  without `-e`, disable default Ghostty config files for isolation, and pass
+  `--input=path:<input-file>` so a normal shell receives startup text through
+  the PTY. This wrote the marker, exited, removed the temporary directory, and
+  left only the pre-existing active Ghostty process.
 
 Important constraints:
 
@@ -99,4 +104,4 @@ Important constraints:
 - [Experiment 1: Probe isolated Ghostty launch](01-probe-isolated-ghostty-launch.md) -
   **Fail**
 - [Experiment 2: Probe Ghostty startup input](02-probe-ghostty-startup-input.md) -
-  **Designed**
+  **Pass**
