@@ -112,3 +112,5 @@ Important constraints:
   **Pass**
 - [Experiment 3: Render timg through Ghostty input](03-render-timg-through-ghostty-input.md) -
   **Pass**
+- [Experiment 4: Capture Ghostty render screenshot](04-capture-ghostty-render-screenshot.md) -
+  **Designed**
