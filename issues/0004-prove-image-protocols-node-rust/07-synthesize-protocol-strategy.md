@@ -80,3 +80,70 @@ documentation-only scope is narrow enough, verification includes concrete
 pass/fail criteria and index regeneration, and the design avoids overclaiming
 iTerm2 Kitty support, ANSI fallback, unsupported terminals, or unproven
 libraries.
+
+## Result
+
+**Result:** Pass
+
+Experiment 7 synthesized the prior protocol proofs and closed Issue 4.
+
+Changes made:
+
+- Updated the Issue 4 frontmatter to `status = "closed"` with
+  `closed = "2026-06-15"`.
+- Replaced the remaining protocol-matrix `Pending` cells with evidence-backed
+  `Pass`, `Unsupported`, or `Deferred` statuses.
+- Added the final protocol strategy:
+  - TypeScript/Node foreground client and display layer for v1.
+  - Ghostty default: Kitty graphics with an in-repo direct encoder.
+  - iTerm2 default: OSC 1337 `File=` with an in-repo direct PNG emitter.
+  - iTerm2 compatibility: SIXEL, proven in both Node.js and Rust, but not the
+    default because production full-color plots would need quantization or a
+    maintained encoder.
+  - Deferred: ANSI/Unicode block fallback and iTerm2 Kitty graphics.
+- Added the Issue 4 conclusion.
+- Regenerated `issues/README.md` with `scripts/build-issues-index.sh` so Issue 4
+  moves from Open to Closed.
+
+Verification commands:
+
+```bash
+rg 'Pending' issues/0004-prove-image-protocols-node-rust/README.md
+scripts/build-issues-index.sh
+dprint fmt issues/0004-prove-image-protocols-node-rust/README.md issues/0004-prove-image-protocols-node-rust/07-synthesize-protocol-strategy.md issues/README.md
+git diff --check
+```
+
+Expected verification:
+
+- `rg 'Pending' ...` returns no matches.
+- `issues/README.md` lists Issue 5 under Open and Issue 4 under Closed.
+- `git diff --check` passes.
+
+## Conclusion
+
+Issue 4 no longer blocks Issue 5. TermPlot v1 should proceed with a
+TypeScript/Node client/display layer and direct in-repo encoders for Kitty
+graphics in Ghostty and OSC 1337 in iTerm2. SIXEL should remain an iTerm2
+compatibility path, while ANSI/Unicode fallback and iTerm2 Kitty support are
+deferred until the primary v1 path works end to end.
+
+## Completion Review
+
+Reviewer: Gauss (`019ecb97-fddd-78d1-b313-ac4bce4c31a6`), fresh-context Codex
+completion reviewer.
+
+Findings:
+
+- Blocker: none.
+- Major: none.
+- Minor: none.
+
+Approval: approved. The reviewer confirmed that the result stayed within the
+documentation-only scope, Experiment 7 has `Result` and `Conclusion`, Issue 4 is
+closed correctly, the matrix has no `Pending` cells, the recommendation covers
+language, protocol priority, supported terminals, in-repo encoders, and deferred
+paths, `issues/README.md` has Issue 5 open and Issue 4 closed,
+`git diff
+--check` and `dprint check` passed, and the result commit had not yet
+been made.

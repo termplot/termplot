@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-15"
+closed = "2026-06-15"
 +++
 
 # Issue 4: Prove image protocols in Node.js and Rust
@@ -76,16 +77,15 @@ Fill this matrix as experiments run:
 
 | Protocol                       | Ghostty support                                                                | iTerm2 support                                                        | Node.js path                                                                                                                                   | Rust path                                                                                                   | Node proof                                             | Rust proof                                             |
 | ------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
-| Kitty graphics                 | Supported by Ghostty docs; Issue 2 proved `timg -p kitty` only                 | Not official in iTerm2 docs; third-party detector claims iTerm2 v3.6+ | Pass in Ghostty with dependency-free direct RGB24 Kitty encoder; library candidates remain untested                                            | Pass in Ghostty with dependency-free direct RGB24 Kitty encoder; library candidates remain untested         | Ghostty: Pass; iTerm2: Pending                         | Ghostty: Pass; iTerm2: Pending                         |
+| Kitty graphics                 | Supported by Ghostty docs; Issue 2 proved `timg -p kitty` only                 | Not official in iTerm2 docs; third-party detector claims iTerm2 v3.6+ | Pass in Ghostty with dependency-free direct RGB24 Kitty encoder; library candidates remain untested                                            | Pass in Ghostty with dependency-free direct RGB24 Kitty encoder; library candidates remain untested         | Ghostty: Pass; iTerm2: Deferred                        | Ghostty: Pass; iTerm2: Deferred                        |
 | iTerm2 inline image / OSC 1337 | Unsupported by current Ghostty evidence; feature request closed as not planned | Supported by iTerm2 docs                                              | Pass in iTerm2 with dependency-free direct OSC 1337 `File=` PNG encoder; v0 used `ansi-escapes.image(...)`; library candidates remain untested | Pass in iTerm2 with dependency-free direct OSC 1337 `File=` PNG encoder; library candidates remain untested | iTerm2: Pass; Ghostty: Unsupported by current evidence | iTerm2: Pass; Ghostty: Unsupported by current evidence |
 | SIXEL                          | Unsupported by current Ghostty evidence; not documented by Ghostty             | iTerm2 feature-reporting spec defines SIXEL support                   | Pass in iTerm2 with dependency-free direct 4-color SIXEL encoder; library candidates remain untested                                           | Pass in iTerm2 with dependency-free direct 4-color SIXEL encoder; library candidates remain untested        | iTerm2: Pass; Ghostty: Unsupported by current evidence | iTerm2: Pass; Ghostty: Unsupported by current evidence |
-| ANSI/Unicode block fallback    | Expected text/truecolor capability                                             | Expected text/truecolor capability                                    | Candidate: `terminal-image` fallback or custom half-block renderer                                                                             | Candidate: `ratatui-image` halfblocks, `viuer` default, custom renderer                                     | Pending                                                | Pending                                                |
+| ANSI/Unicode block fallback    | Expected text/truecolor capability                                             | Expected text/truecolor capability                                    | Deferred; text fallback does not determine the v1 image-protocol or client-language decision                                                   | Deferred; text fallback does not determine the v1 image-protocol or client-language decision                | Deferred                                               | Deferred                                               |
 
-Experiment 1 filled the first researched matrix version. The support/path
-columns are evidence-backed research findings, not proof results. The proof
-columns must remain `Pending` until later experiments render images from
-TermPlot-owned Node.js and Rust code in real terminal windows and pass
-screenshot assertions.
+Experiment 1 filled the first researched matrix version. Experiments 2 through 6
+converted the client-language-critical image paths from research into proof
+results. Remaining unproven cells are marked `Deferred` because they do not
+change the TermPlot v1 macOS protocol or client-language decision.
 
 Experiment 6 proved that direct four-color SIXEL output works from both Node.js
 and Rust in iTerm2. For TermPlot v1, SIXEL is a viable iTerm2 compatibility
@@ -158,6 +158,38 @@ Issue 4 closes when the protocol matrix is filled with evidence-backed statuses
 and the conclusion recommends whether the TermPlot client/display layer should
 be implemented in Node.js, Rust, or a hybrid.
 
+## Final Protocol Strategy
+
+TermPlot v1 should use a TypeScript/Node foreground client and display layer,
+matching the TypeScript/Node daemon selected in Issue 3. Issue 4 found no
+protocol capability that requires Rust for the v1 client: both Node.js and Rust
+successfully emitted the required macOS image protocols directly, and a single
+Node toolchain keeps IPC, packaging, and daemon lifecycle work simpler.
+
+Protocol priority for macOS v1:
+
+1. Ghostty: Kitty graphics protocol.
+   - Use an in-repo direct Kitty encoder initially.
+   - Keep the Rust proof as reference only.
+   - Keep `timg -p kitty` as an oracle for tests, not as production rendering.
+2. iTerm2: OSC 1337 `File=` inline image protocol.
+   - Use an in-repo direct OSC 1337 PNG emitter initially.
+   - This is the simplest proven iTerm2 path for full-color Plotly screenshots.
+3. iTerm2 compatibility: SIXEL.
+   - Direct four-color SIXEL works from both Node.js and Rust.
+   - Do not make SIXEL the default v1 path because production full-color plots
+     would require quantization or a maintained encoder.
+4. Deferred: ANSI/Unicode block fallback.
+   - This is text rendering, not a terminal image protocol.
+   - Revisit only after the primary Ghostty/iTerm2 image paths work end to end.
+5. Deferred: iTerm2 Kitty graphics.
+   - iTerm2's own image docs do not document Kitty graphics as the native image
+     path, and OSC 1337 plus SIXEL are already proven in iTerm2.
+
+Supported macOS terminals for v1 should be Ghostty and iTerm2. Other terminals,
+terminal multiplexers, and non-macOS support should be separate follow-up
+issues.
+
 ## Experiments
 
 - [Experiment 1: Research terminal protocol support and libraries](01-research-terminal-protocol-support-and-libraries.md) -
@@ -173,4 +205,19 @@ be implemented in Node.js, Rust, or a hybrid.
 - [Experiment 6: Prove SIXEL output in iTerm2](06-prove-sixel-output-in-iterm2.md) -
   **Pass**
 - [Experiment 7: Synthesize protocol strategy](07-synthesize-protocol-strategy.md) -
-  **Designed**
+  **Pass**
+
+## Conclusion
+
+Issue 4 proved enough protocol coverage to choose the TermPlot v1 client/display
+stack. The v1 foreground client should be TypeScript/Node, using in-repo direct
+terminal image encoders rather than external renderers:
+
+- Kitty graphics for Ghostty.
+- OSC 1337 `File=` inline images for iTerm2.
+- SIXEL as an iTerm2 compatibility path, not the default.
+
+Rust remains viable for every tested protocol, but it is not necessary for v1.
+Choosing Node.js lets Issue 5 focus on daemon lifecycle, browser rendering,
+Plotly screenshots, IPC, CLI ergonomics, and full-stack terminal tests without
+splitting the implementation across two languages.
