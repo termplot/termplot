@@ -162,3 +162,5 @@ be implemented in Node.js, Rust, or a hybrid.
   **Pass**
 - [Experiment 4: Prove Node.js iTerm2 OSC 1337 output](04-prove-nodejs-iterm2-osc1337-output.md) -
   **Pass**
+- [Experiment 5: Prove Rust iTerm2 OSC 1337 output](05-prove-rust-iterm2-osc1337-output.md) -
+  **Designed**
