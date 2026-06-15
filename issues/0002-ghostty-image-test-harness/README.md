@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-15"
+closed = "2026-06-15"
 +++
 
 # Issue 2: Ghostty image test harness
@@ -126,3 +127,28 @@ Important constraints:
   **Pass**
 - [Experiment 5: Assert screenshot pixels](05-assert-screenshot-pixels.md) -
   **Pass**
+
+## Conclusion
+
+Issue 2 is closed. The working Ghostty harness launches an isolated window
+without Ghostty's prompt-producing `-e` command path, feeds shell input through
+`--input=path:<input-file>`, renders a deterministic four-color image with
+`timg -p kitty`, captures the controlled screen rectangle with
+`screencapture -x -R...`, and verifies the screenshot with GraphicsMagick pixel
+counts.
+
+The final close audit ran `scripts/probe-ghostty-pixel-assertion.sh`
+successfully on 2026-06-15. It recorded `timg_status=0`, captured a nonempty
+2400x1600 screenshot, copied the retained proof image to
+`/tmp/termplot-ghostty-pixel-termplot-ghostty-pixel-probe.iaQzdp.png`, and found
+the expected color evidence in the render crop:
+
+- red: 256 pixels
+- green: 256 pixels
+- blue: 256 pixels
+- white: 3725 pixels
+
+The same audit confirmed `pixel_probe_tmpdir` was removed, the proof artifact
+remained nonempty, and the post-run process check showed only the pre-existing
+active Ghostty process. The harness treats permission prompts as failures to
+avoid or report, not as dialogs for automation to accept.
