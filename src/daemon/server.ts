@@ -32,6 +32,7 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
   let ttlMs = normalizeTtl(options.ttlMs ?? DEFAULT_TTL_MS);
   let idleDeadline = Date.now() + ttlMs;
   let stopping = false;
+  let activeRequests = 0;
   let idleTimer: NodeJS.Timeout | undefined;
   const registry = new PlotRegistry();
   let renderer: BrowserRenderer | undefined;
@@ -55,6 +56,13 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
       clearTimeout(idleTimer);
     }
     idleTimer = setTimeout(() => {
+      if (activeRequests > 0) {
+        idleTimer = setTimeout(() => {
+          scheduleIdleTimer();
+        }, 100);
+        idleTimer.unref();
+        return;
+      }
       void stop();
     }, Math.max(1, idleDeadline - Date.now()));
     idleTimer.unref();
@@ -123,6 +131,7 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
     }
 
     const request = parsed as Request;
+    activeRequests += 1;
     try {
       if (request.method === "status") {
         writeResponse(socket, ok(request.id, status()));
@@ -168,6 +177,9 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
           fail(request.id, "INTERNAL_ERROR", error instanceof Error ? error.message : String(error)),
         );
       }
+    } finally {
+      activeRequests -= 1;
+      scheduleIdleTimer();
     }
   }
 

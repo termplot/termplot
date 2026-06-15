@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { test } from "node:test";
@@ -37,7 +36,7 @@ function parseJson(stdout: string): any {
 }
 
 async function withDaemon<T>(fn: (ctx: { dir: string; socket: string; pid: number }) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), "termplotd-registry-test-"));
+  const dir = await mkdtemp("/tmp/tp-registry-");
   const socket = join(dir, "termplotd.sock");
   const log = join(dir, "termplotd.log");
   const started = parseJson(
@@ -115,7 +114,7 @@ test("registry returns structured errors for missing plots and invalid input", a
 });
 
 test("registry is in memory and clears across daemon restart", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "termplotd-registry-restart-test-"));
+  const dir = await mkdtemp("/tmp/tp-registry-restart-");
   const socket = join(dir, "termplotd.sock");
   const log = join(dir, "termplotd.log");
   try {

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { test } from "node:test";
@@ -54,7 +53,7 @@ function parseJson(stdout: string): any {
 }
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), "termplotd-test-"));
+  const dir = await mkdtemp("/tmp/tp-daemon-");
   try {
     return await fn(dir);
   } finally {

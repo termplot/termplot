@@ -138,19 +138,28 @@ experiment.
   - Stage 8 can rely on the daemon/client contract. Local setup still requires
     macOS Screen Recording permission, target terminals, and GraphicsMagick for
     screenshot probes.
-- [ ] Stage 8: Nushell integration.
+- [x] Stage 8: Nushell integration.
   - Provide a Nushell-friendly command or plugin path that uses the same daemon.
   - Accept Nushell pipeline values and convert them to Plotly JSON.
   - Return binary PNG data or terminal display output in the shape Nushell users
     expect.
   - Preserve the cross-shell daemon contract instead of creating a separate
     plugin-only browser lifecycle.
+  - Implemented `termplot.nu` as a thin Nushell wrapper over the external CLI.
+    It returns binary PNG data by default, supports `--output`, and uses the
+    same `termplotd` daemon.
+  - Browser-backed verification now uses Playwright Firefox because Chromium
+    cannot launch from the current macOS automation session.
 - [ ] Stage 9: packaging and documentation.
   - Update package metadata, scripts, and build outputs for `termplot`,
     `termplotd`, and any client/display binary selected by Issue 4.
   - Document install, daemon lifecycle, supported terminals, permissions,
     protocol selection, and troubleshooting.
   - Add examples that prove plain shell and Nushell usage.
+  - Package and document `termplot.nu`, including `source termplot.nu`, default
+    binary PNG pipeline output, `--output`, `--display`, and daemon options.
+  - Document the Playwright Firefox browser dependency and how users install or
+    verify the required browser artifact.
   - Keep `CLAUDE.md` as a symlink to `AGENTS.md` wherever agent docs are added.
 
 ## Constraints
@@ -202,4 +211,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 7: Verify full-stack terminal rendering](07-verify-full-stack-terminal-rendering.md) -
   **Pass**
 - [Experiment 8: Implement Nushell integration](08-implement-nushell-integration.md) -
-  **Designed**
+  **Pass**

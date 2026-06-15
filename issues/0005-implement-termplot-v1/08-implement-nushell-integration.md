@@ -143,3 +143,166 @@ Stage 8 output shape beyond file output, file-only PNG output is explicitly
 resolved/configurable path or `^termplot render`, no new blockers were
 introduced, and git state still showed only plan docs changed with no
 implementation started.
+
+## Result
+
+**Result:** Pass
+
+Implemented a top-level `termplot.nu` script as the v1 Nushell integration. It
+is a thin wrapper over the external TermPlot CLI and keeps all browser/render
+lifecycle ownership in `termplotd`.
+
+Behavior:
+
+- `source termplot.nu` exports a `termplot` command.
+- Nushell pipeline values are converted with `to json --raw`.
+- The wrapper calls the external CLI through a resolved path with `^$cli_path`,
+  avoiding recursion into the exported Nushell command.
+- `termplot --output <path>` writes PNG output and returns the CLI's structured
+  metadata as a Nushell value.
+- `termplot` without `--output` renders to a temporary PNG and returns binary
+  PNG data to the Nushell pipeline.
+- `termplot --display` passes terminal image output through the external CLI for
+  users who want terminal display from Nushell.
+- `--socket`, `--ttl-ms`, `--log`, `--timeout-ms`, `--protocol`, and `--cli` are
+  supported so tests and users can control daemon and protocol behavior.
+
+Changed files:
+
+- `termplot.nu`: new Nushell wrapper.
+- `tests/nushell-integration.test.ts`: sources the wrapper from Nushell, renders
+  a pipeline record to `--output`, renders binary PNG pipeline output, verifies
+  PNG signatures/dimensions, and proves daemon reuse through private socket
+  status/PID evidence.
+- `src/renderer/browser-renderer.ts`: switched the daemon-owned browser renderer
+  to Playwright Firefox after the current macOS session could not launch
+  Chromium headless.
+- `src/daemon/server.ts`: keeps the daemon alive while requests are active so
+  idle expiry cannot interrupt a slow browser-backed render.
+- `src/bin/termplot.ts`: lets `plots render-png` honor `--timeout-ms`.
+- `package.json` / `pnpm-lock.yaml`: use Playwright for browser automation and
+  run the Node test suite serially for browser-backed integration stability.
+- Browser-backed tests: use short `/tmp/tp-*` socket roots and longer render
+  timeouts for integration tests.
+- `issues/0005-implement-termplot-v1/README.md`: marked Stage 8 complete and
+  Experiment 8 `Pass`.
+
+Verification run:
+
+```text
+nu --version
+```
+
+Passed: `0.113.1`.
+
+```text
+pnpm run build
+```
+
+Passed.
+
+```text
+node --test build/tests/nushell-integration.test.js
+```
+
+Passed.
+
+```text
+pnpm test
+```
+
+Passed: 24 tests, 24 pass.
+
+Chromium launch investigation:
+
+- Minimal Puppeteer launch failed with
+  `TimeoutError: Timed out after 30000 ms
+  while waiting for the WS endpoint URL to appear in stdout!`
+- Direct `chrome-headless-shell --headless --dump-dom about:blank` also hung.
+- Sampling the hung Chromium process showed it blocked in AppKit/SkyLight while
+  looking up the display server, below TermPlot and Puppeteer.
+- Playwright WebKit launched but returned a zero-length screenshot.
+- Playwright Firefox launched and produced valid PNG screenshot bytes, so
+  TermPlot now uses Playwright Firefox for the browser-backed renderer.
+
+```text
+rg --fixed-strings 'puppeteer' termplot.nu tests/nushell-integration.test.ts || true
+rg --fixed-strings 'timg' termplot.nu tests/nushell-integration.test.ts || true
+rg --fixed-strings 'imgcat' termplot.nu tests/nushell-integration.test.ts || true
+rg --fixed-strings 'kitty +kitten' termplot.nu tests/nushell-integration.test.ts || true
+rg --fixed-strings 'ansi-escapes' termplot.nu tests/nushell-integration.test.ts || true
+rg --fixed-strings 'v0/cli/nu_plugin_termplot' termplot.nu tests/nushell-integration.test.ts || true
+```
+
+Passed with no matches.
+
+```text
+pnpm exec dprint fmt issues/0005-implement-termplot-v1/README.md issues/0005-implement-termplot-v1/08-implement-nushell-integration.md
+```
+
+Passed.
+
+```text
+git add -N termplot.nu tests/nushell-integration.test.ts && git diff --check
+```
+
+Passed.
+
+`pnpm exec dprint fmt termplot.nu tests/nushell-integration.test.ts` reported no
+matching files for the current dprint plugin configuration, so no Nushell or
+TypeScript test formatting changes were available through dprint. TypeScript
+compilation and the full Node test suite passed.
+
+## Conclusion
+
+Stage 8 confirms that Nushell can use TermPlot through the same cross-shell
+daemon contract:
+
+- The script wrapper is sufficient for v1; a native Nushell plugin is not needed
+  for the implemented pipeline ergonomics.
+- Nushell users can pipe records into `termplot` and receive binary PNG data by
+  default.
+- Nushell users can write files with `--output` and receive structured metadata.
+- Terminal display passthrough is exposed with `--display`, while Stage 7
+  remains the real-terminal proof for Ghostty and iTerm2 rendering.
+
+Stage 9 should package and document `termplot.nu`, including
+`source termplot.nu`, binary PNG pipeline output, `--output`, `--display`,
+daemon options, and the Playwright Firefox browser dependency.
+
+## Completion Review
+
+Reviewer: Wegener (`019ecc1c-1100-7130-b2e2-2b735ccb81cc`), fresh-context Codex
+subagent, read-only.
+
+Findings:
+
+- Minor: `termplot.nu` removed temporary files only on successful paths. If the
+  external CLI, JSON parsing, or raw PNG open failed, the JSON temp file and
+  possibly PNG temp file could be left behind.
+
+Fix:
+
+- Updated `termplot.nu` to create the temporary JSON and PNG files up front and
+  remove both in a Nushell `try ... finally` block. Re-review noted that the
+  JSON save should also happen inside the `try`, so that write was moved into
+  the cleanup-protected block before final verification.
+
+Re-verification after the fix:
+
+```text
+node --test --test-concurrency=1 build/tests/nushell-integration.test.js
+```
+
+Passed: 1 test, 1 pass.
+
+```text
+pnpm test
+```
+
+Passed: 24 tests, 24 pass.
+
+Approval: approved. The reviewer found no blockers or major issues, verified
+`git diff --check`, `nu --version`, `pnpm run build`, and `pnpm test`, and
+confirmed the result commit had not been made before review. Re-review approved
+the temp-file cleanup fix and found no blockers.

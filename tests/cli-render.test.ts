@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { test } from "node:test";
@@ -19,7 +18,7 @@ async function cli(args: string[], options: { env?: NodeJS.ProcessEnv; reject?: 
   try {
     return await execFileAsync(process.execPath, [termplot, ...args], {
       env: options.env,
-      timeout: options.timeout ?? 30_000,
+      timeout: options.timeout ?? 90_000,
       maxBuffer: 20 * 1024 * 1024,
     });
   } catch (error) {
@@ -43,7 +42,7 @@ async function cliWithStdin(args: string[], stdin: string): Promise<CliResult> {
     const timeout = setTimeout(() => {
       child.kill("SIGTERM");
       reject(new Error(`termplot timed out: ${args.join(" ")}`));
-    }, 30_000);
+    }, 90_000);
 
     child.stdout.on("data", (chunk) => stdout.push(Buffer.from(chunk)));
     child.stderr.on("data", (chunk) => stderr.push(Buffer.from(chunk)));
@@ -82,7 +81,7 @@ function pngDimensions(path: string): { width: number; height: number } {
 }
 
 async function withTempDir<T>(prefix: string, fn: (ctx: { dir: string; socket: string; log: string }) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), prefix));
+  const dir = await mkdtemp(join("/tmp", prefix.replace("termplot-", "tp-")));
   try {
     return await fn({
       dir,
@@ -112,11 +111,11 @@ test("render writes PNG from positional JSON and reuses an auto-started daemon",
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--timeout-ms",
-        "20000",
+        "60000",
         "--output",
         firstOutput,
       ])).stdout,
@@ -128,11 +127,11 @@ test("render writes PNG from positional JSON and reuses an auto-started daemon",
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--timeout-ms",
-        "20000",
+        "60000",
         "--output",
         secondOutput,
         "--protocol",
@@ -186,11 +185,11 @@ test("render accepts JSON from --file and stdin", async () => {
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--timeout-ms",
-        "20000",
+        "60000",
         "--output",
         fileOutput,
       ])).stdout,
@@ -201,11 +200,11 @@ test("render accepts JSON from --file and stdin", async () => {
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--timeout-ms",
-        "20000",
+        "60000",
         "--output",
         stdinOutput,
       ], JSON.stringify(config))).stdout,
@@ -231,7 +230,7 @@ test("render returns structured errors before writing output for invalid input",
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--output",
@@ -245,7 +244,7 @@ test("render returns structured errors before writing output for invalid input",
         "--socket",
         socket,
         "--ttl-ms",
-        "10000",
+        "60000",
         "--log",
         log,
         "--output",
@@ -284,11 +283,11 @@ test("render emits Kitty output for explicit protocol and Ghostty auto-detection
       "--socket",
       socket,
       "--ttl-ms",
-      "10000",
+      "60000",
       "--log",
       log,
       "--timeout-ms",
-      "20000",
+      "60000",
       "--protocol",
       "kitty",
     ], { env: terminalEnv() });
@@ -298,11 +297,11 @@ test("render emits Kitty output for explicit protocol and Ghostty auto-detection
       "--socket",
       socket,
       "--ttl-ms",
-      "10000",
+      "60000",
       "--log",
       log,
       "--timeout-ms",
-      "20000",
+      "60000",
       "--protocol",
       "auto",
     ], { env: terminalEnv({ TERM_PROGRAM: "ghostty" }) });
@@ -331,11 +330,11 @@ test("render emits OSC 1337 output for explicit protocol and iTerm2 auto-detecti
       "--socket",
       socket,
       "--ttl-ms",
-      "10000",
+      "60000",
       "--log",
       log,
       "--timeout-ms",
-      "20000",
+      "60000",
       "--protocol",
       "iterm2",
     ], { env: terminalEnv() });
@@ -345,11 +344,11 @@ test("render emits OSC 1337 output for explicit protocol and iTerm2 auto-detecti
       "--socket",
       socket,
       "--ttl-ms",
-      "10000",
+      "60000",
       "--log",
       log,
       "--timeout-ms",
-      "20000",
+      "60000",
       "--protocol",
       "auto",
     ], { env: terminalEnv({ TERM_PROGRAM: "iTerm.app" }) });

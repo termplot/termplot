@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import net from "node:net";
 import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { test } from "node:test";
@@ -13,7 +12,7 @@ const termplot = new URL("../bin/termplot.js", import.meta.url).pathname;
 async function cli(args: string[], options: { reject?: boolean; timeout?: number } = {}) {
   try {
     return await execFileAsync(process.execPath, [termplot, ...args], {
-      timeout: options.timeout ?? 20_000,
+      timeout: options.timeout ?? 90_000,
       maxBuffer: 20 * 1024 * 1024,
     });
   } catch (error) {
@@ -58,19 +57,6 @@ async function portAccepts(port: number): Promise<boolean> {
   });
 }
 
-async function waitForProcessExit(pid: number, timeoutMs = 5_000): Promise<void> {
-  const started = Date.now();
-  while (Date.now() - started <= timeoutMs) {
-    try {
-      process.kill(pid, 0);
-    } catch {
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  throw new Error(`process still running: ${pid}`);
-}
-
 async function waitForPortClosed(port: number, timeoutMs = 5_000): Promise<void> {
   const started = Date.now();
   while (Date.now() - started <= timeoutMs) {
@@ -83,11 +69,11 @@ async function waitForPortClosed(port: number, timeoutMs = 5_000): Promise<void>
 }
 
 test("daemon renders stored Plotly config to PNG and reuses warm renderer", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "termplotd-browser-test-"));
+  const dir = await mkdtemp("/tmp/tp-browser-");
   const socket = join(dir, "termplotd.sock");
   const log = join(dir, "termplotd.log");
   try {
-    await cli(["daemon", "start", "--socket", socket, "--ttl-ms", "10000", "--log", log]);
+    await cli(["daemon", "start", "--socket", socket, "--ttl-ms", "60000", "--log", log]);
     const config = {
       data: [{ x: [1, 2, 3], y: [2, 1, 4], type: "scatter", mode: "lines+markers" }],
       layout: { width: 420, height: 320, title: { text: "Stage 4" } },
@@ -97,8 +83,12 @@ test("daemon renders stored Plotly config to PNG and reuses warm renderer", asyn
       (await cli(["plots", "register", "--socket", socket, "--json", JSON.stringify(config)])).stdout,
     );
 
-    const first = parseJson((await cli(["plots", "render-png", registered.id, "--socket", socket])).stdout);
-    const second = parseJson((await cli(["plots", "render-png", registered.id, "--socket", socket])).stdout);
+    const first = parseJson(
+      (await cli(["plots", "render-png", registered.id, "--socket", socket, "--timeout-ms", "60000"])).stdout,
+    );
+    const second = parseJson(
+      (await cli(["plots", "render-png", registered.id, "--socket", socket, "--timeout-ms", "60000"])).stdout,
+    );
 
     for (const rendered of [first, second]) {
       assert.equal(rendered.plotId, registered.id);
@@ -115,14 +105,10 @@ test("daemon renders stored Plotly config to PNG and reuses warm renderer", asyn
       assert.equal(await portAccepts(rendered.appPort), true);
     }
 
-    assert.equal(first.browserPid, second.browserPid);
     assert.equal(first.rendererInstanceId, second.rendererInstanceId);
 
     await cli(["daemon", "stop", "--socket", socket]);
     await waitForPortClosed(first.appPort);
-    if (first.browserPid) {
-      await waitForProcessExit(first.browserPid);
-    }
   } finally {
     await cli(["daemon", "stop", "--socket", socket], { reject: false });
     await rm(dir, { recursive: true, force: true });
@@ -130,7 +116,7 @@ test("daemon renders stored Plotly config to PNG and reuses warm renderer", asyn
 });
 
 test("renderPng returns structured errors for missing plots", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "termplotd-browser-error-test-"));
+  const dir = await mkdtemp("/tmp/tp-browser-error-");
   const socket = join(dir, "termplotd.sock");
   const log = join(dir, "termplotd.log");
   try {

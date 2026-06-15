@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import puppeteer, { Browser, Page } from "puppeteer";
+import { firefox, type Browser, type Page } from "playwright";
 import type { PlotRecord, RenderPngResult } from "../ipc/protocol.js";
 import { startAppServer, type AppServer } from "./app-server.js";
 
@@ -27,17 +27,17 @@ export class BrowserRenderer {
   async renderPng(plotId: string): Promise<RenderPngResult> {
     const started = Date.now();
     const startedAt = new Date(started).toISOString();
+    const plot = this.#getPlot(plotId);
     const appServer = await this.#ensureAppServer();
     const appReadyAt = Date.now();
     const browser = await this.#ensureBrowser();
     const page = await this.#ensurePage(browser);
-    const plot = this.#getPlot(plotId);
     const token = randomUUID();
     const width = plot.width ?? 1080;
     const height = plot.height ?? 810;
 
-    await page.setViewport({ width, height, deviceScaleFactor: 1 });
-    await page.evaluateOnNewDocument(() => {
+    await page.setViewportSize({ width, height });
+    await page.addInitScript(() => {
       Reflect.set(globalThis, "__TERMPLOT_RENDER_READY__", {
         plotId: null,
         token: null,
@@ -60,7 +60,7 @@ export class BrowserRenderer {
 
     try {
       await page.waitForFunction(
-        (expectedPlotId, expectedToken) => {
+        ({ expectedPlotId, expectedToken }: { expectedPlotId: string; expectedToken: string }) => {
           const state = Reflect.get(globalThis, "__TERMPLOT_RENDER_READY__") as
             | { plotId?: string; token?: string; ready?: boolean; error?: string }
             | undefined;
@@ -71,9 +71,8 @@ export class BrowserRenderer {
               (state.ready || state.error),
           );
         },
+        { expectedPlotId: plotId, expectedToken: token },
         { timeout: 5_000 },
-        plotId,
-        token,
       );
     } catch (error) {
       throw new RenderError("RENDER_TIMEOUT", error instanceof Error ? error.message : String(error));
@@ -112,7 +111,6 @@ export class BrowserRenderer {
       contentType: "image/png",
       width: dimensions.width,
       height: dimensions.height,
-      browserPid: browser.process()?.pid,
       rendererInstanceId: this.#rendererInstanceId,
       appPort: appServer.port,
       timings: {
@@ -148,10 +146,10 @@ export class BrowserRenderer {
   }
 
   async #ensureBrowser(): Promise<Browser> {
-    if (!this.#browser || !this.#browser.connected) {
-      this.#browser = await puppeteer.launch({
+    if (!this.#browser || !this.#browser.isConnected()) {
+      this.#browser = await firefox.launch({
         headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        timeout: 60_000,
       });
     }
     return this.#browser;
