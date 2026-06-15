@@ -5,6 +5,7 @@
 | #                                                      | Title                                     | Opened     |
 | ------------------------------------------------------ | ----------------------------------------- | ---------- |
 | [0004](0004-prove-image-protocols-node-rust/README.md) | Prove image protocols in Node.js and Rust | 2026-06-15 |
+| [0005](0005-implement-termplot-v1/README.md)           | Implement TermPlot v1                     | 2026-06-15 |
 
 ## Closed
 
