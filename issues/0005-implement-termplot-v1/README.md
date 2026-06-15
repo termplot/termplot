@@ -187,3 +187,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 3: Implement plot registry protocol](03-implement-plot-registry-protocol.md) -
   **Pass**
+- [Experiment 4: Implement browser renderer](04-implement-browser-renderer.md) -
+  **Designed**
