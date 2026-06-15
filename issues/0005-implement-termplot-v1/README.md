@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-15"
+closed = "2026-06-15"
 +++
 
 # Issue 5: Implement TermPlot v1
@@ -150,7 +151,7 @@ experiment.
     same `termplotd` daemon.
   - Browser-backed verification now uses Playwright Firefox because Chromium
     cannot launch from the current macOS automation session.
-- [ ] Stage 9: packaging and documentation.
+- [x] Stage 9: packaging and documentation.
   - Update package metadata, scripts, and build outputs for `termplot`,
     `termplotd`, and any client/display binary selected by Issue 4.
   - Document install, daemon lifecycle, supported terminals, permissions,
@@ -160,6 +161,9 @@ experiment.
     binary PNG pipeline output, `--output`, `--display`, and daemon options.
   - Document the Playwright Firefox browser dependency and how users install or
     verify the required browser artifact.
+  - Added package metadata, package file allowlist, Playwright Firefox install
+    and verification scripts, shell/Nushell smoke scripts, package/docs tests,
+    and top-level README documentation.
   - Keep `CLAUDE.md` as a symlink to `AGENTS.md` wherever agent docs are added.
 
 ## Constraints
@@ -213,4 +217,50 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 8: Implement Nushell integration](08-implement-nushell-integration.md) -
   **Pass**
 - [Experiment 9: Package and document v1](09-package-and-document-v1.md) -
-  **Designed**
+  **Pass**
+
+## Conclusion
+
+Issue 5 delivered TermPlot v1 as a macOS-focused TypeScript/Node tool.
+
+The implemented architecture is:
+
+- `termplotd`: a detached local daemon with socket IPC, one-hour default idle
+  TTL, explicit lifecycle commands, in-memory plot registry, React
+  Router/Express app, and warm Playwright Firefox browser renderer.
+- `termplot`: a CLI that reads Plotly JSON from an argument, file, or stdin,
+  auto-starts or reuses `termplotd`, renders PNG files with `--output`, and
+  emits terminal image bytes when no output file is requested.
+- `termplot.nu`: a Nushell wrapper that sources as `termplot`, accepts pipeline
+  values, returns binary PNG data by default, supports `--output` metadata, and
+  can pass terminal image output through with `--display`.
+
+Supported macOS terminal display paths are Ghostty through Kitty graphics and
+iTerm2 through OSC 1337 inline images. SIXEL was proved in Issue 4 but remains a
+deferred compatibility path.
+
+The Issue 5 closure checklist is satisfied:
+
+1. `termplotd` starts from no running daemon and reports status.
+2. `termplot render` accepts Plotly configs.
+3. CLI render auto-starts or connects to `termplotd`.
+4. The daemon renders through a warm browser-backed app and reuses the renderer.
+5. Terminal image output is emitted through Kitty or iTerm2 protocols.
+6. Stage 7 verified real Ghostty and iTerm2 terminal screenshots with pixel
+   assertions.
+7. Stage 7 recorded warm-daemon timing evidence for both target terminals.
+8. Daemons stop explicitly and expire by TTL.
+9. Tests and probes clean up attributed daemon, browser, terminal, and helper
+   processes; final Stage 9 checks left no test-owned processes running.
+
+Known limitations:
+
+- v1 is macOS-only.
+- Browser rendering uses Playwright Firefox because Chromium could not launch in
+  the current macOS automation session.
+- iTerm2 SIXEL is not exposed as a production protocol yet.
+- Plot records stay in memory until deleted or the daemon exits.
+
+Follow-up issues can expand non-macOS support, expose SIXEL if needed, add
+richer package publishing/release automation, and revisit renderer choices if
+Chromium becomes reliable in the target environment.

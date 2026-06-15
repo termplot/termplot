@@ -4,12 +4,41 @@
   "description": "Render Plotly plots in terminals.",
   "type": "module",
   "private": true,
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/astrohacker/termplot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astrohacker/termplot.git"
+  },
+  "keywords": [
+    "terminal",
+    "plotly",
+    "plot",
+    "graphics",
+    "nushell"
+  ],
   "bin": {
     "termplot": "./build/bin/termplot.js",
     "termplotd": "./build/bin/termplotd.js"
   },
+  "files": [
+    "AGENTS.md",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "build/bin",
+    "build/src",
+    "package.json",
+    "termplot.nu"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/write-bin-shims.mjs",
+    "pack:check": "pnpm run build && pnpm pack --dry-run",
+    "playwright:install": "playwright install firefox",
+    "playwright:verify": "node scripts/verify-playwright-firefox.mjs",
+    "smoke:shell": "node scripts/smoke-shell-render.mjs",
+    "smoke:nu": "node scripts/smoke-nushell-render.mjs",
+    "smoke": "pnpm run playwright:verify && pnpm run smoke:shell && pnpm run smoke:nu",
     "test": "pnpm run build && node --test --test-concurrency=1 build/tests/*.test.js"
   },
   "engines": {

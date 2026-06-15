@@ -129,3 +129,132 @@ Approval: approved. The reviewer found no blockers and confirmed the README
 links Experiment 9 as `Designed`, required sections are present, the scope is
 appropriate for one final packaging/documentation experiment, and implementation
 has not started before the plan commit.
+
+## Result
+
+**Result:** Pass
+
+Implemented Stage 9 packaging and documentation.
+
+Changed files:
+
+- `README.md`: added top-level v1 documentation for setup, Playwright Firefox,
+  shell usage, Nushell usage, daemon lifecycle, verification, terminal probes,
+  protocol selection, and troubleshooting.
+- `package.json`: added package metadata, package file allowlist, Playwright
+  Firefox install/verification scripts, shell/Nushell smoke scripts, aggregate
+  smoke script, and package dry-run check.
+- `scripts/verify-playwright-firefox.mjs`: verifies Playwright Firefox launches
+  and screenshots a `200x100` PNG.
+- `scripts/smoke-shell-render.mjs`: verifies plain shell rendering to a
+  `240x180` PNG through a private daemon socket.
+- `scripts/smoke-nushell-render.mjs`: verifies `source termplot.nu` and binary
+  PNG pipeline output through a private daemon socket.
+- `tests/package-docs.test.ts`: verifies package metadata and README coverage.
+- `issues/0005-implement-termplot-v1/README.md`: marked Stage 9 and Experiment 9
+  `Pass`, added the Issue 5 conclusion, and closed the issue.
+
+Verification run:
+
+```text
+pnpm run build
+```
+
+Passed.
+
+```text
+node --test --test-concurrency=1 build/tests/package-docs.test.js
+```
+
+Passed: 2 tests, 2 pass.
+
+```text
+pnpm run playwright:verify
+```
+
+Passed: produced `/tmp/tp-playwright-firefox.png` with PNG signature
+`89504e470d0a1a0a` and dimensions `200x100`.
+
+```text
+pnpm run smoke:shell
+```
+
+Passed: rendered `/tmp/tp-stage9-shell/plot.png` with PNG signature
+`89504e470d0a1a0a` and dimensions `240x180`, then cleaned up the private daemon
+socket and temp directory.
+
+```text
+pnpm run smoke:nu
+```
+
+Passed: rendered `/tmp/tp-stage9-nu/plot.png` from `source termplot.nu` binary
+pipeline output with PNG signature `89504e470d0a1a0a` and dimensions `240x180`,
+then cleaned up the private daemon socket and temp directory.
+
+```text
+pnpm test
+```
+
+Passed: 26 tests, 26 pass.
+
+```text
+pnpm run pack:check
+```
+
+Passed. The package dry-run file list included `README.md`, `LICENSE`, `NOTICE`,
+`package.json`, `termplot.nu`, `build/bin/termplot.js`, and
+`build/bin/termplotd.js`.
+
+```text
+pnpm run smoke
+```
+
+Passed: Playwright Firefox verification, shell smoke, and Nushell smoke all
+passed.
+
+```text
+pnpm exec dprint fmt README.md issues/0005-implement-termplot-v1/README.md issues/0005-implement-termplot-v1/09-package-and-document-v1.md
+```
+
+Passed.
+
+```text
+git diff --check
+```
+
+Passed.
+
+## Conclusion
+
+Stage 9 made TermPlot v1 packageable and documented. The README now explains the
+daemon, renderer dependency, shell and Nushell usage, protocol selection, and
+troubleshooting. Package metadata now exposes the expected CLI binaries and file
+allowlist. The smoke scripts prove the documented shell, Nushell, and Playwright
+Firefox setup paths.
+
+Issue 5 can close because every stage has passed and the issue conclusion
+records the implemented architecture, supported terminal protocols, closure
+checklist, known limitations, and follow-up directions.
+
+## Completion Review
+
+Reviewer: Dirac (`019ecc26-c71f-70f3-8e6b-aac9991ce3e6`), fresh-context Codex
+subagent, read-only.
+
+Findings:
+
+- Major: `README.md` did not document macOS permission/setup requirements for
+  real terminal screenshot probes even though Stage 9 required permissions
+  documentation.
+
+Fix:
+
+- Added README documentation that real Ghostty/iTerm2 screenshot probes require
+  Screen Recording permission for the launcher and that permission prompts are
+  setup failures for automation, not dialogs the probes handle.
+
+Approval: approved. The reviewer found no blockers, corroborated
+`git diff --check`, `pnpm test`, `pnpm run smoke`, and `pnpm run pack:check`,
+confirmed Issue 5 was closed with Experiment 9 marked `Pass`, confirmed
+`issues/README.md` showed 0 open and 5 closed issues, and confirmed the result
+commit had not been made before review.
