@@ -191,3 +191,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 5: Implement CLI render workflow](05-implement-cli-render-workflow.md) -
   **Pass**
+- [Experiment 6: Implement terminal image display](06-implement-terminal-image-display.md) -
+  **Designed**
