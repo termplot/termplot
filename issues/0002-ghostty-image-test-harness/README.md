@@ -119,3 +119,5 @@ Important constraints:
   **Pass**
 - [Experiment 4: Capture Ghostty render screenshot](04-capture-ghostty-render-screenshot.md) -
   **Pass**
+- [Experiment 5: Assert screenshot pixels](05-assert-screenshot-pixels.md) -
+  **Designed**
