@@ -78,6 +78,11 @@ Current findings:
   `--input=path:<input-file>` so a normal shell receives startup text through
   the PTY. This wrote the marker, exited, removed the temporary directory, and
   left only the pre-existing active Ghostty process.
+- Experiment 3 proved that the startup-input harness can run `timg -p kitty`
+  inside Ghostty against a generated local PPM image. The first implementation
+  hung because follow-up shell commands were still queued in PTY input while
+  `timg` was running; wrapping the Ghostty-side logic in a shell function fixed
+  that by ensuring the shell parsed the post-render logic before `timg` started.
 
 Important constraints:
 
@@ -106,4 +111,4 @@ Important constraints:
 - [Experiment 2: Probe Ghostty startup input](02-probe-ghostty-startup-input.md) -
   **Pass**
 - [Experiment 3: Render timg through Ghostty input](03-render-timg-through-ghostty-input.md) -
-  **Designed**
+  **Pass**
