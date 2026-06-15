@@ -119,7 +119,7 @@ experiment.
   - Send render requests to `termplotd`.
   - Support `--output <file>` for PNG output.
   - Support explicit protocol selection based on Issue 4's results.
-- [ ] Stage 6: terminal image display.
+- [x] Stage 6: terminal image display.
   - Implement the protocol path selected by Issue 4.
   - Preserve any working fallback protocols identified by Issue 4.
   - Detect supported terminals conservatively.
@@ -192,4 +192,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 5: Implement CLI render workflow](05-implement-cli-render-workflow.md) -
   **Pass**
 - [Experiment 6: Implement terminal image display](06-implement-terminal-image-display.md) -
-  **Designed**
+  **Pass**

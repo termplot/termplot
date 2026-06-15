@@ -5,6 +5,13 @@ import { defaultSocketPath } from "../ipc/socket-path.js";
 import { getStatus, renew, restartDaemon, setTtl, startOrProbe, stopDaemon } from "../client/daemon.js";
 import { IpcError, requestResult } from "../ipc/client.js";
 import type { PlotRecord, RenderPngResult } from "../ipc/protocol.js";
+import {
+  DisplayError,
+  encodeTerminalImage,
+  resolveTerminalProtocol,
+  type ResolvedTerminalProtocol,
+  type TerminalProtocol,
+} from "../display/protocols.js";
 
 type GlobalOptions = {
   socket: string;
@@ -14,12 +21,10 @@ type GlobalOptions = {
   json?: string;
   file?: string;
   output?: string;
-  protocol?: ImageProtocol;
+  protocol?: TerminalProtocol;
 };
 
-type ImageProtocol = "auto" | "kitty" | "iterm2" | "sixel";
-
-const imageProtocols = new Set<ImageProtocol>(["auto", "kitty", "iterm2", "sixel"]);
+const imageProtocols = new Set<TerminalProtocol>(["auto", "kitty", "iterm2", "sixel"]);
 
 function parseOptions(argv: string[]): { command: string[]; options: GlobalOptions } {
   const command: string[] = [];
@@ -51,9 +56,9 @@ function parseOptions(argv: string[]): { command: string[]; options: GlobalOptio
   return { command, options };
 }
 
-function parseProtocol(value: string): ImageProtocol {
-  if (imageProtocols.has(value as ImageProtocol)) {
-    return value as ImageProtocol;
+function parseProtocol(value: string): TerminalProtocol {
+  if (imageProtocols.has(value as TerminalProtocol)) {
+    return value as TerminalProtocol;
   }
   throw new IpcError("INVALID_PROTOCOL", `unsupported protocol: ${value}`);
 }
@@ -116,16 +121,9 @@ async function handleDaemon(action: string, options: GlobalOptions): Promise<voi
 }
 
 async function handleRender(command: string[], options: GlobalOptions): Promise<void> {
-  const protocol = options.protocol ?? "auto";
+  const protocol = options.output ? options.protocol ?? "auto" : resolveTerminalProtocol(options.protocol ?? "auto");
   const config = await readPlotConfig(command, options);
   validatePlotConfig(config);
-
-  if (!options.output) {
-    throw new IpcError(
-      "TERMINAL_DISPLAY_DEFERRED",
-      `terminal display is not implemented until Stage 6; use --output <file> to write a PNG`,
-    );
-  }
 
   const daemonStartedAt = Date.now();
   const daemon = await startOrProbe({
@@ -146,6 +144,12 @@ async function handleRender(command: string[], options: GlobalOptions): Promise<
     timeoutMs: options.timeoutMs ?? 15_000,
   });
   const png = Buffer.from(rendered.pngBase64, "base64");
+
+  if (!options.output) {
+    process.stdout.write(encodeTerminalImage(protocol as ResolvedTerminalProtocol, png));
+    return;
+  }
+
   await fs.mkdir(dirname(options.output), { recursive: true });
   await fs.writeFile(options.output, png);
 
@@ -290,6 +294,8 @@ try {
   await main();
 } catch (error) {
   if (error instanceof IpcError) {
+    printJson({ ok: false, error: { code: error.code, message: error.message } });
+  } else if (error instanceof DisplayError) {
     printJson({ ok: false, error: { code: error.code, message: error.message } });
   } else {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);

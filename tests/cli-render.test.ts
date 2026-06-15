@@ -15,9 +15,10 @@ type CliResult = {
   stderr: string;
 };
 
-async function cli(args: string[], options: { reject?: boolean; timeout?: number } = {}): Promise<CliResult> {
+async function cli(args: string[], options: { env?: NodeJS.ProcessEnv; reject?: boolean; timeout?: number } = {}): Promise<CliResult> {
   try {
     return await execFileAsync(process.execPath, [termplot, ...args], {
+      env: options.env,
       timeout: options.timeout ?? 30_000,
       maxBuffer: 20 * 1024 * 1024,
     });
@@ -261,16 +262,143 @@ test("render returns structured errors before writing output for invalid input",
   });
 });
 
-test("render rejects terminal display until Stage 6", async () => {
+function terminalEnv(values: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
+  const env = { ...process.env, ...values };
+  delete env.TERM_PROGRAM;
+  delete env.ITERM_SESSION_ID;
+  delete env.GHOSTTY_RESOURCES_DIR;
+  return { ...env, ...values };
+}
+
+test("render emits Kitty output for explicit protocol and Ghostty auto-detection", async () => {
+  await withTempDir("termplot-cli-kitty-test-", async ({ socket, log }) => {
+    const config = JSON.stringify({
+      data: [{ x: [1, 2], y: [2, 3], type: "scatter" }],
+      layout: { width: 180, height: 140 },
+      config: { staticPlot: true },
+    });
+
+    const explicit = await cli([
+      "render",
+      config,
+      "--socket",
+      socket,
+      "--ttl-ms",
+      "10000",
+      "--log",
+      log,
+      "--timeout-ms",
+      "20000",
+      "--protocol",
+      "kitty",
+    ], { env: terminalEnv() });
+    const automatic = await cli([
+      "render",
+      config,
+      "--socket",
+      socket,
+      "--ttl-ms",
+      "10000",
+      "--log",
+      log,
+      "--timeout-ms",
+      "20000",
+      "--protocol",
+      "auto",
+    ], { env: terminalEnv({ TERM_PROGRAM: "ghostty" }) });
+
+    for (const result of [explicit, automatic]) {
+      assert.match(result.stdout, /^\x1b_Ga=T,f=100,q=2,m=/);
+      assert.match(result.stdout, /\x1b\\\n$/);
+      assert.equal(result.stdout.includes("\x1b]1337;File="), false);
+      assert.equal(result.stdout.includes("\"ok\""), false);
+      assert.equal(result.stderr, "");
+    }
+  });
+});
+
+test("render emits OSC 1337 output for explicit protocol and iTerm2 auto-detection", async () => {
+  await withTempDir("termplot-cli-iterm2-test-", async ({ socket, log }) => {
+    const config = JSON.stringify({
+      data: [{ x: ["a", "b"], y: [2, 5], type: "bar" }],
+      layout: { width: 180, height: 140 },
+      config: { staticPlot: true },
+    });
+
+    const explicit = await cli([
+      "render",
+      config,
+      "--socket",
+      socket,
+      "--ttl-ms",
+      "10000",
+      "--log",
+      log,
+      "--timeout-ms",
+      "20000",
+      "--protocol",
+      "iterm2",
+    ], { env: terminalEnv() });
+    const automatic = await cli([
+      "render",
+      config,
+      "--socket",
+      socket,
+      "--ttl-ms",
+      "10000",
+      "--log",
+      log,
+      "--timeout-ms",
+      "20000",
+      "--protocol",
+      "auto",
+    ], { env: terminalEnv({ TERM_PROGRAM: "iTerm.app" }) });
+
+    for (const result of [explicit, automatic]) {
+      assert.match(result.stdout, /^\x1b]1337;File=/);
+      assert.match(result.stdout, /inline=1/);
+      assert.match(result.stdout, /\x07\n$/);
+      assert.equal(result.stdout.includes("\x1b_G"), false);
+      assert.equal(result.stdout.includes("\"ok\""), false);
+      assert.equal(result.stderr, "");
+    }
+  });
+});
+
+test("render returns structured errors for unsupported terminal display paths", async () => {
+  const unsupported = parseJson(
+    (await cli([
+      "render",
+      "{\"layout\":{\"width\":160,\"height\":120}}",
+      "--protocol",
+      "auto",
+    ], { env: terminalEnv(), reject: false })).stdout,
+  );
+  const sixel = parseJson(
+    (await cli([
+      "render",
+      "{\"layout\":{\"width\":160,\"height\":120}}",
+      "--protocol",
+      "sixel",
+    ], { env: terminalEnv(), reject: false })).stdout,
+  );
+
+  assert.equal(unsupported.ok, false);
+  assert.equal(unsupported.error.code, "UNSUPPORTED_TERMINAL");
+  assert.equal(sixel.ok, false);
+  assert.equal(sixel.error.code, "PROTOCOL_NOT_IMPLEMENTED");
+});
+
+test("render returns structured errors for invalid protocols", async () => {
   const result = parseJson(
     (await cli([
       "render",
       "{\"layout\":{\"width\":160,\"height\":120}}",
       "--protocol",
-      "iterm2",
+      "nope",
     ], { reject: false })).stdout,
   );
 
   assert.equal(result.ok, false);
-  assert.equal(result.error.code, "TERMINAL_DISPLAY_DEFERRED");
+  assert.equal(result.error.code, "INVALID_PROTOCOL");
 });
