@@ -2,8 +2,9 @@
 
 ## Open
 
-| # | Title | Opened |
-| - | ----- | ------ |
+| #                                             | Title                           | Opened     |
+| --------------------------------------------- | ------------------------------- | ---------- |
+| [0003](0003-research-v1-tech-stack/README.md) | Research TermPlot v1 tech stack | 2026-06-15 |
 
 ## Closed
 
