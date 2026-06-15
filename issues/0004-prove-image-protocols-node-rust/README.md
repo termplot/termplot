@@ -172,3 +172,5 @@ be implemented in Node.js, Rust, or a hybrid.
   **Pass**
 - [Experiment 6: Prove SIXEL output in iTerm2](06-prove-sixel-output-in-iterm2.md) -
   **Pass**
+- [Experiment 7: Synthesize protocol strategy](07-synthesize-protocol-strategy.md) -
+  **Designed**
