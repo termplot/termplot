@@ -74,12 +74,18 @@ of:
 
 Fill this matrix as experiments run:
 
-| Protocol                       | Ghostty support | iTerm2 support | Node.js path                      | Rust path | Node proof | Rust proof |
-| ------------------------------ | --------------- | -------------- | --------------------------------- | --------- | ---------- | ---------- |
-| Kitty graphics                 | Unknown         | Unknown        | Unknown                           | Unknown   | Pending    | Pending    |
-| iTerm2 inline image / OSC 1337 | Unknown         | Unknown        | v0 used `ansi-escapes.image(...)` | Unknown   | Pending    | Pending    |
-| SIXEL                          | Unknown         | Unknown        | Unknown                           | Unknown   | Pending    | Pending    |
-| ANSI/Unicode block fallback    | Expected        | Expected       | Unknown                           | Unknown   | Pending    | Pending    |
+| Protocol                       | Ghostty support                                                                | iTerm2 support                                                        | Node.js path                                                                            | Rust path                                                                                                             | Node proof | Rust proof |
+| ------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| Kitty graphics                 | Supported by Ghostty docs; Issue 2 proved `timg -p kitty` only                 | Not official in iTerm2 docs; third-party detector claims iTerm2 v3.6+ | Candidate: `terminal-image`, direct spec encoder; `term-kitty-img` is stale/risky       | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `kitty-graphics-protocol`, direct spec                              | Pending    | Pending    |
+| iTerm2 inline image / OSC 1337 | Unsupported by current Ghostty evidence; feature request closed as not planned | Supported by iTerm2 docs                                              | v0 used `ansi-escapes.image(...)`; candidate: `terminal-image`, direct spec encoder     | Candidate: `ratatui-image`, `viuer`, `rasteroid`, `iterm2img`, direct spec                                            | Pending    | Pending    |
+| SIXEL                          | Not documented by Ghostty; treat unsupported until proof or official evidence  | iTerm2 feature-reporting spec defines SIXEL support                   | Candidate: `sixel`, direct encoder; no strong maintained terminal-display wrapper found | Candidate: `ratatui-image`, `viuer` with feature, `rasteroid`, `icy_sixel`, `a-sixel`; C/FFI via libsixel last resort | Pending    | Pending    |
+| ANSI/Unicode block fallback    | Expected text/truecolor capability                                             | Expected text/truecolor capability                                    | Candidate: `terminal-image` fallback or custom half-block renderer                      | Candidate: `ratatui-image` halfblocks, `viuer` default, custom renderer                                               | Pending    | Pending    |
+
+Experiment 1 filled the first researched matrix version. The support/path
+columns are evidence-backed research findings, not proof results. The proof
+columns must remain `Pending` until later experiments render images from
+TermPlot-owned Node.js and Rust code in real terminal windows and pass
+screenshot assertions.
 
 ## Experiment Roadmap
 
@@ -138,4 +144,4 @@ be implemented in Node.js, Rust, or a hybrid.
 ## Experiments
 
 - [Experiment 1: Research terminal protocol support and libraries](01-research-terminal-protocol-support-and-libraries.md) -
-  **Designed**
+  **Pass**
