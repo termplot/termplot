@@ -201,3 +201,5 @@ terminals and protocols, known limitations, and follow-up issues.
   **Pass**
 - [Experiment 7: Verify full-stack terminal rendering](07-verify-full-stack-terminal-rendering.md) -
   **Pass**
+- [Experiment 8: Implement Nushell integration](08-implement-nushell-integration.md) -
+  **Designed**
