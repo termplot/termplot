@@ -129,3 +129,137 @@ Fixes:
 Approval: approved. The reviewer confirmed that the issue README links
 Experiment 4 as `Designed`, the experiment has the required sections,
 implementation had not started, and no blockers remained.
+
+## Result
+
+**Result:** Pass
+
+Experiment 4 implemented the daemon-owned browser renderer. The daemon can now
+render a stored Plotly config to PNG bytes through IPC while keeping a browser
+and renderer instance warm across requests.
+
+Implemented files:
+
+- `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`
+  - add Express, Puppeteer, Plotly, React, React DOM, and React Router
+    dependencies;
+  - record pnpm's approved Puppeteer build in `allowBuilds`.
+- `src/renderer/app-server.ts`
+  - adds a daemon-owned loopback Express app server;
+  - uses React Router route matching for `/plots/:id`;
+  - serves a Plotly render page for stored plot configs;
+  - resets and scopes readiness to plot ID plus render token;
+  - surfaces browser-side Plotly errors through the readiness state.
+- `src/renderer/browser-renderer.ts`
+  - keeps a Puppeteer browser/page warm;
+  - starts the app server lazily on an ephemeral loopback port;
+  - navigates to the plot route and waits on the scoped readiness marker;
+  - screenshots the plot element to PNG;
+  - returns base64 PNG data, dimensions, content type, browser PID, renderer
+    instance ID, app port, and timing metadata;
+  - closes page, browser, and app server on daemon cleanup.
+- `src/ipc/protocol.ts`
+  - adds `renderPng` and the JSON-framed `RenderPngResult` response shape.
+- `src/daemon/server.ts`
+  - wires `renderPng` into daemon IPC;
+  - preserves Stage 3 `render` as render-intent registration;
+  - converts render failures into stable structured errors.
+- `src/bin/termplot.ts`
+  - adds the Stage 4 debug command `termplot plots render-png <id>`.
+- `tests/browser-renderer.test.ts`
+  - verifies PNG rendering, PNG signature/dimensions, timing metadata, warm
+    renderer reuse, app-port cleanup, browser cleanup, and missing-plot errors.
+
+Stable render errors added:
+
+- `PLOT_NOT_FOUND`
+- `RENDER_TIMEOUT`
+- `RENDER_NAVIGATION_FAILED`
+- `RENDER_BROWSER_ERROR`
+- `RENDER_SCREENSHOT_FAILED`
+
+Verification commands:
+
+```bash
+pnpm add express puppeteer plotly.js-dist-min react react-dom react-router @types/express @types/react @types/react-dom
+pnpm approve-builds --all
+pnpm install
+pnpm run build
+pnpm test
+ps -axo pid=,ppid=,command= | rg 'termplotd|termplotd-browser|chrome.*puppeteer|chrome-headless|Chromium' || true
+git add -N pnpm-workspace.yaml src/renderer tests/browser-renderer.test.ts
+git diff --check
+```
+
+`pnpm test` passed:
+
+```text
+✔ daemon renders stored Plotly config to PNG and reuses warm renderer
+✔ renderPng returns structured errors for missing plots
+✔ status reports no daemon for a missing private socket
+✔ start probes before bind, reports status, renews TTL, and stops cleanly
+✔ restart replaces only the probe-owned daemon
+✔ direct termplotd refuses to steal a live socket
+✔ TTL precedence supports env, flag, and runtime overrides
+✔ idle expiry exits and unlinks the private socket
+✔ SIGTERM and SIGINT clean up only spawned daemon sockets
+✔ startup failure is bounded and reports a clear error
+✔ render registers a plot and get/list/delete/clear operate on it
+✔ registry returns structured errors for missing plots and invalid input
+✔ registry is in memory and clears across daemon restart
+ℹ tests 13
+ℹ pass 13
+ℹ fail 0
+```
+
+The renderer test proves both renders report the same `browserPid` and
+`rendererInstanceId`, which is deterministic warm reuse evidence. It also
+decodes `pngBase64`, verifies the PNG signature, checks dimensions, confirms the
+daemon-owned app port accepts connections while rendering, then verifies the
+port closes after daemon shutdown and the probe-owned browser process exits.
+
+The final process check showed no leftover `termplotd`, `termplotd-browser`,
+Puppeteer Chrome, headless Chrome, or Chromium processes other than the check
+command itself.
+
+`git diff --check` passed with new implementation and test files included via
+intent-to-add.
+
+## Conclusion
+
+Stage 4 is complete. TermPlot v1 now has the daemon-side path from stored Plotly
+config to PNG bytes:
+
+1. register config through Stage 3 `render`;
+2. call Stage 4 `renderPng` with the plot ID;
+3. daemon serves the plot through its internal app server;
+4. warm Puppeteer renderer waits for deterministic Plotly readiness;
+5. daemon returns base64 PNG data and render metadata through JSON IPC.
+
+The next experiment should implement Stage 5: the user-facing CLI render
+workflow, including JSON input from argument/file/stdin, daemon auto-start,
+render registration, PNG output, and handoff to terminal display selection in
+Stage 6.
+
+## Completion Review
+
+Reviewer: Pauli (`019ecbc4-dec0-7d43-9050-3272d016ef89`), fresh-context Codex
+completion reviewer.
+
+Findings:
+
+- Blocker: none.
+- Major: none.
+- Minor: none.
+
+Approval: approved. The reviewer confirmed that Stage 4 is marked complete while
+later stages remain unchecked, Experiment 4 has `Result` and `Conclusion`, Stage
+3 `render` registration is preserved separately from `renderPng`, `renderPng`
+returns base64 PNG metadata through JSON IPC, readiness is reset/token-scoped
+with structured render errors, tests cover PNG signature/dimensions, warm reuse,
+app-port cleanup, browser cleanup, missing plot errors, and existing
+lifecycle/registry compatibility, scope scan found no Stage 6 terminal
+protocol/display or Stage 8 Nushell implementation, `git diff
+--check` and
+`pnpm exec tsc -p tsconfig.json --noEmit` passed, and the result commit had not
+yet been made.

@@ -4,6 +4,7 @@ export type Request =
   | { id?: string; method: "setTtl"; ttlMs: number }
   | { id?: string; method: "renew" }
   | { id?: string; method: "render"; config: unknown }
+  | { id?: string; method: "renderPng"; plotId: string }
   | { id?: string; method: "getPlot"; plotId: string }
   | { id?: string; method: "listPlots" }
   | { id?: string; method: "deletePlot"; plotId: string }
@@ -35,6 +36,24 @@ export type PlotRecord = PlotMetadata & {
   config: unknown;
 };
 
+export type RenderPngResult = {
+  plotId: string;
+  pngBase64: string;
+  contentType: "image/png";
+  width: number;
+  height: number;
+  browserPid?: number;
+  rendererInstanceId: string;
+  appPort: number;
+  timings: {
+    startedAt: string;
+    appReadyMs: number;
+    plotReadyMs: number;
+    screenshotMs: number;
+    totalMs: number;
+  };
+};
+
 export function isRequest(value: unknown): value is Request {
   if (!value || typeof value !== "object") {
     return false;
@@ -49,7 +68,7 @@ export function isRequest(value: unknown): value is Request {
     return typeof record.ttlMs === "number" && Number.isFinite(record.ttlMs);
   }
 
-  if (["getPlot", "deletePlot"].includes(record.method)) {
+  if (["renderPng", "getPlot", "deletePlot"].includes(record.method)) {
     return typeof record.plotId === "string" && record.plotId.length > 0;
   }
 

@@ -106,7 +106,7 @@ experiment.
   - Support individual plot deletion and clearing all plots.
   - Clear all plots on daemon exit.
   - Return structured errors with stable machine-readable codes.
-- [ ] Stage 4: browser app and renderer port.
+- [x] Stage 4: browser app and renderer port.
   - Port the v0 React Router/Express Plotly route into the v1 daemon app.
   - Keep browser/page or browser/context warm across renders.
   - Add deterministic browser-side render readiness instead of fixed sleeps.
@@ -188,4 +188,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 3: Implement plot registry protocol](03-implement-plot-registry-protocol.md) -
   **Pass**
 - [Experiment 4: Implement browser renderer](04-implement-browser-renderer.md) -
-  **Designed**
+  **Pass**

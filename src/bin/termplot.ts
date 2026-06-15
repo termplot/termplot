@@ -119,6 +119,10 @@ async function handlePlots(command: string[], options: GlobalOptions): Promise<v
     printJson(await requestResult(options.socket, { method: "deletePlot", plotId: requireCommandArg(command, 1, "id") }, {
       timeoutMs: 1_000,
     }));
+  } else if (action === "render-png") {
+    printJson(await requestResult(options.socket, { method: "renderPng", plotId: requireCommandArg(command, 1, "id") }, {
+      timeoutMs: 15_000,
+    }));
   } else if (action === "clear") {
     printJson(await requestResult(options.socket, { method: "clearPlots" }, { timeoutMs: 1_000 }));
   } else {

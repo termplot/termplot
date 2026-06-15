@@ -3,6 +3,7 @@ import net from "node:net";
 import type { Request, Response, Status } from "../ipc/protocol.js";
 import { isRequest } from "../ipc/protocol.js";
 import { PlotRegistry, RegistryError } from "./plot-registry.js";
+import { BrowserRenderer, RenderError } from "../renderer/browser-renderer.js";
 
 export type DaemonOptions = {
   socketPath: string;
@@ -33,6 +34,7 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
   let stopping = false;
   let idleTimer: NodeJS.Timeout | undefined;
   const registry = new PlotRegistry();
+  let renderer: BrowserRenderer | undefined;
   const server = net.createServer();
 
   function status(): Status {
@@ -78,6 +80,10 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
         connection.destroy();
       }
     });
+    if (renderer) {
+      await renderer.close();
+      renderer = undefined;
+    }
     unlinkSocket(socketPath);
   }
 
@@ -129,6 +135,11 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
         const record = registry.render(request.config);
         renew();
         writeResponse(socket, ok(request.id, record));
+      } else if (request.method === "renderPng") {
+        renderer ??= new BrowserRenderer((id) => registry.get(id));
+        const rendered = await renderer.renderPng(request.plotId);
+        renew();
+        writeResponse(socket, ok(request.id, rendered));
       } else if (request.method === "getPlot") {
         writeResponse(socket, ok(request.id, registry.get(request.plotId)));
       } else if (request.method === "listPlots") {
@@ -148,6 +159,8 @@ export async function startDaemon(options: DaemonOptions): Promise<RunningDaemon
       }
     } catch (error) {
       if (error instanceof RegistryError) {
+        writeResponse(socket, fail(request.id, error.code, error.message));
+      } else if (error instanceof RenderError) {
         writeResponse(socket, fail(request.id, error.code, error.message));
       } else {
         writeResponse(
