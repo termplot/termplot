@@ -98,3 +98,105 @@ verification covers concrete pass/fail criteria and repo hygiene, private socket
 use is covered, input sources, PNG output, auto-start/reuse, validation,
 structured metadata/errors, and the no-terminal-display boundary are covered,
 and implementation had not started before the plan commit.
+
+## Result
+
+**Result:** Pass
+
+Implemented `termplot render` as the Stage 5 PNG-output workflow. The command
+now accepts Plotly JSON from one positional argument, `--file`, or stdin,
+validates the config object and positive numeric `layout.width` /
+`layout.height`, auto-starts or reuses `termplotd`, registers the plot, renders
+PNG bytes through the Stage 4 browser renderer, writes `--output`, and prints
+structured metadata without embedding `pngBase64`.
+
+Terminal image display remains deferred. `--protocol <auto|kitty|iterm2|sixel>`
+is parsed and reported in metadata for output renders, but invoking
+`termplot render` without `--output` returns the structured
+`TERMINAL_DISPLAY_DEFERRED` error instead of emitting Kitty, OSC 1337, SIXEL, or
+other terminal escape codes.
+
+The previous registry-only `termplot render --json` behavior moved to
+`termplot plots register --json` so Stage 3/4 diagnostic tests can continue to
+exercise raw registry and renderer operations without conflicting with the
+user-facing render workflow.
+
+Changed files:
+
+- `src/bin/termplot.ts`: added render input handling, protocol parsing, minimal
+  validation, daemon auto-start/reuse, PNG output writing, structured metadata,
+  and `plots register`.
+- `tests/cli-render.test.ts`: added Stage 5 CLI workflow coverage for positional
+  JSON, `--file`, stdin, daemon auto-start/reuse, PNG signature/dimensions,
+  validation errors, and the Stage 6 terminal-display deferral.
+- `tests/plot-registry.test.ts`: moved registry setup calls to `plots register`.
+- `tests/browser-renderer.test.ts`: moved renderer setup calls to
+  `plots register`.
+
+Verification run:
+
+```text
+pnpm run build
+```
+
+Passed.
+
+```text
+pnpm test
+```
+
+Passed: 17 tests, 17 pass.
+
+```text
+git add -N tests/cli-render.test.ts && git diff --check
+```
+
+Passed.
+
+```text
+pnpm exec dprint fmt issues/0005-implement-termplot-v1/README.md issues/0005-implement-termplot-v1/05-implement-cli-render-workflow.md
+```
+
+Passed.
+
+`pnpm exec dprint fmt src/bin/termplot.ts tests/plot-registry.test.ts tests/browser-renderer.test.ts tests/cli-render.test.ts`
+reported no matching files for the current dprint plugin configuration, so no
+source/test formatting changes were available through dprint. TypeScript
+compilation and the full Node test suite passed.
+
+## Completion Review
+
+Reviewer: Lorentz (`019ecbd1-41a8-7ff1-ac13-5262156bd076`), fresh-context Codex
+completion reviewer.
+
+Findings:
+
+- Blocker: none.
+- Major: CLI tests did not explicitly assert the stdout metadata fields claimed
+  by the experiment: width, height, daemon PID, and timing metadata.
+- Minor: formatter evidence recorded the source/test dprint invocation but not
+  the changed Markdown issue files.
+
+Fixes:
+
+- Added explicit assertions for render metadata width, height, daemon PID,
+  daemon/register timing fields, and browser render timing fields in
+  `tests/cli-render.test.ts`.
+- Ran and recorded `pnpm exec dprint fmt` for the changed Issue 5 Markdown
+  files.
+
+Reviewer approval: approved with no blockers. Re-review requested for the
+recorded fixes before the result commit.
+
+Re-review approval: approved. Lorentz confirmed the prior metadata-assertion and
+Markdown-formatting findings are resolved, no new blocker was introduced,
+`git diff --check` passes, and the result commit had not been made before
+re-review approval.
+
+## Conclusion
+
+Stage 5 gives TermPlot a real user-facing PNG render command while preserving
+the daemon, registry, and warm browser renderer boundaries established in Stages
+2 through 4. The next experiment should implement Stage 6 terminal image display
+by taking the PNG produced by this workflow and emitting the selected protocol
+encoder output for Ghostty and iTerm2.

@@ -94,7 +94,7 @@ test("daemon renders stored Plotly config to PNG and reuses warm renderer", asyn
       config: { staticPlot: true },
     };
     const registered = parseJson(
-      (await cli(["render", "--socket", socket, "--json", JSON.stringify(config)])).stdout,
+      (await cli(["plots", "register", "--socket", socket, "--json", JSON.stringify(config)])).stdout,
     );
 
     const first = parseJson((await cli(["plots", "render-png", registered.id, "--socket", socket])).stdout);

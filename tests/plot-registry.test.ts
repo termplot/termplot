@@ -59,7 +59,7 @@ test("render registers a plot and get/list/delete/clear operate on it", async ()
     };
 
     const rendered = parseJson(
-      (await cli(["render", "--socket", socket, "--json", JSON.stringify(config)])).stdout,
+      (await cli(["plots", "register", "--socket", socket, "--json", JSON.stringify(config)])).stdout,
     );
     assert.match(rendered.id, /^[0-9a-f-]{36}$/);
     assert.equal(rendered.width, 640);
@@ -79,7 +79,7 @@ test("render registers a plot and get/list/delete/clear operate on it", async ()
     assert.deepEqual(deleted, { deleted: true, id: rendered.id });
     assert.deepEqual(parseJson((await cli(["plots", "list", "--socket", socket])).stdout), []);
 
-    const second = parseJson((await cli(["render", "--socket", socket, "--json", JSON.stringify(config)])).stdout);
+    const second = parseJson((await cli(["plots", "register", "--socket", socket, "--json", JSON.stringify(config)])).stdout);
     assert.notEqual(second.id, rendered.id);
     assert.deepEqual(parseJson((await cli(["plots", "clear", "--socket", socket])).stdout), { cleared: 1 });
     assert.deepEqual(parseJson((await cli(["plots", "list", "--socket", socket])).stdout), []);
@@ -94,18 +94,18 @@ test("registry returns structured errors for missing plots and invalid input", a
     assert.equal(missing.ok, false);
     assert.equal(missing.error.code, "PLOT_NOT_FOUND");
 
-    const nonObject = parseJson((await cli(["render", "--socket", socket, "--json", "[]"], { reject: false })).stdout);
+    const nonObject = parseJson((await cli(["plots", "register", "--socket", socket, "--json", "[]"], { reject: false })).stdout);
     assert.equal(nonObject.ok, false);
     assert.equal(nonObject.error.code, "INVALID_PLOT_CONFIG");
 
     const badDimensions = parseJson(
-      (await cli(["render", "--socket", socket, "--json", '{"layout":{"width":0}}'], { reject: false })).stdout,
+      (await cli(["plots", "register", "--socket", socket, "--json", '{"layout":{"width":0}}'], { reject: false })).stdout,
     );
     assert.equal(badDimensions.ok, false);
     assert.equal(badDimensions.error.code, "INVALID_DIMENSIONS");
 
     const malformed = parseJson(
-      (await cli(["render", "--socket", socket, "--json", '{"layout":'], { reject: false })).stdout,
+      (await cli(["plots", "register", "--socket", socket, "--json", '{"layout":'], { reject: false })).stdout,
     );
     assert.equal(malformed.ok, false);
     assert.equal(malformed.error.code, "INVALID_JSON");
@@ -123,7 +123,7 @@ test("registry is in memory and clears across daemon restart", async () => {
       (await cli(["daemon", "start", "--socket", socket, "--ttl-ms", "5000", "--log", log])).stdout,
     );
     const rendered = parseJson(
-      (await cli(["render", "--socket", socket, "--json", '{"layout":{"width":320,"height":240}}'])).stdout,
+      (await cli(["plots", "register", "--socket", socket, "--json", '{"layout":{"width":320,"height":240}}'])).stdout,
     );
     assert.equal(parseJson((await cli(["plots", "list", "--socket", socket])).stdout).length, 1);
 

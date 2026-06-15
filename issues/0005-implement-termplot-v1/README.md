@@ -112,7 +112,7 @@ experiment.
   - Add deterministic browser-side render readiness instead of fixed sleeps.
   - Screenshot the plot element or page to a PNG buffer.
   - Return PNG bytes, width, height, plot ID, and timing metadata.
-- [ ] Stage 5: CLI render workflow.
+- [x] Stage 5: CLI render workflow.
   - Parse Plotly JSON from an argument, file, or stdin.
   - Validate width/height and Plotly config shape.
   - Auto-start or connect to `termplotd`.
@@ -190,4 +190,4 @@ terminals and protocols, known limitations, and follow-up issues.
 - [Experiment 4: Implement browser renderer](04-implement-browser-renderer.md) -
   **Pass**
 - [Experiment 5: Implement CLI render workflow](05-implement-cli-render-workflow.md) -
-  **Designed**
+  **Pass**

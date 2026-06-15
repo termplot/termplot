@@ -1,7 +1,10 @@
 #!/usr/bin/env node
+import fs from "node:fs/promises";
+import { dirname } from "node:path";
 import { defaultSocketPath } from "../ipc/socket-path.js";
 import { getStatus, renew, restartDaemon, setTtl, startOrProbe, stopDaemon } from "../client/daemon.js";
 import { IpcError, requestResult } from "../ipc/client.js";
+import type { PlotRecord, RenderPngResult } from "../ipc/protocol.js";
 
 type GlobalOptions = {
   socket: string;
@@ -9,7 +12,14 @@ type GlobalOptions = {
   logPath?: string;
   timeoutMs?: number;
   json?: string;
+  file?: string;
+  output?: string;
+  protocol?: ImageProtocol;
 };
+
+type ImageProtocol = "auto" | "kitty" | "iterm2" | "sixel";
+
+const imageProtocols = new Set<ImageProtocol>(["auto", "kitty", "iterm2", "sixel"]);
 
 function parseOptions(argv: string[]): { command: string[]; options: GlobalOptions } {
   const command: string[] = [];
@@ -27,12 +37,25 @@ function parseOptions(argv: string[]): { command: string[]; options: GlobalOptio
       options.timeoutMs = Number(requireValue(argv, (index += 1), arg));
     } else if (arg === "--json") {
       options.json = requireValue(argv, (index += 1), arg);
+    } else if (arg === "--file") {
+      options.file = requireValue(argv, (index += 1), arg);
+    } else if (arg === "--output") {
+      options.output = requireValue(argv, (index += 1), arg);
+    } else if (arg === "--protocol") {
+      options.protocol = parseProtocol(requireValue(argv, (index += 1), arg));
     } else {
       command.push(arg);
     }
   }
 
   return { command, options };
+}
+
+function parseProtocol(value: string): ImageProtocol {
+  if (imageProtocols.has(value as ImageProtocol)) {
+    return value as ImageProtocol;
+  }
+  throw new IpcError("INVALID_PROTOCOL", `unsupported protocol: ${value}`);
 }
 
 function requireValue(argv: string[], index: number, flag: string): string {
@@ -52,7 +75,7 @@ async function main(): Promise<void> {
   if (command[0] === "daemon") {
     await handleDaemon(command[1] ?? "status", options);
   } else if (command[0] === "render") {
-    await handleRender(options);
+    await handleRender(command.slice(1), options);
   } else if (command[0] === "plots") {
     await handlePlots(command.slice(1), options);
   } else {
@@ -92,9 +115,64 @@ async function handleDaemon(action: string, options: GlobalOptions): Promise<voi
   }
 }
 
-async function handleRender(options: GlobalOptions): Promise<void> {
+async function handleRender(command: string[], options: GlobalOptions): Promise<void> {
+  const protocol = options.protocol ?? "auto";
+  const config = await readPlotConfig(command, options);
+  validatePlotConfig(config);
+
+  if (!options.output) {
+    throw new IpcError(
+      "TERMINAL_DISPLAY_DEFERRED",
+      `terminal display is not implemented until Stage 6; use --output <file> to write a PNG`,
+    );
+  }
+
+  const daemonStartedAt = Date.now();
+  const daemon = await startOrProbe({
+    socketPath: options.socket,
+    ttlMs: options.ttlMs,
+    logPath: options.logPath,
+    timeoutMs: options.timeoutMs,
+  });
+  const daemonStartMs = Date.now() - daemonStartedAt;
+
+  const registerStartedAt = Date.now();
+  const record = await requestResult<PlotRecord>(options.socket, { method: "render", config }, {
+    timeoutMs: options.timeoutMs ?? 1_000,
+  });
+  const registerMs = Date.now() - registerStartedAt;
+
+  const rendered = await requestResult<RenderPngResult>(options.socket, { method: "renderPng", plotId: record.id }, {
+    timeoutMs: options.timeoutMs ?? 15_000,
+  });
+  const png = Buffer.from(rendered.pngBase64, "base64");
+  await fs.mkdir(dirname(options.output), { recursive: true });
+  await fs.writeFile(options.output, png);
+
+  printJson({
+    ok: true,
+    plotId: record.id,
+    output: options.output,
+    protocol,
+    contentType: rendered.contentType,
+    width: rendered.width,
+    height: rendered.height,
+    daemonPid: daemon.status.pid,
+    startedDaemon: daemon.started,
+    browserPid: rendered.browserPid,
+    rendererInstanceId: rendered.rendererInstanceId,
+    appPort: rendered.appPort,
+    timings: {
+      daemonStartMs,
+      registerMs,
+      render: rendered.timings,
+    },
+  });
+}
+
+async function handleRegister(options: GlobalOptions): Promise<void> {
   if (!options.json) {
-    throw new IpcError("INVALID_JSON", "render requires --json <json>");
+    throw new IpcError("INVALID_JSON", "plots register requires --json <json>");
   }
 
   let config: unknown;
@@ -111,6 +189,8 @@ async function handlePlots(command: string[], options: GlobalOptions): Promise<v
   const action = command[0] ?? "list";
   if (action === "list") {
     printJson(await requestResult(options.socket, { method: "listPlots" }, { timeoutMs: 1_000 }));
+  } else if (action === "register") {
+    await handleRegister(options);
   } else if (action === "get") {
     printJson(await requestResult(options.socket, { method: "getPlot", plotId: requireCommandArg(command, 1, "id") }, {
       timeoutMs: 1_000,
@@ -127,6 +207,74 @@ async function handlePlots(command: string[], options: GlobalOptions): Promise<v
     printJson(await requestResult(options.socket, { method: "clearPlots" }, { timeoutMs: 1_000 }));
   } else {
     throw new Error(`unknown plots command: ${action}`);
+  }
+}
+
+async function readPlotConfig(command: string[], options: GlobalOptions): Promise<unknown> {
+  if (command.length > 1) {
+    throw new IpcError("INVALID_INPUT", "render accepts at most one positional JSON argument");
+  }
+
+  const sources = [
+    options.json !== undefined ? "--json" : undefined,
+    options.file !== undefined ? "--file" : undefined,
+    command[0] !== undefined ? "argument" : undefined,
+  ].filter(Boolean);
+
+  if (sources.length > 1) {
+    throw new IpcError("INVALID_INPUT", `render accepts exactly one JSON source, got: ${sources.join(", ")}`);
+  }
+
+  const useStdin = sources.length === 0 && !process.stdin.isTTY;
+  if (sources.length === 0 && !useStdin) {
+    throw new IpcError("INVALID_JSON", "render requires JSON from an argument, --file <path>, or stdin");
+  }
+
+  let text: string;
+  if (options.json !== undefined) {
+    text = options.json;
+  } else if (options.file !== undefined) {
+    text = await fs.readFile(options.file, "utf8");
+  } else if (command[0] !== undefined) {
+    text = command[0];
+  } else {
+    text = await readStdin();
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new IpcError("INVALID_JSON", error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function readStdin(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function validatePlotConfig(config: unknown): void {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    throw new IpcError("INVALID_PLOT_CONFIG", "plot config must be a JSON object");
+  }
+
+  const layout = (config as Record<string, unknown>).layout;
+  if (layout !== undefined && (!layout || typeof layout !== "object" || Array.isArray(layout))) {
+    throw new IpcError("INVALID_PLOT_CONFIG", "plot config layout must be an object when present");
+  }
+
+  if (!layout || typeof layout !== "object" || Array.isArray(layout)) {
+    return;
+  }
+
+  for (const name of ["width", "height"]) {
+    const value = (layout as Record<string, unknown>)[name];
+    if (value !== undefined && (typeof value !== "number" || !Number.isFinite(value) || value <= 0)) {
+      throw new IpcError("INVALID_DIMENSIONS", `${name} must be a positive finite number`);
+    }
   }
 }
 
