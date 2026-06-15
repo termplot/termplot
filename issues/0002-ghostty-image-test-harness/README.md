@@ -88,6 +88,11 @@ Current findings:
   `osascript` could not see the Ghostty window in this environment, so the probe
   instead positions the isolated Ghostty window at a controlled rectangle and
   captures that rectangle with `screencapture -x -R...`.
+- Experiment 5 completed the end-to-end proof by analyzing a fresh screenshot
+  with GraphicsMagick. The probe retained a `/tmp/termplot-ghostty-pixel-*.png`
+  artifact, cropped the lower-left render band, and found red, green, blue, and
+  white pixel counts above threshold while cleaning up probe-owned Ghostty
+  processes and temporary files.
 
 Important constraints:
 
@@ -120,4 +125,4 @@ Important constraints:
 - [Experiment 4: Capture Ghostty render screenshot](04-capture-ghostty-render-screenshot.md) -
   **Pass**
 - [Experiment 5: Assert screenshot pixels](05-assert-screenshot-pixels.md) -
-  **Designed**
+  **Pass**

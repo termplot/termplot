@@ -1,5 +1,5 @@
 +++
-status = "designed"
+status = "passed"
 opened = "2026-06-15"
 +++
 
@@ -40,16 +40,18 @@ green, blue, and white regions from the deterministic test image.
 
 ### Pixel Method
 
-The script will analyze a fixed crop from the retained screenshot rather than
-the full screenshot. Experiment 4 captures a `1200x800` point rectangle, which
-is `2400x1600` pixels on the current Retina display. The `timg` output appears
-near the lower-left of the terminal content, so the initial crop will be:
+The script analyzes a fixed crop from the retained screenshot rather than the
+full screenshot. Experiment 4 captures a `1200x800` point rectangle, which is
+`2400x1600` pixels on the current Retina display. The initial design placed a
+`220x220` crop at `y = screenshot_height - 220`, but a real screenshot showed
+that crop was too low: the `timg` output appears above the final prompt in the
+lower-left terminal content. The implemented crop is therefore:
 
 ```text
 x = 0
-y = screenshot_height - 220
-width = 220
-height = 220
+y = screenshot_height - 440
+width = 320
+height = 320
 ```
 
 The script will use:
@@ -132,3 +134,96 @@ Re-review:
 - New blockers: none.
 
 Approval: approved.
+
+## Result
+
+**Result:** Pass
+
+Verification commands:
+
+```bash
+chmod +x scripts/probe-ghostty-pixel-assertion.sh
+dprint fmt issues/0002-ghostty-image-test-harness/README.md issues/0002-ghostty-image-test-harness/05-assert-screenshot-pixels.md
+sh -n scripts/probe-ghostty-pixel-assertion.sh
+rg --fixed-strings -- '-e' scripts/probe-ghostty-pixel-assertion.sh || true
+scripts/probe-ghostty-pixel-assertion.sh
+out=/tmp/termplot-ghostty-pixel-verify.log
+scripts/probe-ghostty-pixel-assertion.sh > "$out" 2>&1
+cat "$out"
+tmpdir=$(sed -n 's/^pixel_probe_tmpdir=//p' "$out" | tail -n 1)
+artifact=$(sed -n 's/^pixel_screenshot=//p' "$out" | tail -n 1)
+test -n "$tmpdir"
+test ! -e "$tmpdir"
+test -n "$artifact"
+test -s "$artifact"
+ps -axo pid=,ppid=,command= | rg 'Ghostty|termplot-ghostty-(pixel|screenshot)-probe|probe-ghostty-(pixel|screenshot)|timg' || true
+git diff --check
+```
+
+The first live run passed:
+
+```text
+timg_status=0
+pixel_screenshot=/tmp/termplot-ghostty-screenshot-termplot-ghostty-screenshot-probe.Gg3WDR.png
+pixel_crop=320x320+0+1160
+pixel_threshold=20
+red_count=256
+green_count=256
+blue_count=256
+white_count=3725
+pass: screenshot contains expected red, green, blue, and white pixel evidence
+```
+
+The script was then corrected to retain the final artifact under the planned
+`/tmp/termplot-ghostty-pixel-*.png` naming pattern and to let the wrapper verify
+temp-dir cleanup after the script exits. The second live run passed with:
+
+```text
+timg_status=0
+pixel_screenshot=/tmp/termplot-ghostty-pixel-termplot-ghostty-pixel-probe.fQBX21.png
+pixel_crop=320x320+0+1160
+pixel_threshold=20
+pixel_tolerance=red(|r-255|<=35,g<=60,b<=60);green(r<=80,g>=150,b<=80);blue(r<=80,g<=80,b>=150);white(r>=200,g>=200,b>=200)
+red_count=256
+green_count=256
+blue_count=256
+white_count=3882
+pixel_tmpdir_removed=yes
+pixel_artifact_exists=yes
+pass: screenshot contains expected red, green, blue, and white pixel evidence
+```
+
+The post-run process check showed only the pre-existing active Ghostty process
+and the check command itself:
+
+```text
+1173 1 /Applications/Ghostty.app/Contents/MacOS/ghostty
+```
+
+Completion review:
+
+Reviewer: Codex subagent `019ecb12-2b20-7fa0-be06-a0fa273390c8` with fresh
+context.
+
+Findings:
+
+- Blocker: none.
+- Major: none.
+- Minor: the Pixel Method section still described the original `220x220` crop at
+  `screenshot_height - 220`, while the implemented and verified script uses a
+  `320x320` crop at `screenshot_height - 440`. Fixed by updating the method
+  section and recording the rationale.
+
+Approval: approved. The reviewer confirmed that the script avoids Ghostty's
+failed `-e` path, cleanup remains attributed through the screenshot probe, pixel
+assertion is scoped to the lower-left render crop, the issue README marks
+Experiment 5 as `Pass`, `git diff --check` passed, and the result commit had not
+been made.
+
+## Conclusion
+
+Issue 2's end-to-end harness goal is now proven on this machine: launch an
+isolated Ghostty window without `-e`, feed rendering commands through startup
+`input`, render a known image with `timg -p kitty`, capture the controlled
+screen rectangle with `screencapture`, and assert from screenshot pixels that
+the expected red, green, blue, and white image regions are visible.
