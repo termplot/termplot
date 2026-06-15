@@ -160,3 +160,8 @@ Issue 5 closes only when TermPlot v1 can:
 
 The conclusion should summarize the implemented architecture, supported
 terminals and protocols, known limitations, and follow-up issues.
+
+## Experiments
+
+- [Experiment 1: Adopt protocol decision](01-adopt-protocol-decision.md) -
+  **Designed**
