@@ -62,3 +62,8 @@ Important constraints:
   control.
 - Pixel assertions should use a simple known image with distinctive colors and
   geometry so failures are easy to diagnose.
+
+## Experiments
+
+- [Experiment 1: Probe isolated Ghostty launch](01-probe-isolated-ghostty-launch.md) -
+  **Designed**
