@@ -181,3 +181,5 @@ terminals and protocols, known limitations, and follow-up issues.
 
 - [Experiment 1: Adopt protocol decision](01-adopt-protocol-decision.md) -
   **Pass**
+- [Experiment 2: Implement termplotd lifecycle skeleton](02-implement-termplotd-lifecycle-skeleton.md) -
+  **Designed**
