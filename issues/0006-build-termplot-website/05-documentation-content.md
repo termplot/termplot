@@ -160,6 +160,70 @@ the plan correctly avoids broken internal links, and the verification plan
 (build, link check, accuracy spot-check, visual) is rigorous. Approved for
 implementation with no changes required.
 
+## Result
+
+**Result:** Pass
+
+- **Pages:** wrote all seven docs — `getting-started.md` (Start, 10, rewritten),
+  `cli.md` (20), `daemon.md` (30), `terminals.md` (40), `plotly.md` (50),
+  `nushell.md` (60), `requirements.md` (70), all Guide except getting-started.
+- **Build:** `bun run build` succeeds; all seven `dist/docs/<slug>/index.html`
+  built; Pagefind indexed 7 pages / 523 words (well beyond the placeholder's 59).
+- **Sidebar grouping:** the docs sidebar groups **Start** (Getting started) then
+  **Guide** (CLI reference, The daemon, Terminals, Plotly input, Nushell,
+  Requirements) in order — confirmed in built HTML.
+- **No broken internal links:** extracted every internal `href="/..."` from all
+  built HTML and resolved each to a built file — zero broken. getting-started
+  references the Installation page in prose without a link (the page arrives in
+  Experiment 6), so nothing points at `/docs/installation/` yet.
+- **Accuracy spot-checks:** the built docs contain the documented facts —
+  `TERMPLOTD_TTL_MS`, the default socket `termplotd-<uid>.sock` (HTML-escaped),
+  the 1080×810 default, `PROTOCOL_NOT_IMPLEMENTED` + `UNSUPPORTED_TERMINAL`,
+  the `GHOSTTY_RESOURCES_DIR`/`ITERM_SESSION_ID` detection, `source termplot.nu`
+  (verified in rendered text after stripping Shiki spans), the one-hour TTL, and
+  Node ≥ 24 — all matching the source.
+- **Shell tabs:** getting-started, cli, and the home page carry paired bash+nu
+  shell-tabs (`data-shell-panel="nu"` present).
+- **Visual (both themes):** screenshotted the CLI reference and the daemon guide
+  in light and dark via the repo-root Firefox script and inspected them — prose,
+  the options/status tables (bordered, header-shaded), code blocks (correct Shiki
+  light/dark theme per mode), shell tabs, the active sidebar item (teal), and
+  prev/next links all render correctly and legibly in both themes.
+- **Hygiene:** dev server stopped, root script and `/tmp` shots removed; no stray
+  processes; port clear; `git status` shows only the seven docs files;
+  `git diff --check` clean.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+TermPlot's documentation now covers the whole tool — getting started, the full
+CLI, the daemon and its TTL/socket model, terminals and protocols, the Plotly
+input format, the Nushell wrapper, and requirements and limitations — all accurate
+to the shipped source and legible in both themes. The sidebar groups Start then
+Guide, with spaced orders that leave room for the Installation page.
+
+Next, **Experiment 6** adds the dedicated **Installation** page (Start, order 15):
+the aspirational Homebrew install reconciled with the shared `INSTALL` snippet,
+plus a working install-from-source path (`pnpm install` →
+`pnpm run playwright:install` → `pnpm run build`), with macOS stated as the only
+supported platform. It cross-links getting-started to that page.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill. The reviewer read all
+seven doc pages and cross-checked every technical claim against the source,
+independently re-ran `bun run build`, and re-ran the broken-link check.
+
+**Verdict:** APPROVE — no Blockers, Majors, or Minors. The reviewer confirmed the
+cli.md global-options table matches the 8 real flags, the daemon.md status table
+matches `protocol.ts` exactly, the nushell.md flags table matches `termplot.nu`
+(including `--cli`), the protocol detection env vars and Kitty/OSC 1337/SIXEL
+behavior are correct, the 1080×810 default and 1000/15000 ms timeouts are right,
+all six listed error codes exist in the source, the four input methods are
+accurate, and the `open plot.json | from json | termplot --display` example is
+valid Nushell + wrapper usage. The build produces 7 docs pages (Pagefind 7
+pages/523 words), there are no broken internal links (nothing references
+`/docs/installation/`), the sidebar groups Start then Guide in order, git status
+shows only the 7 doc files, and no result commit existed at review time.

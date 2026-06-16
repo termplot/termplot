@@ -254,4 +254,4 @@ publish.
 - [Experiment 3: Site chrome and docs infrastructure](03-site-chrome-and-docs-infra.md) -
   **Pass**
 - [Experiment 4: Home page](04-home-page.md) - **Pass**
-- [Experiment 5: Documentation content](05-documentation-content.md) - **Designed**
+- [Experiment 5: Documentation content](05-documentation-content.md) - **Pass**
