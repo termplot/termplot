@@ -15,6 +15,7 @@ const { title, description, canonical, ogType = "website" } = Astro.props;
 const site = Astro.site ?? Astro.url;
 const canonicalUrl = canonical ? new URL(canonical, site) : undefined;
 const ogUrl = canonicalUrl ?? new URL(Astro.url.pathname, site);
+const ogImage = new URL("/images/og-termplot.png", site);
 ---
 
 <!doctype html>
@@ -24,14 +25,16 @@ const ogUrl = canonicalUrl ?? new URL(Astro.url.pathname, site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/images/termplot-mark.svg" type="image/svg+xml" />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={ogUrl} />
     <meta property="og:site_name" content="TermPlot" />
+    <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
-    {/* og:image and favicon are added in experiment 2 (logo pipeline). */}
     <script is:inline>
       // Theme init, before first paint. Two layers: the SETTING
       // (system|light|dark, localStorage) and the RESOLVED mode

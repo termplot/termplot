@@ -250,4 +250,4 @@ publish.
 - [Experiment 1: Scaffold the website Astro project](01-scaffold-website-astro-project.md) -
   **Pass**
 - [Experiment 2: Design the TermPlot SVG logo and brand palette](02-design-logo-and-brand.md) -
-  **Designed**
+  **Pass**

@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 /*
- * Brand tokens. PLACEHOLDER TermPlot palette — finalized in experiment 2
- * alongside the logo. TermPlot is "terminal" + "plot": a teal terminal
- * primary with a warm amber plot accent. Light mode renders them as ink on
- * a cool off-white; dark mode as glow on a deep slate near-black. Runtime
- * mode swap happens on :root[data-theme] — the inline head script in
- * Base.astro sets the attribute before first paint.
+ * Brand tokens. Final TermPlot palette, derived from the logo
+ * (public/images/termplot-mark.svg): a teal terminal tile (--term) with a
+ * warm amber plot line (--plot). Light mode renders them as ink on a cool
+ * off-white; dark mode as glow on a deep slate near-black. Runtime mode swap
+ * happens on :root[data-theme] — the inline head script in Base.astro sets
+ * the attribute before first paint.
  */
 
 :root {

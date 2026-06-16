@@ -168,6 +168,73 @@ clean XML with a source-location note; the OG card now names the tagline
 worded as tuning the tokens to the chosen logo colors. With the Major resolved
 the design is approved for implementation.
 
+## Result
+
+**Result:** Pass
+
+- **Logo:** `website/public/images/termplot-mark.svg` hand-coded as clean SVG XML
+  (256 viewBox): a teal-gradient rounded tile with a faint white inner stroke, an
+  amber plot line (pale `#fde68a` stroke + saturated `#f59e0b` nodes, last node
+  ringed white) over faint white gridlines, and a white `>` prompt + cursor block.
+- **Pipeline:** `bun run build:images` ran clean and wrote `favicon.ico` (4.3 KB,
+  32px PNG packed via `png-to-ico`), `images/termplot-mark-{64,128,192}.png`,
+  `images/termplot-hero.png` + `@2x`, and `images/og-termplot.png` (1200×630).
+- **Visual check (both themes):** rendered `/tmp` preview composites of the mark
+  at 32px and 192px over light `#f6f7f9` and dark `#0d1117` and inspected all
+  four — the self-contained teal tile keeps the mark legible, balanced, and
+  on-brand on both backgrounds (the inner stroke defines the tile edge against
+  the dark page; the amber line/nodes read at favicon size). The OG card was
+  inspected and is well composed: mark left, "TermPlot" wordmark (teal "Term" +
+  amber "Plot"), tagline "Plotly plots in your terminal".
+- **Palette:** `global.css` comment updated to state the palette is final and
+  logo-derived; the amber `--plot` tokens are exact matches to the SVG
+  (`#f59e0b` light, `#fbbf24` dark) and the teal `--term` (`#14b8a6`) is a
+  perceptually-identical variant of the tile gradient (`#16bdb0`→`#0b6f66`),
+  tuned for Tailwind/dark-mode legibility (no structural changes).
+- **Base wiring:** added `<link rel="icon" href="/favicon.ico">`, the
+  `image/svg+xml` icon link to the mark, and `og:image` →
+  `/images/og-termplot.png`.
+- **Build:** `bun run build` succeeds; `dist/favicon.ico`,
+  `dist/images/og-termplot.png`, and `dist/images/termplot-mark.svg` are present,
+  and `dist/index.html` contains the favicon links and `og:image`. Theme
+  pre-paint script still present.
+- **Hygiene:** the `/tmp` previews and the temporary preview script were deleted;
+  `git status` shows only the intended outputs (favicon.ico, public/images/,
+  scripts/, and the Base.astro + global.css edits); `git diff --check` is clean.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+TermPlot now has a distinct identity: a teal terminal tile with an amber Plotly
+sparkline and a shell prompt — "terminal" + "plot" in one self-contained mark
+that needs no light/dark variants because it carries its own contrast. The SVG is
+the source of truth, served directly for crisp scaling and rasterized to the
+favicon/OG assets the platform requires. The brand palette is locked to the logo.
+
+Next, **Experiment 3** builds the site chrome on this foundation: `Header`
+(consuming the mark PNGs/SVG), `Footer` ("An Astrohacker Project" + the
+Astrohacker brand marks, which it will add to `public/images/`), `ThemeToggle`
+(system/light/dark), the `DocNav` sidebar + `DocPage`, the docs route
+(`src/pages/docs/[...slug].astro`) and `docs/index.astro`, a first docs entry so
+the route builds, and `404.astro`. Header/Footer get wired into `Base.astro`.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill. The reviewer read
+`AGENTS.md`, the issue README, this experiment file, the SVG source, the
+pipeline, and the Base/global.css wiring; independently re-ran `bun run
+build:images` and `bun run build`; validated the SVG with `xmllint`; and visually
+inspected the rendered mark and OG card.
+
+**Verdict:** APPROVE — no Blockers, no Majors. One Minor: the Result originally
+said the palette tokens "match" the SVG, but the teal `--term` (`#14b8a6`) is a
+perceptually-identical variant of the tile gradient (`#16bdb0`), not a byte-exact
+match (the amber tokens are exact). Fixed by rewording the Result to state this
+precisely. The reviewer confirmed scope conformance (no later-stage code leaked),
+that the self-contained-tile approach genuinely carries its own contrast on both
+light and dark backgrounds, that all pipeline outputs exist and `favicon.ico` is
+a valid PNG-in-ICO, that the build succeeds with the favicon/og links in
+`dist/index.html`, that `git diff --check` is clean with only intended outputs
+untracked, and that no result commit existed at review time.

@@ -1,0 +1,39 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TermPlot logo">
+  <defs>
+    <linearGradient id="tp-tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16bdb0"/>
+      <stop offset="1" stop-color="#0b6f66"/>
+    </linearGradient>
+    <linearGradient id="tp-area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Terminal tile -->
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#tp-tile)"/>
+  <rect x="9.5" y="9.5" width="237" height="237" rx="50.5" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="3"/>
+
+  <!-- Chart gridlines -->
+  <g stroke="#ffffff" stroke-opacity="0.14" stroke-width="3" stroke-linecap="round">
+    <line x1="52" y1="84" x2="204" y2="84"/>
+    <line x1="52" y1="120" x2="204" y2="120"/>
+    <line x1="52" y1="156" x2="204" y2="156"/>
+  </g>
+
+  <!-- Area under the plotted line -->
+  <path d="M52 156 L94 116 L136 138 L178 76 L178 182 L52 182 Z" fill="url(#tp-area)"/>
+
+  <!-- Plotted line -->
+  <polyline points="52,156 94,116 136,138 178,76" fill="none" stroke="#fde68a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Node markers -->
+  <circle cx="52" cy="156" r="9" fill="#f59e0b"/>
+  <circle cx="94" cy="116" r="9" fill="#f59e0b"/>
+  <circle cx="136" cy="138" r="9" fill="#f59e0b"/>
+  <circle cx="178" cy="76" r="11" fill="#f59e0b" stroke="#ffffff" stroke-width="4"/>
+
+  <!-- Terminal prompt + cursor -->
+  <path d="M58 196 L74 206 L58 216" fill="none" stroke="#ffffff" stroke-opacity="0.92" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="88" y="202" width="28" height="8" rx="4" fill="#ffffff" fill-opacity="0.92"/>
+</svg>
