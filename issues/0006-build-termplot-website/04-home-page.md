@@ -125,6 +125,70 @@ examples use `termplot render`; the content-accuracy list and feature card 3 wer
 updated to match. With both Blockers resolved the design is approved for
 implementation.
 
+## Result
+
+**Result:** Pass
+
+- **Files:** added `src/lib/install.ts` (`INSTALL = "brew install
+  astrohacker/tap/termplot"`) and rewrote `src/pages/index.astro` with hero,
+  install, demos, and feature sections.
+- **Hero:** the SVG mark (served directly) behind `.hero-glow`, the `<h1>`
+  "Plotly plots in your terminal" (with the amber `text-plot` emphasis on
+  "your"), the pitch, a bash/zsh + Nushell shell-tabs block, the "For macOS ·
+  Ghostty (Kitty graphics) and iTerm2 (OSC 1337)" note, and Install/GitHub
+  buttons.
+- **Accuracy:** all shown commands match the real CLI per the design's
+  content-accuracy list — `echo '{...}' | termplot render`,
+  `termplot render --file plot.json --output plot.png`, `source termplot.nu`
+  with a record piped to `termplot`/`termplot --display`,
+  `$plot | termplot | save`, and `termplot daemon status`. Only the Homebrew
+  command is aspirational.
+- **Build:** `bun run build` succeeds. Content checks confirm the hero `<h1>`,
+  the install command, both shell-tabs panels (`data-shell-panel="posix"` and
+  `="nu"`), `termplot render`, `source termplot.nu`, and all four feature titles
+  are in `dist/index.html`. The "Plot"/wordmark uses `text-plot`; the only
+  `text-accent` occurrence is the footer's `hover:text-accent`, not the wordmark.
+- **Visual (both themes):** screenshotted the full home page in light and dark
+  via the repo-root Firefox script and inspected hero, install, demos, and
+  feature grid — layout, legibility, and brand colors are correct in both. Also
+  clicked the hero "Nushell" tab and captured the switched state: the code block
+  swapped to the `source termplot.nu` example and the Nushell tab became active,
+  confirming the shell-tabs runtime works on the home page.
+- **Hygiene:** dev server stopped, root `shot.mjs` and `/tmp` shots removed; no
+  stray processes; port clear; `git status` shows only `index.astro` (modified)
+  and `src/lib/` (new); `git diff --check` clean.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+TermPlot's landing page now communicates the product accurately: a hero with the
+logo and a real render example, an aspirational Homebrew install, accurate
+bash/Nushell demos, and a feature grid — all verified legible in both themes with
+working shell tabs. The shared `INSTALL` snippet is in place for the docs to
+reuse.
+
+Next, **Experiment 5** writes the full documentation set into
+`src/content/docs/` (replacing the placeholder getting-started): the start guide,
+CLI reference, daemon guide, terminals & protocols, Plotly input, Nushell, and
+requirements & limitations — with bash/Nushell shell tabs — all accurate to the
+shipped code. Experiment 6 then finalizes the installation docs (Homebrew +
+install-from-source), reconciling them with the shared `INSTALL` snippet.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill, which independently
+re-ran `bun run build` and cross-checked every shown command against
+`src/bin/termplot.ts`, `termplot.nu`, `src/display/protocols.ts`, and `README.md`.
+
+**Verdict:** APPROVE — no Blockers, no Majors. The reviewer verified all six shown
+commands are real and correct, the protocol/TTL/warm-renderer/macOS claims are
+accurate, the scope is limited to `index.astro` + `src/lib/install.ts`, the
+wordmark uses `text-plot` (only the footer hover uses `text-accent`), both
+shell-tabs panels are present, and git hygiene is clean with no result commit yet.
+
+One Minor: the Nushell record examples used unquoted `type: scatter` while the
+README uses quoted `type: "scatter"` (both valid Nushell). Fixed for
+cross-doc consistency — `index.astro` now uses `type: "scatter"` and rebuilds
+clean.

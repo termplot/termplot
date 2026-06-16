@@ -1,18 +1,219 @@
 ---
+import CodeBlock from "../components/CodeBlock.astro";
 import Base from "../layouts/Base.astro";
+import { INSTALL as install } from "../lib/install";
+
+const heroDemo = `echo '{"data":[{"x":[1,2,3],"y":[2,6,3],"type":"scatter"}]}' \\
+  | termplot render
+# a Plotly line plot, drawn right here in your terminal`;
+
+const heroDemoNu = `source termplot.nu
+{ data: [{ x: [1 2 3], y: [2 6 3], type: "scatter" }] } | termplot --display
+# a native record in, a plot on your screen`;
+
+const fileDemo = `termplot render --file plot.json --output plot.png
+# render a saved Plotly config to a PNG file`;
+
+const nuDemo = `source termplot.nu
+let plot = {
+  data: [{ x: [1 2 3], y: [2 5 3], type: "scatter" }]
+  layout: { width: 640, height: 480 }
+}
+$plot | termplot | save --force plot.png
+# binary PNG straight into the pipeline`;
+
+const daemonDemo = `termplot daemon status
+# the warm renderer's pid, uptime, and idle TTL`;
+
+const features = [
+  {
+    title: "Real terminal images",
+    body:
+      "Plots render as actual images — Kitty graphics in Ghostty, OSC 1337 "
+      + "inline images in iTerm2 — not ASCII art.",
+  },
+  {
+    title: "Warm daemon renderer",
+    body:
+      "termplotd keeps a browser hot in the background, so repeat renders are "
+      + "fast. A one-hour idle TTL cleans up after itself.",
+  },
+  {
+    title: "Any shell, plus Nushell",
+    body:
+      "Pipe Plotly JSON from bash, zsh, or stdin into `termplot render`, or "
+      + "source termplot.nu for a native command that takes records.",
+  },
+  {
+    title: "Real Plotly",
+    body:
+      "It's Plotly.js under the hood, so scatter, bar, box, and heatmaps render "
+      + "exactly as Plotly draws them.",
+  },
+];
 ---
 
 <Base
   title="TermPlot — Plotly plots in your terminal"
-  description="TermPlot renders Plotly plots inside your terminal as real images. Scaffold placeholder home page."
+  description="TermPlot renders Plotly plots inside your terminal as real images, using Kitty graphics in Ghostty and OSC 1337 in iTerm2. A warm browser daemon keeps renders fast. For macOS."
 >
-  <section class="mx-auto max-w-5xl px-6 py-24">
-    <h1 class="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-      <span class="text-primary">Term</span><span class="text-accent">Plot</span>
-    </h1>
-    <p class="mt-4 max-w-xl text-lg text-muted">
-      Plotly plots, rendered as real images inside your terminal. The full site
-      lands as this issue's experiments progress — this is the scaffold.
+  <!-- Hero -->
+  <section class="mx-auto max-w-5xl px-6 pt-16 pb-12 sm:pt-24">
+    <div class="flex flex-col items-center gap-10 sm:flex-row sm:gap-14">
+      <div class="relative shrink-0">
+        <div class="hero-glow absolute -inset-14" aria-hidden="true"></div>
+        <img
+          src="/images/termplot-mark.svg"
+          alt="The TermPlot logo: a teal terminal tile with an amber plot line"
+          width="288"
+          height="288"
+          class="relative w-52 sm:w-72"
+        />
+      </div>
+      <div class="min-w-0 flex-1 text-center sm:text-left">
+        <h1
+          class="font-display text-4xl font-bold tracking-tight text-balance sm:text-5xl"
+        >
+          Plotly plots in <span class="text-plot">your</span> terminal
+        </h1>
+        <p class="mt-4 text-lg text-muted">
+          TermPlot renders Plotly charts as real images, right where you work.
+          Pipe a config in from any shell; a warm browser daemon draws it and
+          prints it through your terminal's image protocol.
+        </p>
+        <div class="shell-tabs mt-6 text-left">
+          <div class="shell-tablist" role="tablist" aria-label="Shell">
+            <button
+              type="button"
+              id="shell-tab-hero-posix"
+              role="tab"
+              aria-selected="true"
+              aria-controls="shell-panel-hero-posix"
+              data-shell-tab="posix"
+              class="shell-tab"
+            >bash / zsh</button>
+            <button
+              type="button"
+              id="shell-tab-hero-nu"
+              role="tab"
+              aria-selected="false"
+              aria-controls="shell-panel-hero-nu"
+              data-shell-tab="nu"
+              class="shell-tab"
+            >Nushell</button>
+          </div>
+          <div
+            id="shell-panel-hero-posix"
+            role="tabpanel"
+            aria-labelledby="shell-tab-hero-posix"
+            data-shell-panel="posix"
+          >
+            <CodeBlock code={heroDemo} lang="bash" />
+          </div>
+          <div
+            id="shell-panel-hero-nu"
+            role="tabpanel"
+            aria-labelledby="shell-tab-hero-nu"
+            data-shell-panel="nu"
+            hidden
+          >
+            <CodeBlock code={heroDemoNu} lang="nu" />
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-muted">
+          For macOS · Ghostty (Kitty graphics) and iTerm2 (OSC 1337).
+        </p>
+        <div
+          class="mt-6 flex flex-wrap items-center justify-center gap-4 sm:justify-start"
+        >
+          <a
+            href="#install"
+            class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-85"
+          >Install</a>
+          <a
+            href="https://github.com/astrohacker/termplot"
+            class="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold transition-colors hover:border-muted"
+          >GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section id="install" class="mx-auto max-w-5xl scroll-mt-8 px-6 py-12">
+    <h2 class="font-display text-2xl font-bold tracking-tight">
+      Installation
+    </h2>
+    <p class="mt-2 text-muted">
+      Install with Homebrew on macOS. This installs the <code
+        class="font-mono text-sm">termplot</code> CLI and the <code
+        class="font-mono text-sm">termplotd</code> daemon. macOS is the only
+      supported platform at this time.
     </p>
+    <div class="relative mt-6">
+      <CodeBlock code={install} lang="bash" />
+      <button
+        id="copy-install"
+        type="button"
+        aria-label="Copy install command"
+        data-copy={install}
+        class="absolute top-3 right-3 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+      >copy</button>
+    </div>
+  </section>
+
+  <!-- Demos -->
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <h2 class="font-display text-2xl font-bold tracking-tight">
+      Render from anywhere
+    </h2>
+    <p class="mt-2 text-muted">
+      Feed TermPlot a Plotly config as an argument, a file, or stdin. Write a PNG
+      with <code class="font-mono text-sm">--output</code>, or omit it to draw
+      straight into a supported terminal.
+    </p>
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <div>
+        <h3 class="mb-3 font-mono text-sm font-medium text-muted">
+          render a file to PNG
+        </h3>
+        <CodeBlock code={fileDemo} lang="bash" />
+      </div>
+      <div>
+        <h3 class="mb-3 font-mono text-sm font-medium text-muted">nushell</h3>
+        <CodeBlock code={nuDemo} lang="nu" />
+      </div>
+    </div>
+    <div class="mt-6">
+      <h3 class="mb-3 font-mono text-sm font-medium text-muted">
+        the daemon
+      </h3>
+      <CodeBlock code={daemonDemo} lang="bash" />
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="mx-auto max-w-5xl px-6 py-12 pb-20">
+    <div class="grid gap-5 sm:grid-cols-2">
+      {
+        features.map((f) => (
+          <div class="rounded-xl border border-border bg-surface p-6">
+            <h3 class="font-display text-lg font-bold">{f.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{f.body}</p>
+          </div>
+        ))
+      }
+    </div>
   </section>
 </Base>
+
+<script>
+  const button = document.getElementById("copy-install");
+  button?.addEventListener("click", async () => {
+    const text = button.dataset.copy;
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    button.textContent = "copied";
+    setTimeout(() => (button.textContent = "copy"), 1500);
+  });
+</script>
