@@ -55,6 +55,12 @@ New directory `website/` at the repo root.
   - `preview`: `astro preview`
   - `deploy`: `bun run build && wrangler pages deploy dist` (present for a future
     publish issue; not run here)
+  - `build:images`: `bun run scripts/process-images.ts` — pre-declared here
+    pointing at the image pipeline script that Experiment 2 creates. The script
+    file does not exist yet and `build:images` is not part of `build`, so it is
+    never invoked in this experiment; it is staged now so Experiment 2 adds only
+    the script file, not a package.json change. (Added during completion review
+    for record accuracy.)
 - `website/astro.config.mjs` — imports the plugin at the top
   (`import rehypeShellTabs from "./plugins/rehype-shell-tabs.mjs";`) and the
   `@astrojs/sitemap` and `@tailwindcss/vite` integrations. Config:
@@ -185,6 +191,65 @@ import explicit, notes the sitemap filter as future-proofing, and records the
 404.astro deferral. No Blockers were raised; with the Major findings addressed
 the design is approved for implementation.
 
+## Result
+
+**Result:** Pass
+
+Scaffolded `website/` and verified end to end:
+
+- `website/` created with `package.json`, `astro.config.mjs`, `tsconfig.json`,
+  `wrangler.toml`, `.gitignore`, `src/content.config.ts`,
+  `plugins/rehype-shell-tabs.mjs` (verbatim copy), `src/styles/global.css`
+  (TermPlot placeholder palette + `prose-termplot`), `src/layouts/Base.astro`
+  (theme/shell pre-paint scripts, no chrome), `src/pages/index.astro`
+  (placeholder), and `public/robots.txt`.
+- **Install:** `bun install` resolved 311 packages and wrote `bun.lock`.
+  Resolved versions floated up within the declared ranges (Astro 6.4.7,
+  Tailwind 4.3.1, sitemap 3.7.3, fonts 5.2.x, Pagefind 1.5.2) — all compatible.
+- **Build:** `bun run build` succeeded — Astro built `/index.html`, the sitemap
+  integration emitted `sitemap-index.xml`, and Pagefind indexed `dist` without
+  error. (Pagefind warned "Did not find a data-pagefind-body element" and
+  indexed the whole `<body>`; expected at this stage — the `data-pagefind-body`
+  marker arrives with the docs layout in Experiment 3.)
+- **Artifacts:** `dist/index.html`, `dist/sitemap-index.xml`, and
+  `dist/pagefind/` all present.
+- **Theme foundation ships:** `dist/index.html` contains the pre-paint theme
+  `is:inline` script (grep for `prefers-color-scheme` matched), and the
+  placeholder `TermPlot` heading is in the built HTML.
+- **Dev smoke:** `astro dev` on port 4329 served HTTP 200 (after ~4 polls); the
+  test killed only the dev-server process tree it launched, and the port was
+  confirmed clear afterward with no stray `astro dev` process remaining.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+The NuTorch stack ports cleanly to TermPlot: Astro 6 static + Tailwind 4 inline
+theme + Pagefind + sitemap + the shell-tabs rehype plugin all build with bun,
+fully isolated from the repo's pnpm root (no `packages:` glob captured
+`website/`). The empty docs collection built without issue, confirming docs
+routes can safely be deferred. The two-layer theme foundation is in built output
+from the start.
+
+Next, **Experiment 2** designs the TermPlot SVG logo and final brand palette,
+then builds it to PNG for the favicon (`favicon.ico` may be a PNG), the favicon
+sizes, and the OG image, and replaces the placeholder tokens in `global.css`.
+The `sharp` + `png-to-ico` dev dependencies are already installed so the image
+pipeline needs no dependency change. Experiment 2 also adds the `og:image` and
+favicon `<link>` to `Base.astro` that were intentionally deferred here.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill. The reviewer read
+`AGENTS.md`, the issue README, this experiment file, and the scaffold under
+`website/`, and independently re-ran `bun run build` and grepped the built HTML.
+
+**Verdict:** APPROVE — no Blockers, no Majors. One Minor finding: the
+`build:images` script in `package.json` was not listed in the plan's Changes
+section. Fixed by documenting it above (it is pre-declared, points at the
+Experiment 2 script, and is never invoked here). The reviewer independently
+confirmed the build succeeds, the theme script ships in `dist/index.html`,
+branding is TermPlot (`prose-termplot`, `termplot.com`, placeholder palette, no
+NuTorch strings), deferred items (logo/chrome/docs/404) are correctly absent,
+`git diff --check` passes, and no result commit existed at review time.

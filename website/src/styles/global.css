@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+/*
+ * Brand tokens. PLACEHOLDER TermPlot palette — finalized in experiment 2
+ * alongside the logo. TermPlot is "terminal" + "plot": a teal terminal
+ * primary with a warm amber plot accent. Light mode renders them as ink on
+ * a cool off-white; dark mode as glow on a deep slate near-black. Runtime
+ * mode swap happens on :root[data-theme] — the inline head script in
+ * Base.astro sets the attribute before first paint.
+ */
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-edge: #eceef1;
+  --fg: #18212b;
+  --fg-muted: #56636f;
+  --border: #dde1e6;
+  --primary: #0d8b8b;
+  --primary-strong: #0a6e6e;
+  --term: #14b8a6;
+  --plot: #f59e0b;
+  --accent: #d9610f;
+  --code-edge: #e5e8ec;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #141b22;
+  --surface-edge: #1b242d;
+  --fg: #e3e8ee;
+  --fg-muted: #93a1af;
+  --border: #26313c;
+  --primary: #2dd4bf;
+  --primary-strong: #5eead4;
+  --term: #2dd4bf;
+  --plot: #fbbf24;
+  --accent: #ff9d4d;
+  --code-edge: #222d37;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-edge: var(--surface-edge);
+  --color-foreground: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-term: var(--term);
+  --color-plot: var(--plot);
+  --color-accent: var(--accent);
+  --color-code-edge: var(--code-edge);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--fg);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--term) 35%, transparent);
+}
+
+/*
+ * Shiki dual-theme glue. Astro/Shiki emit the LIGHT colors as inline
+ * styles on every span with the dark colors alongside as --shiki-dark
+ * variables; an ordinary rule can never beat an inline style, hence
+ * !important.
+ */
+:root[data-theme="dark"] .astro-code,
+:root[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+.astro-code {
+  border: 1px solid var(--code-edge);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.astro-code code {
+  font-family: var(--font-mono);
+}
+
+/* Documentation prose. Markdown output from the docs collection. */
+.prose-termplot {
+  line-height: 1.75;
+}
+
+.prose-termplot h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.prose-termplot h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-termplot h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-termplot p {
+  margin-bottom: 1rem;
+}
+
+.prose-termplot a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  text-underline-offset: 3px;
+}
+
+.prose-termplot a:hover {
+  color: var(--primary-strong);
+  text-decoration-color: currentColor;
+}
+
+.prose-termplot code:not(.astro-code code) {
+  background-color: var(--surface-edge);
+  border-radius: 0.3rem;
+  padding: 0.125rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.prose-termplot ul,
+.prose-termplot ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.prose-termplot ul {
+  list-style: disc;
+}
+
+.prose-termplot ol {
+  list-style: decimal;
+}
+
+.prose-termplot li {
+  margin-bottom: 0.375rem;
+}
+
+.prose-termplot .astro-code {
+  margin-bottom: 1.25rem;
+}
+
+.prose-termplot blockquote {
+  border-left: 3px solid var(--term);
+  padding-left: 1rem;
+  color: var(--fg-muted);
+  margin-bottom: 1rem;
+}
+
+.prose-termplot table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.prose-termplot th,
+.prose-termplot td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose-termplot th {
+  font-family: var(--font-display);
+  font-weight: 500;
+  background-color: var(--surface-edge);
+}
+
+.prose-termplot strong {
+  font-weight: 600;
+}
+
+.prose-termplot hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Shell tabs: component classes, NOT Tailwind utilities — the rehype plugin
+ * injects this markup from a file Tailwind never scans. Active state and
+ * pre-paint panel visibility key on :root[data-shell] (set by the head
+ * script before first paint; absent = posix default, so a no-JS visitor
+ * sees bash via the static hidden attributes). */
+.shell-tablist {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.shell-tab {
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+  cursor: pointer;
+}
+
+:root:not([data-shell="nu"]) .shell-tab[data-shell-tab="posix"],
+:root[data-shell="nu"] .shell-tab[data-shell-tab="nu"] {
+  color: var(--fg);
+  border-color: var(--primary);
+  background-color: var(--surface-edge);
+}
+
+:root[data-shell="nu"] [data-shell-panel="posix"] {
+  display: none;
+}
+
+:root[data-shell="nu"] [data-shell-panel="nu"] {
+  display: block;
+}
+
+.shell-tabs .astro-code {
+  margin-bottom: 0;
+}
+
+.prose-termplot .shell-tabs {
+  margin-bottom: 1.25rem;
+}
+
+/* Soft brand glow behind the hero mark; reads in both modes. */
+.hero-glow {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--term) 24%, transparent),
+    color-mix(in srgb, var(--plot) 10%, transparent) 60%,
+    transparent
+  );
+}
+
+/* Pagefind UI themed with the brand tokens; tracks both modes because
+ * the values are the swapped CSS variables. */
+#docs-search .pagefind-ui {
+  --pagefind-ui-primary: var(--primary);
+  --pagefind-ui-text: var(--fg);
+  --pagefind-ui-background: var(--surface);
+  --pagefind-ui-border: var(--border);
+  --pagefind-ui-tag: var(--surface-edge);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 0.75rem;
+  --pagefind-ui-font: inherit;
+}
+
+/* Theme toggle: show the CURRENT setting's icon (system/light/dark),
+ * keyed on data-theme-setting; system is the default when the attribute
+ * is absent (e.g. pre-resolved harness pages). */
+.toggle-system,
+.toggle-sun,
+.toggle-moon {
+  display: none;
+}
+
+:root[data-theme-setting="system"] .toggle-system,
+:root:not([data-theme-setting]) .toggle-system {
+  display: block;
+}
+
+:root[data-theme-setting="light"] .toggle-sun {
+  display: block;
+}
+
+:root[data-theme-setting="dark"] .toggle-moon {
+  display: block;
+}
+
+/* Astrohacker footer logo: variant follows the data-theme toggle (the
+ * donor sites' prefers-color-scheme picture would ignore it). */
+:root .astrohacker-light,
+:root[data-theme="dark"] .astrohacker-dark {
+  display: block;
+}
+
+:root .astrohacker-dark,
+:root[data-theme="dark"] .astrohacker-light {
+  display: none;
+}

@@ -1,0 +1,27 @@
+{
+  "name": "termplot-website",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "rm -rf node_modules/.astro .astro && astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "deploy": "bun run build && wrangler pages deploy dist",
+    "build:images": "bun run scripts/process-images.ts"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.8",
+    "@tailwindcss/vite": "^4.2.1",
+    "astro": "^6.1.1",
+    "tailwindcss": "^4.2.1"
+  },
+  "devDependencies": {
+    "pagefind": "^1.5.2",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "wrangler": "^4.100.0"
+  }
+}

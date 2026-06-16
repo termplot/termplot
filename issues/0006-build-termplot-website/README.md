@@ -248,4 +248,4 @@ publish.
 ## Experiments
 
 - [Experiment 1: Scaffold the website Astro project](01-scaffold-website-astro-project.md) -
-  **Designed**
+  **Pass**

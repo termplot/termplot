@@ -1,0 +1,116 @@
+---
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogType?: "website" | "article";
+}
+
+const { title, description, canonical, ogType = "website" } = Astro.props;
+const site = Astro.site ?? Astro.url;
+const canonicalUrl = canonical ? new URL(canonical, site) : undefined;
+const ogUrl = canonicalUrl ?? new URL(Astro.url.pathname, site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={ogUrl} />
+    <meta property="og:site_name" content="TermPlot" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {/* og:image and favicon are added in experiment 2 (logo pipeline). */}
+    <script is:inline>
+      // Theme init, before first paint. Two layers: the SETTING
+      // (system|light|dark, localStorage) and the RESOLVED mode
+      // (light|dark, data-theme — what all CSS keys on). A pre-set
+      // data-theme attribute short-circuits everything (test harness /
+      // SSR escape hatch). In system mode the OS preference is tracked
+      // LIVE via the matchMedia change listener.
+      (() => {
+        const root = document.documentElement;
+        if (root.dataset.theme) return;
+        const media = matchMedia("(prefers-color-scheme: dark)");
+        let setting = null;
+        try {
+          setting = localStorage.getItem("theme");
+        } catch {}
+        if (setting !== "light" && setting !== "dark") setting = "system";
+        root.dataset.themeSetting = setting;
+        root.dataset.theme = setting === "system"
+          ? (media.matches ? "dark" : "light")
+          : setting;
+        media.addEventListener("change", () => {
+          if (root.dataset.themeSetting === "system") {
+            root.dataset.theme = media.matches ? "dark" : "light";
+          }
+        });
+      })();
+      // Shell preference, pre-paint: posix is the default (no attribute);
+      // only "nu" sets :root[data-shell], which the CSS uses to swap tab
+      // panels before first paint.
+      (() => {
+        let shell = null;
+        try {
+          shell = localStorage.getItem("shell");
+        } catch {}
+        if (shell === "nu") document.documentElement.dataset.shell = "nu";
+      })();
+    </script>
+  </head>
+  <body
+    class="flex min-h-screen flex-col bg-background text-foreground antialiased"
+  >
+    <main class="flex-1">
+      <slot />
+    </main>
+    <script>
+      // Shell tabs runtime: ONE delegated handler drives every tab group on
+      // the page. The head script already set :root[data-shell] pre-paint;
+      // this syncs hidden/aria for assistive tech and handles clicks.
+      const root = document.documentElement;
+      const applyShell = (shell: string) => {
+        if (shell === "nu") root.dataset.shell = "nu";
+        else delete root.dataset.shell;
+        const nu = shell === "nu";
+        for (const tab of document.querySelectorAll("[data-shell-tab]")) {
+          tab.setAttribute(
+            "aria-selected",
+            String(((tab as HTMLElement).dataset.shellTab === "nu") === nu),
+          );
+        }
+        for (const panel of document.querySelectorAll("[data-shell-panel]")) {
+          panel.toggleAttribute(
+            "hidden",
+            ((panel as HTMLElement).dataset.shellPanel === "nu") !== nu,
+          );
+        }
+      };
+      applyShell(root.dataset.shell === "nu" ? "nu" : "posix");
+      document.addEventListener("click", (event) => {
+        const target = event.target as Element | null;
+        const tab = target?.closest?.("[data-shell-tab]") as
+          | HTMLElement
+          | null;
+        if (!tab) return;
+        const shell = tab.dataset.shellTab === "nu" ? "nu" : "posix";
+        applyShell(shell);
+        try {
+          localStorage.setItem("shell", shell);
+        } catch {}
+      });
+    </script>
+  </body>
+</html>
