@@ -1,0 +1,14 @@
+---
+// /docs renders Getting Started directly (no static redirect hop); the
+// canonical URL is the slug route.
+import { getEntry, render } from "astro:content";
+import DocPage from "../../components/DocPage.astro";
+
+const entry = await getEntry("docs", "getting-started");
+if (!entry) throw new Error("getting-started doc missing");
+const { Content } = await render(entry);
+---
+
+<DocPage entry={entry} canonical="/docs/getting-started/">
+  <Content />
+</DocPage>

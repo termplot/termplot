@@ -1,0 +1,115 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import DocNav from "./DocNav.astro";
+
+interface Props {
+  entry: CollectionEntry<"docs">;
+  canonical?: string;
+}
+
+const { entry, canonical } = Astro.props;
+
+const all = (await getCollection("docs")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+// Sidebar tree: sections in first-appearance order (which is `order` order).
+const sections: { name: string; entries: typeof all }[] = [];
+for (const e of all) {
+  const name = e.data.section ?? "";
+  let s = sections.find((x) => x.name === name);
+  if (!s) {
+    s = { name, entries: [] };
+    sections.push(s);
+  }
+  s.entries.push(e);
+}
+
+const idx = all.findIndex((e) => e.id === entry.id);
+const prev = idx > 0 ? all[idx - 1] : undefined;
+const next = idx < all.length - 1 ? all[idx + 1] : undefined;
+const href = (e: (typeof all)[number]) => `/docs/${e.id}/`;
+
+// The /docs route is a duplicate render of getting-started (canonical
+// points at the slug); keep it out of the search index like the sitemap.
+const indexable = Astro.url.pathname !== "/docs/";
+---
+
+<Base
+  title={`${entry.data.title} — TermPlot docs`}
+  description={entry.data.description}
+  canonical={canonical}
+  ogType="article"
+>
+  <div class="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10 md:flex-row">
+    <nav class="w-full shrink-0 md:w-48" aria-label="Documentation">
+      <!-- A closed <details> hides its children regardless of CSS, so the
+           nav renders twice: a mobile disclosure and a desktop block. -->
+      <details class="md:hidden">
+        <summary
+          class="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted"
+        >
+          Documentation
+        </summary>
+        <div class="mt-4">
+          <DocNav sections={sections} currentId={entry.id} />
+        </div>
+      </details>
+      <div class="hidden md:block">
+        <DocNav sections={sections} currentId={entry.id} />
+      </div>
+    </nav>
+    <article
+      class="prose-termplot min-w-0 flex-1"
+      data-pagefind-body={indexable ? true : undefined}
+    >
+      <!-- One search instance per page, outside the twice-rendered DocNav
+           (a per-nav mount would duplicate ids). Hydrates only in built
+           output — pagefind assets exist after `bun run build`. -->
+      <div id="docs-search" class="mb-8" data-pagefind-ignore></div>
+      <h1>{entry.data.title}</h1>
+      <slot />
+      <div
+        class="mt-12 flex justify-between gap-4 border-t border-border pt-6 text-sm"
+      >
+        {
+          prev
+            ? (
+              <a href={href(prev)} class="text-muted hover:text-foreground">
+                ← {prev.data.title}
+              </a>
+            )
+            : <span />
+        }
+        {
+          next
+            ? (
+              <a
+                href={href(next)}
+                class="text-right font-medium text-primary hover:text-primary-strong"
+              >
+                {next.data.title} →
+              </a>
+            )
+            : <span />
+        }
+      </div>
+    </article>
+  </div>
+</Base>
+
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+<script is:inline src="/pagefind/pagefind-ui.js"></script>
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (typeof PagefindUI !== "undefined") {
+      new PagefindUI({
+        element: "#docs-search",
+        showSubResults: true,
+        showImages: false,
+      });
+    }
+  });
+</script>

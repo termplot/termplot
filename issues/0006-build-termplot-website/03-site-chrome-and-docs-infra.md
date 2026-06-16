@@ -170,6 +170,76 @@ the 404 image path (`termplot-mark-192.png`) is specified; CodeBlock has its own
 bullet; and the Astrohacker copy names exact source paths. With both Blockers
 resolved the design is approved for implementation.
 
+## Result
+
+**Result:** Pass
+
+- **Components:** added `Header.astro` (mark + "Term"/"Plot" wordmark in
+  `text-primary`/`text-plot`, Docs/GitHub nav, ThemeToggle), `Footer.astro`
+  ("An Astrohacker Project" → astrohacker.com with light/dark marks, TermPlot ·
+  MIT, GitHub link, copyright), `DocPage.astro` (`prose-termplot`, "— TermPlot
+  docs" title, DocNav + Pagefind mount + prev/next), and copied the
+  brand-agnostic `ThemeToggle.astro`, `CodeBlock.astro`, `DocNav.astro` from
+  NuTorch.
+- **Pages:** `src/pages/docs/[...slug].astro` and `docs/index.astro` (ported),
+  `404.astro` (TermPlot copy, `termplot-mark-192.png`). Wired `<Header/>` +
+  `<Footer/>` into `Base.astro`.
+- **Assets:** the four `astrohacker-6-{light,dark}-{32,64}.webp` copied into
+  `public/images/`.
+- **Content:** placeholder `getting-started.md` (Start, order 1).
+- **Build:** `bun run build` succeeds; Pagefind now reports "Found a
+  data-pagefind-body element" and indexes the docs page (59 words). Routes
+  `dist/index.html`, `dist/docs/index.html`,
+  `dist/docs/getting-started/index.html`, and `dist/404.html` all built.
+- **Structural checks:** home HTML has the `theme-toggle` button, "An Astrohacker
+  Project" + the astrohacker.com link, the GitHub link
+  (`github.com/astrohacker/termplot`), the header mark, and the teal+amber
+  wordmark; the docs page has the `#docs-search` mount and DocNav links; the four
+  astrohacker webp ship in `dist/images/`.
+- **Visual check (both themes):** started the website dev server (port 4330) and
+  ran a throwaway Firefox screenshot script **from the repo root** (root
+  Playwright 1.60 + Firefox 150), forcing `localStorage.theme` to light then dark
+  via `addInitScript`, capturing the home and docs pages. Inspected all four: the
+  header (logo + teal/amber wordmark), the theme toggle (sun in light, moon in
+  dark), the docs sidebar ("START / Getting started", active in teal), the prose,
+  and the footer ("An Astrohacker Project" with the correct light/dark Astrohacker
+  mark variant) all render correctly and legibly in both themes. The toggle icon
+  and the Astrohacker mark variant both track `data-theme` as intended.
+- **Hygiene:** stopped the dev server, removed the root `shot.mjs` and the `/tmp`
+  shots; no stray `astro dev`/Firefox process and port 4330 clear; `git status`
+  shows only intended outputs; `git diff --check` clean.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+The site now has full chrome and a working docs system: header, theme toggle
+(system/light/dark, persisted, pre-paint), footer with Astrohacker attribution,
+and a `/docs/` route with sidebar, Pagefind search, and prev/next — all verified
+legible in both themes via real Firefox screenshots. The brand wordmark renders
+teal+amber consistent with the logo.
+
+Next, **Experiment 4** replaces the placeholder `index.astro` with the real home
+page: hero (logo + pitch + a terminal-rendered example using the shell-tabs +
+CodeBlock components), an install section (aspirational Homebrew, finalized in
+Experiment 6), and a feature grid — mirroring NuTorch's `index.astro` shape with
+TermPlot content. The placeholder home's `text-accent` wordmark is corrected to
+`text-plot` there.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill. The reviewer read
+`AGENTS.md`, the issue README, this experiment file, and the implementation;
+independently re-ran `bun run build`; and grepped the components for leaked
+NuTorch strings.
+
+**Verdict:** APPROVE — no Blockers, no Majors, no Minors. The reviewer confirmed
+the build succeeds with all routes, Pagefind reports "Found a data-pagefind-body
+element" (59 words indexed), the four Astrohacker webp assets ship to
+`dist/images/`, the Header wordmark uses `text-primary` + `text-plot` (no
+`text-accent`), the Footer attribution and links are correct, DocPage uses
+`prose-termplot` + the "— TermPlot docs" title, there are zero `nutorch`/
+`NuTorch`/`prose-nutorch` strings in `website/src`, `git status` shows only
+intended outputs with no stray `shot.mjs` or `/tmp` artifacts, `git diff --check`
+is clean, and the exp 3 plan commit exists with no result commit yet.

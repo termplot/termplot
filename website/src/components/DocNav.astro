@@ -1,0 +1,42 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  sections: { name: string; entries: CollectionEntry<"docs">[] }[];
+  currentId: string;
+}
+
+const { sections, currentId } = Astro.props;
+---
+
+<div class="space-y-6">
+  {
+    sections.map((s) => (
+      <div>
+        {s.name && (
+          <p class="mb-2 text-xs font-semibold tracking-wider text-muted uppercase">
+            {s.name}
+          </p>
+        )}
+        <ul class="space-y-1.5">
+          {s.entries.map((e) => (
+            <li>
+              <a
+                href={`/docs/${e.id}/`}
+                aria-current={e.id === currentId ? "page" : undefined}
+                class:list={[
+                  "block text-sm transition-colors",
+                  e.id === currentId
+                    ? "font-semibold text-primary"
+                    : "text-muted hover:text-foreground",
+                ]}
+              >
+                {e.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>

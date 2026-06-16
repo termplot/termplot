@@ -1,0 +1,31 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+---
+
+<header class="border-b border-border">
+  <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+    <a href="/" class="flex items-center gap-2.5">
+      <img
+        src="/images/termplot-mark-64.png"
+        srcset="/images/termplot-mark-64.png 1x, /images/termplot-mark-128.png 2x"
+        alt=""
+        width="32"
+        height="32"
+      />
+      <span class="font-display text-xl font-bold tracking-tight">
+        <span class="text-primary">Term</span><span class="text-plot">Plot</span>
+      </span>
+    </a>
+    <nav class="flex items-center gap-5">
+      <a
+        href="/docs/"
+        class="text-sm font-medium text-muted transition-colors hover:text-foreground"
+      >Docs</a>
+      <a
+        href="https://github.com/astrohacker/termplot"
+        class="text-sm font-medium text-muted transition-colors hover:text-foreground"
+      >GitHub</a>
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>

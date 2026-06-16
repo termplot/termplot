@@ -3,6 +3,8 @@ import "@fontsource/space-grotesk/500.css";
 import "@fontsource/space-grotesk/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "../styles/global.css";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
 
 interface Props {
   title: string;
@@ -76,9 +78,11 @@ const ogImage = new URL("/images/og-termplot.png", site);
   <body
     class="flex min-h-screen flex-col bg-background text-foreground antialiased"
   >
+    <Header />
     <main class="flex-1">
       <slot />
     </main>
+    <Footer />
     <script>
       // Shell tabs runtime: ONE delegated handler drives every tab group on
       // the page. The head script already set :root[data-shell] pre-paint;

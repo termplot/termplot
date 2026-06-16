@@ -252,4 +252,4 @@ publish.
 - [Experiment 2: Design the TermPlot SVG logo and brand palette](02-design-logo-and-brand.md) -
   **Pass**
 - [Experiment 3: Site chrome and docs infrastructure](03-site-chrome-and-docs-infra.md) -
-  **Designed**
+  **Pass**

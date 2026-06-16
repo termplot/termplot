@@ -1,0 +1,13 @@
+---
+// Shiki wrapper: Astro's <Code> ignores markdown.shikiConfig, so every
+// page-level code block goes through this component, which bakes in the
+// site's dual themes (issue 0012 exp 1 design review).
+import { Code } from "astro:components";
+import type { ComponentProps } from "astro/types";
+
+type Props = Omit<ComponentProps<typeof Code>, "themes" | "theme">;
+
+const props = Astro.props;
+---
+
+<Code {...props} themes={{ light: "vitesse-light", dark: "vitesse-dark" }} />
