@@ -35,8 +35,8 @@ brew install astrohacker/tap/termplot
 ```
 
 This installs the `termplot` CLI and the `termplotd` daemon. macOS is the only
-supported platform at this time. A full installation guide, including building
-from source, is covered on the dedicated Installation page.
+supported platform at this time. See [Installation](/docs/installation/) for the
+full guide, including building from source.
 
 ## Your first plot
 
@@ -65,6 +65,7 @@ source termplot.nu
 
 ## Where to next
 
+- [Installation](/docs/installation/) — Homebrew and building from source.
 - [CLI reference](/docs/cli/) — every `termplot` command and flag.
 - [The daemon](/docs/daemon/) — `termplotd` lifecycle, TTL, and sockets.
 - [Terminals & protocols](/docs/terminals/) — Ghostty, iTerm2, and protocol

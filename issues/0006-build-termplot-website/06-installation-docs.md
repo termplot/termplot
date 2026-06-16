@@ -102,6 +102,65 @@ link check, command-match, from-source accuracy, visual) is comprehensive. The
 Homebrew formula's aspirational status is correctly isolated. Approved for
 implementation with no changes required.
 
+## Result
+
+**Result:** Pass
+
+- **Page:** added `installation.md` (Start, order 15) with Homebrew (aspirational,
+  with a blockquote noting the tap isn't published) and a From-source path (clone
+  → `pnpm install` → `pnpm run playwright:install` → `pnpm run build` →
+  `pnpm run playwright:verify`, Node ≥ 24, `node build/bin/termplot.js`, and a
+  symlink tip), plus a "Verify it works" render and links to the daemon and
+  requirements pages.
+- **Cross-link:** `getting-started.md` now links "Installation" to
+  `/docs/installation/` and lists it first under "Where to next".
+- **Build:** `bun run build` succeeds; `dist/docs/installation/index.html` exists;
+  Pagefind indexes 8 pages.
+- **Sidebar:** the Start section lists **Getting started** then **Installation**,
+  before the Guide group — confirmed from built HTML.
+- **No broken links:** the whole-site internal-link check passes with zero broken
+  links, including the now-resolving `/docs/installation/` cross-link.
+- **Brew matches INSTALL:** the installation page's brew command equals
+  `src/lib/install.ts` `INSTALL` (`brew install astrohacker/tap/termplot`) —
+  verified against rendered text.
+- **From-source accuracy:** the four `pnpm` commands and the `build/bin/termplot.js`
+  bin path are all present in the rendered page and match `package.json`/README.
+- **Visual (both themes):** screenshotted the installation page in light and dark
+  via the repo-root Firefox script and inspected — the Homebrew block, the note
+  blockquote (teal left border), the from-source code blocks, the active sidebar
+  item, and prev/next all render correctly and legibly in both.
+- **Hygiene:** dev server stopped, root script and `/tmp` shots removed; no stray
+  processes; port clear; `git status` shows only `getting-started.md` (modified)
+  and `installation.md` (new); `git diff --check` clean.
+
+All pass criteria met; no fail conditions hit.
+
 ## Conclusion
 
-_Pending result._
+The documentation is now complete: a dedicated Installation page covers the
+aspirational Homebrew path and the working from-source path (accurate to the
+repo's pnpm scripts and bin layout), grouped under Start after Getting started,
+with the cross-link resolving and the brew command matching the shared `INSTALL`
+snippet.
+
+That finishes the content stages. Next, **Experiment 7** is the full verification
+stage: a clean `bun install` + `bun run build` from scratch, a whole-site link
+check, a theme/no-flash check across system/light/dark, a favicon/OG check, and a
+final confirmation that the site is built and correct locally (not deployed) — the
+basis for closing Issue 6.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill, which re-ran `bun run
+build`, re-ran the broken-link check, and cross-checked the page against
+`package.json`, the repo `README.md`, and `src/lib/install.ts`.
+
+**Verdict:** APPROVE — no Blockers, Majors, or Minors. The reviewer confirmed the
+four from-source `pnpm` commands match `package.json` exactly, the bin paths
+(`build/bin/termplot.js`, `termplotd.js`) and Node ≥ 24 are correct, the clone URL
+is the project repo, the brew command is identical across `installation.md`,
+`getting-started.md`, and `INSTALL`, the cross-link resolves with zero broken
+links site-wide, the sidebar lists Getting started then Installation before the
+Guide group, the build indexes 8 pages, scope is limited to the two doc files,
+and no result commit existed at review time.
