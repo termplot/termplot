@@ -109,6 +109,77 @@ seeding. The clean-room build is safe (removed dirs are gitignored).
 `page.emulateMedia({ colorScheme })`, and the link check now also asserts the
 Pagefind index files exist. Approved for implementation.
 
+## Result
+
+**Result:** Pass
+
+- **Clean-room build:** removed `node_modules`, `dist`, `.astro`; `bun install`
+  reinstalled 311 packages; `bun run build` succeeded with no errors and Pagefind
+  indexed **8 pages / 561 words**. The committed sources build from scratch.
+- **Routes & assets:** all present — `/`, `/404.html`, `/docs/`, all eight docs
+  slugs (getting-started, installation, cli, daemon, terminals, plotly, nushell,
+  requirements), `sitemap-index.xml`, `robots.txt`, `favicon.ico`,
+  `images/og-termplot.png`, `images/termplot-mark.svg`, and
+  `pagefind/pagefind.js` + the `pagefind/index/` fragments.
+- **No broken links:** the whole-site internal-link check found zero broken
+  links.
+- **Theme (core requirement) — all six assertions passed** via Playwright
+  Firefox:
+  - system + OS light → `data-theme=light`, setting `system`.
+  - system + OS dark → `data-theme=dark`, setting `system`.
+  - `localStorage.theme=light` + OS dark → `light` (explicit wins).
+  - `localStorage.theme=dark` + OS light → `dark` (explicit wins).
+  - live tracking: `emulateMedia({colorScheme:"dark"})` flipped `data-theme`
+    light→dark without reload.
+  - toggle cycled system → light → dark and persisted each step to
+    `localStorage`.
+  The pre-paint script sets `data-theme` synchronously before body paint, so the
+  correct values prove no wrong-theme flash.
+- **Favicon/OG:** the home `<head>` carries the `favicon.ico` link, the
+  `image/svg+xml` icon link, and `og:image` → `/images/og-termplot.png`; all
+  three assets ship in `dist`.
+- **Content sanity:** the footer "An Astrohacker Project" → `astrohacker.com`
+  appears on sampled pages; the home page shows the Homebrew install and the
+  bash/Nushell demos; the docs cover the full surface. Zero
+  `nutorch`/`NuTorch`/`prose-nutorch` strings in `website/src`.
+- **Visual:** captured light + dark home screenshots and confirmed correctly
+  themed chrome (sun/moon toggle, logo, hero, install) with no wrong-theme
+  bleed.
+- **Not deployed; clean:** no `deploy`/wrangler ran — the site exists only as
+  local `dist/`. No stray dev-server or Playwright Firefox process; port clear;
+  the throwaway theme/screenshot scripts were deleted; `git status` is clean of
+  website changes and `git diff --check` is clean.
+
+All pass criteria met; no fail conditions hit. No defects were found, so no
+fix-and-re-verify cycle was needed.
+
 ## Conclusion
 
-_Pending result._
+The TermPlot website is complete and verified locally. It builds clean from a
+fresh checkout, all routes and assets are present, there are no broken internal
+links, the light/dark/system theme system resolves correctly with no flash and
+live OS-preference tracking, the favicon/OG assets are wired up, the content is
+complete and accurate with no NuTorch leakage, and nothing has been deployed.
+
+This satisfies the Issue 6 closure checklist. The issue can close. A future
+follow-up issue can publish the site (Cloudflare Pages config is already in place)
+and ship the Homebrew tap/formula that the install docs aspirationally reference.
+
+## Completion Review
+
+Reviewed by a fresh-context Claude subagent (`Explore` agent type, read-only, no
+parent conversation) using the `adversarial-review` skill, which independently
+re-ran the clean build, the route/asset checks, the broken-link scan, the
+NuTorch-leak grep, and the head/footer checks, and cross-read the theme logic in
+`Base.astro`/`ThemeToggle.astro` against the six asserted behaviors.
+
+**Verdict:** APPROVE — no Blockers, no Majors, 1 Minor. The reviewer mapped all
+eight Issue 6 closure-checklist items to verified evidence and confirmed each is
+satisfied, and explicitly stated **Issue 6 is ready to close** after the result
+commit.
+
+The single Minor notes that the logo SVG uses self-contained hardcoded colors
+rather than CSS variables/`currentColor`. This is the deliberate, already-approved
+design from Experiment 2: a self-contained tile that carries its own contrast on
+both themes (verified visually in both modes), chosen so one served SVG works
+without DOM embedding. No change required.
