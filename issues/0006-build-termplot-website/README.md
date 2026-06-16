@@ -256,3 +256,4 @@ publish.
 - [Experiment 4: Home page](04-home-page.md) - **Pass**
 - [Experiment 5: Documentation content](05-documentation-content.md) - **Pass**
 - [Experiment 6: Installation docs](06-installation-docs.md) - **Pass**
+- [Experiment 7: Full verification](07-full-verification.md) - **Designed**
