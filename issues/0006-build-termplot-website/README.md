@@ -1,6 +1,7 @@
 +++
-status = "open"
+status = "closed"
 opened = "2026-06-16"
+closed = "2026-06-16"
 +++
 
 # Issue 6: Build the TermPlot website
@@ -257,3 +258,55 @@ publish.
 - [Experiment 5: Documentation content](05-documentation-content.md) - **Pass**
 - [Experiment 6: Installation docs](06-installation-docs.md) - **Pass**
 - [Experiment 7: Full verification](07-full-verification.md) - **Pass**
+
+## Conclusion
+
+Issue 6 delivered the complete TermPlot website, built locally and verified, not
+deployed.
+
+The site lives in `website/` and mirrors the NuTorch stack: **Astro 6** static
+output, **Tailwind CSS 4** configured inline via `@tailwindcss/vite`, **Pagefind**
+search, `@astrojs/sitemap`, the Space Grotesk + JetBrains Mono fonts, and the
+paired-fence bash/Nushell shell-tabs rehype plugin. It uses **bun**, isolated from
+the repo's pnpm root, and carries a Cloudflare Pages `wrangler.toml` ready for a
+future publish.
+
+What was built, across seven experiments:
+
+1. **Scaffold** — the Astro + Tailwind 4 + Pagefind project with the two-layer
+   pre-paint theme foundation, building clean.
+2. **Logo & brand** — an original, single themeable **SVG** mark (a teal terminal
+   tile with an amber Plotly sparkline and a `>_` prompt) that carries its own
+   contrast on light and dark, plus a `sharp` + `png-to-ico` pipeline that builds
+   it to `favicon.ico` (a PNG payload), favicon sizes, and a 1200×630 OG card. The
+   brand palette is locked to the logo.
+3. **Chrome & docs infra** — Header, Footer ("An Astrohacker Project" →
+   astrohacker.com), the system/light/dark ThemeToggle, and the `/docs/` system
+   (DocNav sidebar, Pagefind search, prev/next), verified in both themes with real
+   Firefox screenshots.
+4. **Home page** — hero with the logo and a real render example, the aspirational
+   Homebrew install, accurate bash/Nushell demos, and a feature grid.
+5. **Documentation** — getting-started, CLI reference, daemon, terminals &
+   protocols, Plotly input, Nushell, and requirements & limitations, every command
+   and default cross-checked against the shipped source.
+6. **Installation** — a dedicated page with the aspirational Homebrew path and the
+   working from-source path (`pnpm install` → `playwright:install` → `build` →
+   `playwright:verify`), accurate to the repo.
+7. **Full verification** — a clean-room build, zero broken links, six passing
+   theme assertions (light/dark/system, no flash, live OS tracking, toggle
+   persistence), favicon/OG wiring, content sanity, and confirmation that nothing
+   was deployed.
+
+The Issue 6 closure checklist is satisfied: the site builds cleanly and runs in
+dev; light/dark/system themes resolve with no flash and persist; the single SVG
+logo works in both themes and is built to the favicon/OG rasters; the docs fully
+and accurately cover TermPlot; installation is documented as Homebrew-on-macOS
+(aspirational) plus a working from-source path with macOS stated as the only
+supported platform; the footer reads "An Astrohacker Project"; internal links
+resolve and Pagefind indexes; and the site is **not** deployed.
+
+Known follow-ups (out of scope here):
+
+- Publish the site to Cloudflare Pages (config is in place).
+- Ship the Homebrew tap/formula the install docs aspirationally reference.
+- Optionally port NuTorch's content/link/theme check scripts for CI.
