@@ -2,8 +2,9 @@
 
 ## Open
 
-| # | Title | Opened |
-| - | ----- | ------ |
+| #                                             | Title                      | Opened     |
+| --------------------------------------------- | -------------------------- | ---------- |
+| [0006](0006-build-termplot-website/README.md) | Build the TermPlot website | 2026-06-16 |
 
 ## Closed
 
