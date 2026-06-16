@@ -1,13 +1,15 @@
 ---
 // Shiki wrapper: Astro's <Code> ignores markdown.shikiConfig, so every
 // page-level code block goes through this component, which bakes in the
-// site's dual themes (issue 0012 exp 1 design review).
+// site's dual themes. Tokyo Night Day (light) is vendored because Shiki only
+// bundles the dark `tokyo-night`.
 import { Code } from "astro:components";
 import type { ComponentProps } from "astro/types";
+import tokyoNightDay from "../shiki/tokyo-night-day.json";
 
 type Props = Omit<ComponentProps<typeof Code>, "themes" | "theme">;
 
 const props = Astro.props;
 ---
 
-<Code {...props} themes={{ light: "vitesse-light", dark: "vitesse-dark" }} />
+<Code {...props} themes={{ light: tokyoNightDay, dark: "tokyo-night" }} />

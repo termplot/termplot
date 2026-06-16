@@ -1,8 +1,16 @@
 // @ts-check
+import { readFileSync } from "node:fs";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import rehypeShellTabs from "./plugins/rehype-shell-tabs.mjs";
+
+// Tokyo Night Day is not a bundled Shiki theme (only `tokyo-night` is), so the
+// light theme is vendored from the upstream VS Code theme. Read via fs so the
+// config loader needs no JSON import attributes.
+const tokyoNightDay = JSON.parse(
+  readFileSync(new URL("./src/shiki/tokyo-night-day.json", import.meta.url), "utf8"),
+);
 
 export default defineConfig({
   output: "static",
@@ -25,7 +33,7 @@ export default defineConfig({
     // Fenced markdown blocks (content collections). The CodeBlock wrapper
     // passes the same themes explicitly for page-level <Code> blocks.
     shikiConfig: {
-      themes: { light: "vitesse-light", dark: "vitesse-dark" },
+      themes: { light: tokyoNightDay, dark: "tokyo-night" },
     },
     // Runs after Shiki: pairs adjacent bash+nu fences into shell tabs.
     rehypePlugins: [rehypeShellTabs],
