@@ -244,3 +244,8 @@ Issue 6 closes when:
 The conclusion should summarize the delivered site structure, the logo and brand
 decisions, documentation coverage, known gaps, and the follow-up issue needed to
 publish.
+
+## Experiments
+
+- [Experiment 1: Scaffold the website Astro project](01-scaffold-website-astro-project.md) -
+  **Designed**
